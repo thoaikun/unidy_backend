@@ -1,9 +1,9 @@
 package com.unidy.backend.services.servicesIplm;
 
-import com.unidy.backend.domains.dto.RegisterRequest;
+import com.unidy.backend.domains.dto.requests.RegisterRequest;
 import com.unidy.backend.config.JwtService;
-import com.unidy.backend.domains.dto.AuthenticationRequest;
-import com.unidy.backend.domains.dto.AuthenticationResponse;
+import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
+import com.unidy.backend.domains.dto.responses.AuthenticationResponse;
 import com.unidy.backend.domains.entity.Token;
 import com.unidy.backend.repositories.TokenRepository;
 import com.unidy.backend.domains.TokenType;
@@ -50,12 +50,9 @@ public class AuthenticationServiceIplm implements AuthenticationService {
       var jwtToken = jwtService.generateToken(user);
       var refreshToken = jwtService.generateRefreshToken(user);
       saveUserToken(savedUser, jwtToken);
-      return ResponseEntity.ok().header("register").body(AuthenticationResponse.builder()
-              .accessToken(jwtToken)
-              .refreshToken(refreshToken)
-              .build());
+      return ResponseEntity.ok().header("Register").body("Register success");
     }catch (Exception e){
-      return ResponseEntity.badRequest().body("register fail");
+      return ResponseEntity.badRequest().body("Register fail");
     }
   }
 

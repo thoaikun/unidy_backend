@@ -1,4 +1,4 @@
-package com.unidy.backend.domains.dto;
+package com.unidy.backend.domains.dto.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

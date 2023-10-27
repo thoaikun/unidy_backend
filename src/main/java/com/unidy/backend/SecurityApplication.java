@@ -1,12 +1,7 @@
 package com.unidy.backend;
 
-import com.unidy.backend.services.servicesIplm.AuthenticationServiceIplm;
-import com.unidy.backend.domains.dto.RegisterRequest;
-import com.unidy.backend.domains.role.Role;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication

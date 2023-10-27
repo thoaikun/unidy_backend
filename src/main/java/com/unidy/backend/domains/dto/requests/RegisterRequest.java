@@ -1,4 +1,4 @@
-package com.unidy.backend.domains.dto;
+package com.unidy.backend.domains.dto.requests;
 
 import com.unidy.backend.domains.role.Role;
 import lombok.*;

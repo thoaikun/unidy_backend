@@ -2,7 +2,7 @@ package com.unidy.backend.services.servicesIplm;
 
 import com.unidy.backend.domains.entity.User;
 import com.unidy.backend.repositories.UserRepository;
-import com.unidy.backend.domains.dto.ChangePasswordRequest;
+import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;

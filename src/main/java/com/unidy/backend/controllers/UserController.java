@@ -1,13 +1,12 @@
 package com.unidy.backend.controllers;
 
+import com.unidy.backend.domains.dto.requests.ResetPasswordRequest;
+import com.unidy.backend.services.servicesInterface.ResetPassword;
 import com.unidy.backend.services.servicesIplm.UserServiceIplm;
-import com.unidy.backend.domains.dto.ChangePasswordRequest;
+import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
@@ -18,7 +17,7 @@ public class UserController {
 
     private final UserServiceIplm service;
 
-    @PatchMapping
+    @PatchMapping("/change-password")
     public ResponseEntity<?> changePassword(
           @RequestBody ChangePasswordRequest request,
           Principal connectedUser

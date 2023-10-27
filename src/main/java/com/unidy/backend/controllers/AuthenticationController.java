@@ -1,17 +1,16 @@
 package com.unidy.backend.controllers;
 
-import com.unidy.backend.domains.dto.AuthenticationRequest;
-import com.unidy.backend.domains.dto.AuthenticationResponse;
+import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
+import com.unidy.backend.domains.dto.requests.ResetPasswordRequest;
+import com.unidy.backend.services.servicesInterface.ResetPassword;
 import com.unidy.backend.services.servicesIplm.AuthenticationServiceIplm;
-import com.unidy.backend.domains.dto.RegisterRequest;
+import com.unidy.backend.domains.dto.requests.RegisterRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -21,6 +20,7 @@ import java.io.IOException;
 public class AuthenticationController {
 
   private final AuthenticationServiceIplm service;
+  private final ResetPassword resetPassword;
 
   @PostMapping("/register")
   public ResponseEntity<?> register(
@@ -43,5 +43,18 @@ public class AuthenticationController {
     service.refreshToken(request, response);
   }
 
-
+  @PostMapping("/send-email-reset-password")
+  public ResponseEntity<?> sendOTP (@RequestBody ResetPasswordRequest request) {
+    String result = resetPassword.sendOTP(request);
+    try {
+      if (result.equals("400")){
+        return ResponseEntity.badRequest().body("Email not found");
+      }
+      else{
+        return ResponseEntity.ok().body("Send OTP success");
+      }
+    } catch (Exception e){
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hệ thống xảy ra lỗi");
+    }
+  }
 }

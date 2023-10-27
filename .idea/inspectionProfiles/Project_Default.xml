@@ -5,6 +5,7 @@
       <option name="customHeaders">
         <set>
           <option value="register" />
+          <option value="Register" />
         </set>
       </option>
     </inspection_tool>

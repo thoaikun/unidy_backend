@@ -1,4 +1,4 @@
-package com.unidy.backend.domains.dto;
+package com.unidy.backend.domains.dto.requests;
 
 import lombok.Builder;
 import lombok.Getter;
