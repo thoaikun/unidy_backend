@@ -11,9 +11,17 @@ services:
     ports:
       - '3306:3306'
     restart: unless-stopped
+  neo4j:
+    image: 'neo4j:5.9.0-community'
+    ports:
+      - '7474:7474'
+      - '7687:7687'
+    volumes:
+      - neo4j-volume:/data
 
 
-
+volumes:
+  neo4j-volume:
 
 
 
