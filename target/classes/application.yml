@@ -4,6 +4,11 @@ spring:
       username: ${SPRING_DATASOURCE_USERNAME}
       password: ${SPRING_DATASOURCE_PASSWORD}
       driver-class-name: com.mysql.cj.jdbc.Driver
+#  neo4j:
+#      uri: neo4j://localhost:7687
+#      authentication:
+#        username: neo4j
+#        password: unidyteam
   jpa:
     hibernate:
       ddl-auto: none

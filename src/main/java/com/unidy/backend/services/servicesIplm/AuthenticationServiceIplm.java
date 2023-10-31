@@ -34,6 +34,10 @@ public class AuthenticationServiceIplm implements AuthenticationService {
 
   public ResponseEntity<?> register(RegisterRequest request) {
     try {
+      var findUser = repository.findByEmail(request.getEmail());
+      if (findUser.isPresent()) {
+        return ResponseEntity.badRequest().body("Invalid Email");
+      }
       var user = User.builder()
               .fullName(request.getFullName())
               .address(request.getAddress())

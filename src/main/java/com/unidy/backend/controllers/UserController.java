@@ -1,7 +1,9 @@
 package com.unidy.backend.controllers;
 
 import com.unidy.backend.domains.dto.requests.ResetPasswordRequest;
+import com.unidy.backend.domains.dto.requests.UserInformationRequest;
 import com.unidy.backend.services.servicesInterface.ResetPassword;
+import com.unidy.backend.services.servicesInterface.UserService;
 import com.unidy.backend.services.servicesIplm.UserServiceIplm;
 import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
 import lombok.RequiredArgsConstructor;
@@ -15,14 +17,24 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserServiceIplm service;
+    private final UserService userService;
+
+    @PostMapping("/get-user-information")
+    public ResponseEntity<?> getUserInformation(@RequestBody UserInformationRequest request){
+        try{
+            return ResponseEntity.ok().body(userService.getUserInformation(request));
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body("Lỗi hệ thống");
+        }
+    }
 
     @PatchMapping("/change-password")
     public ResponseEntity<?> changePassword(
-          @RequestBody ChangePasswordRequest request,
-          Principal connectedUser
+            @RequestBody ChangePasswordRequest request,
+            Principal connectedUser
     ) {
-        service.changePassword(request, connectedUser);
+        userService.changePassword(request, connectedUser);
         return ResponseEntity.ok().build();
     }
 }
