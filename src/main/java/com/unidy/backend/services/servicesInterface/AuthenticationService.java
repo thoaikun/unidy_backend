@@ -11,5 +11,5 @@ import java.io.IOException;
 public interface AuthenticationService {
      ResponseEntity<?> register(RegisterRequest request);
      ResponseEntity<?> authenticate(AuthenticationRequest request);
-     void refreshToken(HttpServletRequest request, HttpServletResponse response)throws IOException;
+     ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response)throws IOException;
 }

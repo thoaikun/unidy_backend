@@ -20,8 +20,8 @@ public class UserServiceIplm implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository repository;
 
-    public UserInformationRespond getUserInformation(UserInformationRequest request){
-        User user = repository.findByUserId(request.getUserId());
+    public UserInformationRespond getUserInformation(int userId){
+        User user = repository.findByUserId(userId);
         UserInformationRespond information = new UserInformationRespond() ;
         information.setUserId(user.getUserId());
         information.setFullName(user.getFullName());

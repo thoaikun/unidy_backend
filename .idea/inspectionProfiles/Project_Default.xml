@@ -6,6 +6,7 @@
         <set>
           <option value="register" />
           <option value="Register" />
+          <option value="Authenticate" />
         </set>
       </option>
     </inspection_tool>

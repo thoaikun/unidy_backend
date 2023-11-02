@@ -27,36 +27,26 @@ public class AuthenticationController {
   public ResponseEntity<?> register(
       @RequestBody RegisterRequest request
   ) {
-    return ResponseEntity.ok(service.register(request));
+    return service.register(request);
   }
   @PostMapping("/authenticate")
   public ResponseEntity<?> authenticate(
       @RequestBody AuthenticationRequest request
   ){
-    return ResponseEntity.ok(service.authenticate(request));
+    return service.authenticate(request);
   }
 
   @PostMapping("/refresh-token")
-  public void refreshToken(
+  public ResponseEntity<?> refreshToken(
       HttpServletRequest request,
       HttpServletResponse response
   ) throws IOException {
-    service.refreshToken(request, response);
+    return service.refreshToken(request,response);
   }
 
   @PostMapping("/send-email-reset-password")
   public ResponseEntity<?> sendOTP (@RequestBody ResetPasswordRequest request) {
-    String result = resetPassword.sendOTP(request);
-    try {
-      if (result.equals("400")){
-        return ResponseEntity.badRequest().body("Email not found");
-      }
-      else{
-        return ResponseEntity.ok().body("Send OTP success");
-      }
-    } catch (Exception e){
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hệ thống xảy ra lỗi");
-    }
+    return resetPassword.sendOTP(request);
   }
 
   @PostMapping("/submit-OPT")

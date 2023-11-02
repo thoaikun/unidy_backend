@@ -19,10 +19,10 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/get-user-information")
-    public ResponseEntity<?> getUserInformation(@RequestBody UserInformationRequest request){
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserInformation(@RequestParam int userId){
         try{
-            return ResponseEntity.ok().body(userService.getUserInformation(request));
+            return ResponseEntity.ok().body(userService.getUserInformation(userId));
         }
         catch (Exception e){
             return ResponseEntity.badRequest().body("Lỗi hệ thống");

@@ -1,5 +1,6 @@
 package com.unidy.backend.services.servicesIplm;
 
+import com.unidy.backend.domains.ErrorResponse;
 import com.unidy.backend.domains.dto.requests.RegisterRequest;
 import com.unidy.backend.config.JwtService;
 import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
@@ -80,7 +81,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
               .refreshToken(refreshToken)
               .build());
     } catch (Exception e){
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Authenticate fail");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Email hoặc mật khẩu không đúng"));
     }
   }
 
@@ -107,7 +108,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
     tokenRepository.saveAll(validUserTokens);
   }
 
-  public void refreshToken(
+  public ResponseEntity<?> refreshToken(
           HttpServletRequest request,
           HttpServletResponse response
   ) throws IOException {
@@ -115,7 +116,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
     final String refreshToken;
     final String userEmail;
     if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
-      return;
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error");
     }
     refreshToken = authHeader.substring(7);
     userEmail = jwtService.extractUsername(refreshToken);
@@ -131,7 +132,9 @@ public class AuthenticationServiceIplm implements AuthenticationService {
                 .refreshToken(refreshToken)
                 .build();
         new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+        return ResponseEntity.ok().body(accessToken);
       }
     }
+    return ResponseEntity.internalServerError().body("Internal server");
   }
 }

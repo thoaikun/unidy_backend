@@ -7,6 +7,6 @@ import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import java.security.Principal;
 
 public interface UserService {
-    UserInformationRespond getUserInformation(UserInformationRequest request);
+    UserInformationRespond getUserInformation(int userId);
     void changePassword(ChangePasswordRequest request, Principal connectedUser);
 }
