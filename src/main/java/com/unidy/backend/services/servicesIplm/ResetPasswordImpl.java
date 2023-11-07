@@ -1,6 +1,6 @@
 package com.unidy.backend.services.servicesIplm;
 
-import com.unidy.backend.domains.ErrorResponse;
+import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.dto.requests.EmailDetails;
 import com.unidy.backend.domains.dto.requests.OTPRequest;
 import com.unidy.backend.domains.dto.requests.ResetPasswordRequest;
@@ -56,7 +56,7 @@ public class ResetPasswordImpl implements ResetPassword {
             }, 60000);
             return ResponseEntity.ok().body(otpCode);
         } catch (Exception e){
-            return ResponseEntity.badRequest().body(new ErrorResponse("Email không tồn tại"));
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Email không tồn tại"));
         }
     }
 

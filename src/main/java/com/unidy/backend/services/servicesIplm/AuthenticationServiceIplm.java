@@ -1,6 +1,6 @@
 package com.unidy.backend.services.servicesIplm;
 
-import com.unidy.backend.domains.ErrorResponse;
+import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.dto.requests.RegisterRequest;
 import com.unidy.backend.config.JwtService;
 import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
@@ -38,7 +38,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
     try {
       var findUser = repository.findByEmail(request.getEmail());
       if (findUser.isPresent()) {
-        return ResponseEntity.badRequest().body("Invalid Email");
+        return ResponseEntity.badRequest().body(new ErrorResponseDto("Invalid Email"));
       }
       var user = User.builder()
               .fullName(request.getFullName())
@@ -54,7 +54,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
               .build();
       var savedUser = repository.save(user);
       var jwtToken = jwtService.generateToken(user);
-      var refreshToken = jwtService.generateRefreshToken(user);
+//      var refreshToken = jwtService.generateRefreshToken(user);
       saveUserToken(savedUser, jwtToken);
       return ResponseEntity.ok().header("Register").body("Register success");
     }catch (Exception e){
@@ -81,7 +81,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
               .refreshToken(refreshToken)
               .build());
     } catch (Exception e){
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Email hoặc mật khẩu không đúng"));
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponseDto("Email hoặc mật khẩu không đúng"));
     }
   }
 
