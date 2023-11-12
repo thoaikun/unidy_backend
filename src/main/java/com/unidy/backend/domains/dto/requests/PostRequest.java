@@ -5,12 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class OTPRequest {
-    private String otp ;
-    private String email;
+public class PostRequest {
+    private String content;
+    private List<String> image_link;
 }

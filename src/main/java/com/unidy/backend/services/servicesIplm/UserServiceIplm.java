@@ -55,17 +55,17 @@ public class UserServiceIplm implements UserService {
     }
 
 
-    public void changePassword(ChangePasswordRequest request, Principal connectedUser) {
+    public ResponseEntity<?> changePassword(ChangePasswordRequest request, Principal connectedUser) {
 
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
         // check if the current password is correct
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new IllegalStateException("Wrong password");
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Sai mật khẩu"));
         }
         // check if the two new passwords are the same
         if (!request.getNewPassword().equals(request.getConfirmationPassword())) {
-            throw new IllegalStateException("Password are not the same");
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Nhập lại khẩu mới không trùng khớp"));
         }
 
         // update the password
@@ -73,5 +73,6 @@ public class UserServiceIplm implements UserService {
 
         // save the new password
         repository.save(user);
+        return ResponseEntity.ok().body(new SuccessReponse("Đổi mật khẩu thành công"));
     }
 }

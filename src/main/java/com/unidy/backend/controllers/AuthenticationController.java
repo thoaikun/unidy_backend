@@ -54,14 +54,8 @@ public class AuthenticationController {
 
   @PostMapping("/submit-OPT")
   public ResponseEntity<?> submitOTP(@RequestBody OTPRequest OTP){
-
     try {
-      if (resetPassword.submitOTP(OTP)){
-        return ResponseEntity.ok().body("Submit OTP success");
-      }
-      else{
-        return ResponseEntity.badRequest().body("Submit OTP fail");
-      }
+      return resetPassword.submitOTP(OTP);
     } catch (Exception e){
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hệ thống xảy ra lỗi");
     }

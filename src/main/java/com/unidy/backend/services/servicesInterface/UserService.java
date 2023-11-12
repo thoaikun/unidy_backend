@@ -12,5 +12,5 @@ import java.security.Principal;
 public interface UserService {
     UserInformationRespond getUserInformation(int userId);
     ResponseEntity<?> updateUserInformation(UserDto userDto);
-    void changePassword(ChangePasswordRequest request, Principal connectedUser);
+    ResponseEntity<?>  changePassword(ChangePasswordRequest request, Principal connectedUser);
 }

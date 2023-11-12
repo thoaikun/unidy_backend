@@ -1,6 +1,7 @@
 package com.unidy.backend.services.servicesIplm;
 
 import com.unidy.backend.domains.ErrorResponseDto;
+import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.requests.EmailDetails;
 import com.unidy.backend.domains.dto.requests.OTPRequest;
 import com.unidy.backend.domains.dto.requests.ResetPasswordRequest;
@@ -60,15 +61,20 @@ public class ResetPasswordImpl implements ResetPassword {
         }
     }
 
-    public boolean submitOTP (OTPRequest OTP){
+    public ResponseEntity<?> submitOTP (OTPRequest OTP){
+        try {
+            var user = userRepository.findByEmail(OTP.getEmail()).orElseThrow(() -> new Exception("Email không tồn tại"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
         var otp = otpRepository.findByOtpCode(OTP.getOtp());
         if (otp.isPresent()) {
             Otp validateOtp = otp.get();
             otpRepository.deleteByUserId(validateOtp.getUserId());
-            return true;
+            return ResponseEntity.ok().body(new SuccessReponse("Success"));
         }
         else {
-            return false;
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("OTP không đúng"));
         }
     }
 

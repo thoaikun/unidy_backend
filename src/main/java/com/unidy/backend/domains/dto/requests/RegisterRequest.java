@@ -1,10 +1,7 @@
 package com.unidy.backend.domains.dto.requests;
 
 import com.unidy.backend.domains.role.Role;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -23,6 +20,7 @@ public class RegisterRequest {
   private Date dayOfBirth;
   private String sex;
   @NotNull
+  @Pattern(regexp = "0[0-9]{9}", message = "Số điện thoại không hợp lệ")
   private String phone;
   @Email(message = "Email không hợp lệ")
   private String email;
