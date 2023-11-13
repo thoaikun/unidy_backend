@@ -7,4 +7,5 @@ import org.springframework.http.ResponseEntity;
 public interface ResetPassword {
      ResponseEntity<?> sendOTP(ResetPasswordRequest request);
      ResponseEntity<?> submitOTP(OTPRequest OTP);
+     ResponseEntity<?> submitOTPChangePassword(OTPRequest OTP);
 }

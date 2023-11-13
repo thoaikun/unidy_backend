@@ -11,6 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 
 public class OTPRequest {
-    private String otp ;
+    private String otp;
     private String email;
 }

@@ -1,12 +1,17 @@
 package com.unidy.backend.services.servicesIplm;
 
+import com.unidy.backend.config.JwtService;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
+import com.unidy.backend.domains.TokenType;
 import com.unidy.backend.domains.dto.requests.EmailDetails;
 import com.unidy.backend.domains.dto.requests.OTPRequest;
 import com.unidy.backend.domains.dto.requests.ResetPasswordRequest;
+import com.unidy.backend.domains.dto.responses.AuthenticationResponse;
 import com.unidy.backend.domains.entity.Otp;
+import com.unidy.backend.domains.entity.Token;
 import com.unidy.backend.repositories.OtpRepository;
+import com.unidy.backend.repositories.TokenRepository;
 import com.unidy.backend.repositories.UserRepository;
 import com.unidy.backend.services.servicesInterface.EmailService;
 import com.unidy.backend.services.servicesInterface.ResetPassword;
@@ -24,6 +29,9 @@ public class ResetPasswordImpl implements ResetPassword {
     private final EmailService emailService;
     private final OtpRepository otpRepository;
     private final UserRepository userRepository;
+    private final JwtService jwtService;
+    private final TokenRepository tokenRepository;
+
     public ResponseEntity<?> sendOTP(ResetPasswordRequest request) {
         try {
             var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
@@ -63,20 +71,55 @@ public class ResetPasswordImpl implements ResetPassword {
 
     public ResponseEntity<?> submitOTP (OTPRequest OTP){
         try {
-            var user = userRepository.findByEmail(OTP.getEmail()).orElseThrow(() -> new Exception("Email không tồn tại"));
+            var user = userRepository.findByEmail(OTP.getEmail()).orElseThrow(() -> new Exception("Email không đúng"));
+            var otp = otpRepository.findByOtpCode(OTP.getOtp());
+            if (otp.isPresent()) {
+                if (!otp.get().getUserId().equals(user.getUserId())){
+                    return ResponseEntity.badRequest().body(new ErrorResponseDto("OTP không đúng"));
+                }
+                Otp validateOtp = otp.get();
+                otpRepository.deleteByUserId(validateOtp.getUserId());
+                return ResponseEntity.ok().body(new SuccessReponse("Success"));
+            }
+            else {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("OTP không đúng"));
+            }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
-        var otp = otpRepository.findByOtpCode(OTP.getOtp());
-        if (otp.isPresent()) {
-            Otp validateOtp = otp.get();
-            otpRepository.deleteByUserId(validateOtp.getUserId());
-            return ResponseEntity.ok().body(new SuccessReponse("Success"));
-        }
-        else {
-            return ResponseEntity.badRequest().body(new ErrorResponseDto("OTP không đúng"));
-        }
     }
+
+    public ResponseEntity<?> submitOTPChangePassword(OTPRequest OTP){
+        try {
+            var user = userRepository.findByEmail(OTP.getEmail()).orElseThrow(() -> new Exception("Email không tồn tại"));
+            var otp = otpRepository.findByOtpCode(OTP.getOtp());
+            if (otp.isPresent()) {
+                if (!otp.get().getUserId().equals(user.getUserId())){
+                    return ResponseEntity.badRequest().body(new ErrorResponseDto("OTP không đúng"));
+                }
+                Otp validateOtp = otp.get();
+                otpRepository.deleteByUserId(validateOtp.getUserId());
+                var jwtToken = jwtService.generateToken(user);
+                var token = Token.builder()
+                        .user(user)
+                        .token(jwtToken)
+                        .tokenType(TokenType.BEARER)
+                        .expired(false)
+                        .revoked(false)
+                        .build();
+                tokenRepository.save(token);
+                return ResponseEntity.ok().body(AuthenticationResponse.builder()
+                        .accessToken(jwtToken)
+                        .build());
+            }
+            else {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("OTP không đúng"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    };
+
 
     public static String generateOTP() {
         Random random = new Random();
