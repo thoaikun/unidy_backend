@@ -13,4 +13,6 @@ public interface UserService {
     UserInformationRespond getUserInformation(int userId);
     ResponseEntity<?> updateUserInformation(UserDto userDto);
     ResponseEntity<?>  changePassword(ChangePasswordRequest request, Principal connectedUser);
+    ResponseEntity<?>  newPassword(ChangePasswordRequest request, Principal connectedUser);
+
 }

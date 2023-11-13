@@ -73,4 +73,15 @@ public class UserServiceIplm implements UserService {
         repository.save(user);
         return ResponseEntity.ok().body(new SuccessReponse("Đổi mật khẩu thành công"));
     }
+
+
+    public ResponseEntity<?> newPassword(ChangePasswordRequest request, Principal connectedUser) {
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        if (!request.getNewPassword().equals(request.getConfirmationPassword())) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Nhập lại khẩu mới không trùng khớp"));
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        repository.save(user);
+        return ResponseEntity.ok().body(new SuccessReponse("Đổi mật khẩu mới thành công"));
+    }
 }

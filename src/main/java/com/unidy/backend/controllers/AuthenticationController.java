@@ -53,19 +53,9 @@ public class AuthenticationController {
     return resetPassword.sendOTP(request);
   }
 
-  @PostMapping("/submit-OPT-reset-password")
-  public ResponseEntity<?> submitOTP(@RequestBody OTPRequest OTP){
-    try {
-      return resetPassword.submitOTP(OTP);
-    } catch (Exception e){
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hệ thống xảy ra lỗi");
-    }
-  }
-
-  @PostMapping("/submit-OTP-change-password")
+  @PostMapping("/submit-OTP")
   public ResponseEntity<?> submitOTPChangePassword(@RequestBody OTPRequest OTP){
     try {
-
        return resetPassword.submitOTPChangePassword(OTP);
     } catch (Exception e){
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hệ thống xảy ra lỗi");
