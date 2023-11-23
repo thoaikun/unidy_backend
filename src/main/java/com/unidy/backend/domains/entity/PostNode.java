@@ -3,9 +3,14 @@ import lombok.*;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Property;
+import org.springframework.data.neo4j.core.schema.Relationship;
 
-import java.util.Date;
+import java.awt.print.Book;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import static org.springframework.data.neo4j.core.schema.Relationship.Direction.INCOMING;
 
 @Data
 @Builder
@@ -34,4 +39,7 @@ public class PostNode {
 
     @Property("__nodeLabels__")
     private List<String> nodeLabels;
+
+    @Relationship(type = "HAS_POST", direction = INCOMING)
+    private UserNode userNodes ;
 }

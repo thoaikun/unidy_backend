@@ -1,9 +1,6 @@
 package com.unidy.backend.services.servicesIplm;
 
 import com.unidy.backend.domains.ErrorResponseDto;
-import com.unidy.backend.domains.dto.UserDto;
-import com.unidy.backend.domains.dto.requests.UserInformationRequest;
-import com.unidy.backend.domains.entity.Post;
 import com.unidy.backend.domains.entity.PostNode;
 import com.unidy.backend.repositories.MySQL_PostRepository;
 import com.unidy.backend.repositories.Neo4j_PostRepository;
@@ -19,12 +16,21 @@ import java.util.List;
 public class PostServiceImpl implements PostService {
     private final Neo4j_PostRepository neo4j_postRepository;
     private final MySQL_PostRepository mySQL_postRepository;
-    public ResponseEntity<?> getPost(UserInformationRequest request){
+    public ResponseEntity<?> getPostById(int postID){
         try {
-            List<PostNode> postList = neo4j_postRepository.findPostNodeByPostId(1);
+            List<PostNode> postList = neo4j_postRepository.findPostNodeByPostId(postID);
             return ResponseEntity.ok().body(postList);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("something error"));
+        }
+    }
+
+    public ResponseEntity<?> getPostByUserId(int userID){
+        try {
+            List<PostNode> listPost= neo4j_postRepository.findPostNodeByUserId(userID);
+            return ResponseEntity.ok().body(listPost);
+        } catch(Exception e){
+            return ResponseEntity.badRequest().body((new ErrorResponseDto("Something error")));
         }
     }
 }

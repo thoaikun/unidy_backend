@@ -4,6 +4,9 @@ import lombok.*;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Property;
+import org.springframework.data.neo4j.core.schema.Relationship;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -21,4 +24,7 @@ public class UserNode {
 
     @Property("is_block")
     private Boolean isBlock;
+
+    @Relationship(type = "HAS_POST", direction = Relationship.Direction.OUTGOING)
+    private List<Post> postList;
 }
