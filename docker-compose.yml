@@ -11,6 +11,11 @@ services:
     ports:
       - '3306:3306'
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 10s
+      retries: 5
+
   neo4j:
     image: 'neo4j:5.9.0-community'
     ports:
@@ -18,17 +23,28 @@ services:
       - '7687:7687'
     volumes:
       - neo4j-volume:/data
+    healthcheck:
+      test: cypher-shell --username neo4j --password th9102002 # Checks if neo4j server is up and running
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
   main_server:
     build: ./
     ports:
       - '8080:8080'
     depends_on:
-      - db
+      neo4j:
+        condition: service_healthy
+      db:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/unidy_database
       SPRING_DATASOURCE_USERNAME: dev
       SPRING_DATASOURCE_PASSWORD: dev
+      NEO4J_DATASOURCE_URL: neo4j://localhost:7687
+      NEO4J_DATASOURCE_USERNAME: neo4j
+      NEO4J_DATASOURCE_PASSWORD: th9102002
 
 volumes:
   neo4j-volume:
