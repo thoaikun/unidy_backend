@@ -263,6 +263,15 @@ CREATE TABLE otp (
     FOREIGN KEY (user_id) REFERENCES user(user_id)
 );
 
+CREATE TABLE user_profile_image (
+    image_id        INTEGER     AUTO_INCREMENT  PRIMARY KEY,
+    link_image       VARCHAR(256) ,
+    update_date     DATE,
+    user_id         BIGINT,
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
+)
+
+
 -- # INSERT INTO user VALUES (1,'Trương Huy Thái', 'Gò Vấp', '2002-05-31', 'male', '0348273185', 'huythai31052002@gmail.com', 'Student', 'BKU','123456','VOLUNTEER');
 -- # INSERT INTO user VALUES (2,'Lê Nguyễn Huyền Thoại', 'Thủ Đức', '2002-09-10', 'male', '0348273185', 'thoaile0910@gmail.com', 'Student', 'BKU','123456','VOLUNTEER');
 -- # INSERT INTO user VALUES (3,'Nguyễn Hoàng Bảo Hùng', 'Đồng Nai', '2002-09-10', 'male', '0348273185', 'nhb.hung@gmail.com', 'Student', 'BKU','123456','VOLUNTEER');

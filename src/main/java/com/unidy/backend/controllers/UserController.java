@@ -1,6 +1,7 @@
 package com.unidy.backend.controllers;
 
 import com.unidy.backend.domains.dto.UserDto;
+import com.unidy.backend.domains.dto.requests.UserInformationRequest;
 import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import com.unidy.backend.domains.entity.User;
 import com.unidy.backend.mapper.DtoMapper;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 
@@ -23,9 +25,9 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/profile")
-    public ResponseEntity<?> getUserInformation(@RequestParam int userId){
+    public ResponseEntity<?> getUserInformation(Principal connectedUser){
         try{
-            return ResponseEntity.ok().body(userService.getUserInformation(userId));
+            return ResponseEntity.ok().body(userService.getUserInformation(connectedUser));
         }
         catch (Exception e){
             return ResponseEntity.badRequest().body("Lỗi hệ thống");
@@ -56,5 +58,10 @@ public class UserController {
             Principal connectedUser
     ) {
         return userService.changePassword(request, connectedUser);
+    }
+
+    @PostMapping("/update-profile-image")
+    public  ResponseEntity<?> updateProfileImage(@ModelAttribute UserInformationRequest request){
+        return userService.updateProfileImage(request.getProfileImage(), request.getUserId());
     }
 }

@@ -23,4 +23,5 @@ public class UserDto {
     private String workLocation;
     private String password;
     private Role role;
+    private String linkImage;
 }

@@ -1,11 +1,14 @@
 package com.unidy.backend.services.servicesIplm;
 
+import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.UserDto;
 import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import com.unidy.backend.domains.entity.User;
+import com.unidy.backend.domains.entity.UserProfileImage;
 import com.unidy.backend.mapper.DtoMapper;
+import com.unidy.backend.repositories.UserProfileImageRepository;
 import com.unidy.backend.repositories.UserRepository;
 import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
 import com.unidy.backend.services.servicesInterface.UserService;
@@ -14,9 +17,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.net.URL;
 import java.security.Principal;
+import java.util.Date;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,9 +32,11 @@ public class UserServiceIplm implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository repository;
     private final DtoMapper dtoMapper;
-
-    public UserInformationRespond getUserInformation(int userId){
-        User user = repository.findByUserId(userId);
+    private final S3Service s3Service;
+    private  final UserProfileImageRepository userProfileImageRepository;
+    public UserInformationRespond getUserInformation(Principal connectedUser){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
         UserInformationRespond information = new UserInformationRespond() ;
         information.setUserId(user.getUserId());
         information.setFullName(user.getFullName());
@@ -38,10 +47,21 @@ public class UserServiceIplm implements UserService {
         information.setJob(user.getJob());
         information.setRole(user.getRole());
         information.setWorkLocation(user.getWorkLocation());
+
+//        byte[] profileImage = s3Service.getObject(
+//                "unidy",
+//                "profile-images/%s/%s".formatted(userId, image.getLinkImage())
+//        );
+//        information.setImage(profileImage);
+        URL urlImage = s3Service.getObjectUrl(
+                "unidy",
+                "profile-images/%s/%s".formatted(user.getUserId(), image.getLinkImage())
+        );
+        information.setImage(urlImage.toString());
         return information ;
     }
 
-    public ResponseEntity<?> updateUserInformation(@RequestBody UserDto userDto){
+    public ResponseEntity<?> updateUserInformation(UserDto userDto){
         try {
             User userData = repository.findByUserId(userDto.getUserId());
             dtoMapper.updateUserInformation(userDto,userData);
@@ -84,4 +104,24 @@ public class UserServiceIplm implements UserService {
         repository.save(user);
         return ResponseEntity.ok().body(new SuccessReponse("Đổi mật khẩu mới thành công"));
     }
+
+    public ResponseEntity<?> updateProfileImage(MultipartFile imageFile, int userId){
+        String profileImageId = UUID.randomUUID().toString();
+        try {
+            s3Service.putImage(
+                    "unidy",
+                    "profile-images/%s/%s".formatted(userId, profileImageId),
+                    imageFile.getBytes()
+            );
+            UserProfileImage image = new UserProfileImage();
+            image.setLinkImage(profileImageId);
+            image.setUpdateDate(new Date());
+            image.setUserId(userId);
+            userProfileImageRepository.save(image);
+            return ResponseEntity.ok().body(new SuccessReponse("Update image success"));
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
 }

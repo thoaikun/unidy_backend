@@ -39,5 +39,7 @@ application:
       refresh-token:
         expiration: 604800000 # 7 days
 
+aws:
+  region: "ap-southeast-1"
 
 

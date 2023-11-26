@@ -23,4 +23,5 @@ public class UserInformationRespond {
     private String job;
     private String workLocation;
     private Role role;
+    private String image;
 }
