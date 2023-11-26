@@ -35,9 +35,9 @@ public class UserController {
     }
 
     @PatchMapping("/profile")
-    public ResponseEntity<?> updateUserInformation(@RequestBody  @Valid UserDto userDto){
+    public ResponseEntity<?> updateUserInformation(@RequestBody  @Valid UserDto userDto, Principal connectedUser){
         try{
-            return userService.updateUserInformation(userDto);
+            return userService.updateUserInformation(userDto, connectedUser);
         }
         catch (Exception e){
             return ResponseEntity.badRequest().body("Lỗi hệ thống");

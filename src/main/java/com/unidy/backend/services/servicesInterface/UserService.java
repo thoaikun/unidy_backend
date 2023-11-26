@@ -12,7 +12,7 @@ import java.security.Principal;
 
 public interface UserService {
     UserInformationRespond getUserInformation(Principal connectedUser);
-    ResponseEntity<?> updateUserInformation(UserDto userDto);
+    ResponseEntity<?> updateUserInformation(UserDto userDto,Principal connectedUser);
     ResponseEntity<?>  changePassword(ChangePasswordRequest request, Principal connectedUser);
     ResponseEntity<?>  newPassword(ChangePasswordRequest request, Principal connectedUser);
     ResponseEntity<?> updateProfileImage(MultipartFile imageFile,int userId);

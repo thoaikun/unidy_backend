@@ -36,7 +36,6 @@ public class UserServiceIplm implements UserService {
     private  final UserProfileImageRepository userProfileImageRepository;
     public UserInformationRespond getUserInformation(Principal connectedUser){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
         UserInformationRespond information = new UserInformationRespond() ;
         information.setUserId(user.getUserId());
         information.setFullName(user.getFullName());
@@ -53,17 +52,22 @@ public class UserServiceIplm implements UserService {
 //                "profile-images/%s/%s".formatted(userId, image.getLinkImage())
 //        );
 //        information.setImage(profileImage);
-        URL urlImage = s3Service.getObjectUrl(
-                "unidy",
-                "profile-images/%s/%s".formatted(user.getUserId(), image.getLinkImage())
-        );
-        information.setImage(urlImage.toString());
+        UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
+        if (image != null){
+            URL urlImage = s3Service.getObjectUrl(
+                    "unidy",
+                    "profile-images/%s/%s".formatted(user.getUserId(), image.getLinkImage())
+            );
+            information.setImage(urlImage.toString());
+        }
+
         return information ;
     }
 
-    public ResponseEntity<?> updateUserInformation(UserDto userDto){
+    public ResponseEntity<?> updateUserInformation(UserDto userDto,Principal connectedUser){
         try {
-            User userData = repository.findByUserId(userDto.getUserId());
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            User userData = repository.findByUserId(user.getUserId());
             dtoMapper.updateUserInformation(userDto,userData);
             repository.save(userData);
             return ResponseEntity.ok().body(new SuccessReponse("Cập nhật thành công"));
@@ -107,21 +111,37 @@ public class UserServiceIplm implements UserService {
 
     public ResponseEntity<?> updateProfileImage(MultipartFile imageFile, int userId){
         String profileImageId = UUID.randomUUID().toString();
+        String fileContentType = imageFile.getContentType();
+
         try {
-            s3Service.putImage(
-                    "unidy",
-                    "profile-images/%s/%s".formatted(userId, profileImageId),
-                    imageFile.getBytes()
-            );
-            UserProfileImage image = new UserProfileImage();
-            image.setLinkImage(profileImageId);
-            image.setUpdateDate(new Date());
-            image.setUserId(userId);
-            userProfileImageRepository.save(image);
-            return ResponseEntity.ok().body(new SuccessReponse("Update image success"));
-        } catch (IOException e) {
+            if (fileContentType != null &&
+                    (fileContentType.equals("image/png") ||
+                            fileContentType.equals("image/jpeg") ||
+                            fileContentType.equals("image/jpg"))) {
+                fileContentType = fileContentType.replace("image/",".");
+                s3Service.putImage(
+                        "unidy",
+                        fileContentType,
+                        "profile-images/%s/%s".formatted(userId, profileImageId+fileContentType ),
+                        imageFile.getBytes()
+                );
+
+                UserProfileImage image = userProfileImageRepository.findByUserId(userId);
+                if (image == null){
+                    image = new UserProfileImage();
+                }
+                image.setLinkImage(profileImageId+fileContentType);
+                image.setUpdateDate(new Date());
+                image.setUserId(userId);
+                userProfileImageRepository.save(image);
+                return ResponseEntity.ok().body(new SuccessReponse("Update image success"));
+            } else {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
+            }
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
+
 
 }
