@@ -61,7 +61,7 @@ public class UserController {
     }
 
     @PostMapping("/update-profile-image")
-    public  ResponseEntity<?> updateProfileImage(@ModelAttribute UserInformationRequest request){
-        return userService.updateProfileImage(request.getProfileImage(), request.getUserId());
+    public  ResponseEntity<?> updateProfileImage(@ModelAttribute UserInformationRequest request, Principal connectedUser){
+        return userService.updateProfileImage(request.getProfileImage(), connectedUser);
     }
 }

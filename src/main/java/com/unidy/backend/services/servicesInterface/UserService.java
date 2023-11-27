@@ -15,5 +15,5 @@ public interface UserService {
     ResponseEntity<?> updateUserInformation(UserDto userDto,Principal connectedUser);
     ResponseEntity<?>  changePassword(ChangePasswordRequest request, Principal connectedUser);
     ResponseEntity<?>  newPassword(ChangePasswordRequest request, Principal connectedUser);
-    ResponseEntity<?> updateProfileImage(MultipartFile imageFile,int userId);
+    ResponseEntity<?> updateProfileImage(MultipartFile imageFile, Principal connectedUser);
 }

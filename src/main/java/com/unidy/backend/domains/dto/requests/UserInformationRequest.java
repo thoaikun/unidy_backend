@@ -12,6 +12,5 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInformationRequest {
-    public int userId ;
     public MultipartFile profileImage;
 }

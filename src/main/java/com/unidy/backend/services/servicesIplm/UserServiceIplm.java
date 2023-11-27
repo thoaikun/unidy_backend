@@ -109,9 +109,11 @@ public class UserServiceIplm implements UserService {
         return ResponseEntity.ok().body(new SuccessReponse("Đổi mật khẩu mới thành công"));
     }
 
-    public ResponseEntity<?> updateProfileImage(MultipartFile imageFile, int userId){
+    public ResponseEntity<?> updateProfileImage(MultipartFile imageFile, Principal connectedUser){
         String profileImageId = UUID.randomUUID().toString();
         String fileContentType = imageFile.getContentType();
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        int userId = user.getUserId();
 
         try {
             if (fileContentType != null &&
