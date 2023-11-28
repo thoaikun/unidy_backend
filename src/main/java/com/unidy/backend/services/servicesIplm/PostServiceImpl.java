@@ -21,7 +21,7 @@ public class PostServiceImpl implements PostService {
             List<PostNode> postList = neo4j_postRepository.findPostNodeByPostId(postID);
             return ResponseEntity.ok().body(postList);
         } catch (Exception e){
-            return ResponseEntity.badRequest().body(new ErrorResponseDto("something error"));
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
 
@@ -30,7 +30,7 @@ public class PostServiceImpl implements PostService {
             List<PostNode> listPost= neo4j_postRepository.findPostNodeByUserId(userID);
             return ResponseEntity.ok().body(listPost);
         } catch(Exception e){
-            return ResponseEntity.badRequest().body((new ErrorResponseDto("Something error")));
+            return ResponseEntity.badRequest().body((new ErrorResponseDto(e.toString())));
         }
     }
 }

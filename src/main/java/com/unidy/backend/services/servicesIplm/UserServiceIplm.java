@@ -136,7 +136,8 @@ public class UserServiceIplm implements UserService {
                 image.setUpdateDate(new Date());
                 image.setUserId(userId);
                 userProfileImageRepository.save(image);
-                return ResponseEntity.ok().body(new SuccessReponse("Update image success"));
+                String imageUrl = "/" + userId + "/" + profileImageId + fileContentType;
+                return ResponseEntity.ok().body(new SuccessReponse(imageUrl));
             } else {
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
             }
