@@ -1,14 +1,14 @@
 spring:
   datasource:
-      url: ${SPRING_DATASOURCE_URL}
-      username: ${SPRING_DATASOURCE_USERNAME}
-      password: ${SPRING_DATASOURCE_PASSWORD}
+      url: jdbc:mysql://localhost:3306/unidy_database
+      username: dev
+      password: dev
       driver-class-name: com.mysql.cj.jdbc.Driver
   neo4j:
-      uri: ${NEO4J_DATASOURCE_URL}
+      uri: neo4j://localhost:7687
       authentication:
-        username: ${NEO4J_DATASOURCE_USERNAME}
-        password: ${NEO4J_DATASOURCE_PASSWORD}
+        username: neo4j
+        password: unidyteam
   jpa:
     hibernate:
       ddl-auto: none
@@ -39,5 +39,11 @@ application:
       refresh-token:
         expiration: 604800000 # 7 days
 
+
+aws:
+  region: "ap-southeast-1"
+  credentials:
+    access-key: AKIAWSQ776R3OBAEGHEB
+    secret-key: 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
 
 

@@ -11,7 +11,6 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDto {
-    @NotNull(message = "UserID không được null")
     private Integer userId;
     private String fullName;
     private String address;
@@ -23,4 +22,5 @@ public class UserDto {
     private String workLocation;
     private String password;
     private Role role;
+    private String linkImage;
 }
