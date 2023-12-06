@@ -19,7 +19,7 @@ public class UserNode {
     @Property("user_id")
     private Integer userId;
 
-    @Property("full_name")
+    @Property("user_name")
     private String fullName;
 
     @Property("is_block")

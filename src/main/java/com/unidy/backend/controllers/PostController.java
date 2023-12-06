@@ -5,9 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/post")
+@RequestMapping("/api/v1/posts")
 public class PostController {
     private final PostService postService;
 
@@ -20,4 +22,10 @@ public class PostController {
     public ResponseEntity<?> getPostByUserId(@RequestParam int userId){
         return postService.getPostByUserId(userId);
     }
+
+    @GetMapping("")
+    public ResponseEntity<?> getPost(Principal connectUser){
+        return postService.getPost(connectUser);
+    }
+
 }

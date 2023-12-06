@@ -1,5 +1,6 @@
--- CREATE DATABASE unidy_database;
-
+DROP DATABASE unidy_database;
+CREATE DATABASE unidy_database;
+USE unidy_database;
 CREATE TABLE user (
                       user_id         BIGINT   AUTO_INCREMENT     PRIMARY KEY ,
                       full_name       VARCHAR(30)        ,

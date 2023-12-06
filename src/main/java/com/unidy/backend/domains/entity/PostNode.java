@@ -5,12 +5,8 @@ import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Property;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
-import java.awt.print.Book;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import static org.springframework.data.neo4j.core.schema.Relationship.Direction.INCOMING;
 
 @Data
 @Builder
@@ -24,6 +20,9 @@ public class PostNode {
 
     @Property("content")
     private String content;
+
+    @Property("status")
+    private String status;
 
     @Property("create_date")
     private String createDate;
@@ -40,6 +39,6 @@ public class PostNode {
     @Property("__nodeLabels__")
     private List<String> nodeLabels;
 
-    @Relationship(type = "HAS_POST", direction = INCOMING)
-    private UserNode userNodes ;
+    @Relationship(type = "HAS_POST", direction = Relationship.Direction.INCOMING)
+    private UserNode userNode;
 }

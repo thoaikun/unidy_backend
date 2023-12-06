@@ -1,5 +1,7 @@
 package com.unidy.backend.domains.dto.responses;
 
+import com.unidy.backend.domains.entity.PostNode;
+import com.unidy.backend.domains.entity.UserNode;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -12,10 +14,6 @@ import java.util.Date;
 @Getter
 @Setter
 public class PostResponse {
-    private Integer optId;
-    private String content;
-    private Date createDate;
-    private Date updateDate;
-    private Boolean isBlock;
-    private String linkImage;
+    private PostNode postNode;
+    private UserNode userNode;
 }
