@@ -16,7 +16,7 @@ import java.util.List;
 public class PostNode {
     @Id
     @Property("post_id")
-    private Integer postId;
+    private String postId;
 
     @Property("content")
     private String content;
@@ -36,8 +36,8 @@ public class PostNode {
     @Property("link_image")
     private String linkImage;
 
-    @Property("__nodeLabels__")
-    private List<String> nodeLabels;
+//    @Property("__nodeLabels__")
+//    private List<String> nodeLabels;
 
     @Relationship(type = "HAS_POST", direction = Relationship.Direction.INCOMING)
     private UserNode userNode;

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.neo4j.core.schema.Property;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -12,6 +14,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostRequest {
+    private String postId;
     private String content;
-    private List<String> image_link;
+    private String status;
+    private MultipartFile imageFile;
 }

@@ -1,5 +1,7 @@
 package com.unidy.backend.controllers;
 
+import com.unidy.backend.domains.dto.requests.PostRequest;
+import com.unidy.backend.domains.entity.PostNode;
 import com.unidy.backend.services.servicesInterface.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +16,7 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping("/get-post-by-postId")
-    public ResponseEntity<?> getPostByPostId(@RequestParam int postId) {
+    public ResponseEntity<?> getPostByPostId(@RequestParam String postId) {
         return postService.getPostById(postId);
     }
 
@@ -28,4 +30,19 @@ public class PostController {
         return postService.getPost(connectUser);
     }
 
+
+    @PostMapping("")
+    public ResponseEntity<?> createPost(Principal connectedUser, @ModelAttribute PostRequest request){
+        return postService.createPost(connectedUser, request);
+    }
+
+    @PatchMapping("")
+    public  ResponseEntity<?> updatePost(Principal connectedUser, @ModelAttribute PostRequest updateRequest){
+        return postService.updatePost(connectedUser, updateRequest);
+    }
+
+    @DeleteMapping("")
+    public  ResponseEntity<?> updatePost(Principal connectedUser, @RequestParam String postId){
+        return postService.deletePost(connectedUser, postId);
+    }
 }

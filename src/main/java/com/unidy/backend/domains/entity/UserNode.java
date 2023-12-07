@@ -25,6 +25,9 @@ public class UserNode {
     @Property("is_block")
     private Boolean isBlock;
 
-    @Relationship(type = "HAS_POST", direction = Relationship.Direction.OUTGOING)
-    private List<Post> postList;
+//    @Property("__nodeLabels__")
+//    private List<String> nodeLabels;
+
+//    @Relationship(type = "HAS_POST", direction = Relationship.Direction.OUTGOING)
+//    private List<Post> postList;
 }
