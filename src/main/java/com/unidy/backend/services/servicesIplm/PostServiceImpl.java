@@ -4,6 +4,7 @@ import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.requests.PostRequest;
+import com.unidy.backend.domains.dto.responses.PostResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.repositories.MySQL_PostRepository;
 import com.unidy.backend.repositories.Neo4j_PostRepository;
@@ -50,7 +51,7 @@ public class PostServiceImpl implements PostService {
     public ResponseEntity<?> getPost(Principal connectedUser){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            List<PostNode> listPost= neo4j_postRepository.findPost(user.getUserId());
+            List<PostResponse> listPost= neo4j_postRepository.findPost(user.getUserId());
             return ResponseEntity.ok().body(listPost);
         } catch(Exception e){
             return ResponseEntity.badRequest().body((new ErrorResponseDto(e.toString())));

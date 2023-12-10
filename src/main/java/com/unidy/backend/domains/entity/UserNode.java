@@ -25,6 +25,8 @@ public class UserNode {
     @Property("is_block")
     private Boolean isBlock;
 
+    @Property("profile_image_link")
+    private String profileImageLink;
 //    @Property("__nodeLabels__")
 //    private List<String> nodeLabels;
 

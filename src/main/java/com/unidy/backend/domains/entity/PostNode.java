@@ -36,9 +36,9 @@ public class PostNode {
     @Property("link_image")
     private String linkImage;
 
-//    @Property("__nodeLabels__")
-//    private List<String> nodeLabels;
-
     @Relationship(type = "HAS_POST", direction = Relationship.Direction.INCOMING)
     private UserNode userNode;
+
+    @Relationship(type = "LIKE", direction = Relationship.Direction.INCOMING)
+    private List<UserNode> userLikes ;
 }

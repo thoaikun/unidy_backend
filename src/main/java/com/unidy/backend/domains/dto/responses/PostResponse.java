@@ -8,12 +8,21 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Builder
 @Getter
 @Setter
 public class PostResponse {
-    private PostNode postNode;
-    private UserNode userNode;
+    private String postId;
+    private String content;
+    private String status;
+    private String createDate;
+    private String updateDate;
+    private Boolean isBlock;
+    private String linkImage;
+    private UserNode userNodes;
+//    private List<UserNode> userLikes;
+    private int likeCount ;
 }

@@ -6,6 +6,8 @@ import com.unidy.backend.config.JwtService;
 import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
 import com.unidy.backend.domains.dto.responses.AuthenticationResponse;
 import com.unidy.backend.domains.entity.Token;
+import com.unidy.backend.domains.entity.UserNode;
+import com.unidy.backend.repositories.Neo4j_UserRepository;
 import com.unidy.backend.repositories.TokenRepository;
 import com.unidy.backend.domains.TokenType;
 import com.unidy.backend.domains.entity.User;
@@ -24,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +36,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
-
+  private final Neo4j_UserRepository neo4j_userRepository;
   public ResponseEntity<?> register(RegisterRequest request) {
     try {
       var findUser = repository.findByEmail(request.getEmail());
@@ -55,6 +58,13 @@ public class AuthenticationServiceIplm implements AuthenticationService {
       var savedUser = repository.save(user);
       var jwtToken = jwtService.generateToken(user);
 //      var refreshToken = jwtService.generateRefreshToken(user);
+      Optional<User> registerUser = repository.findByEmail(request.getEmail());
+      UserNode userNode = new UserNode() ;
+      userNode.setUserId(registerUser.get().getUserId());
+      userNode.setFullName(request.getFullName());
+      userNode.setIsBlock(false);
+      userNode.setProfileImageLink(null);
+      neo4j_userRepository.save(userNode);
       saveUserToken(savedUser, jwtToken);
       return ResponseEntity.ok().header("Register").body("Register success");
     }catch (Exception e){

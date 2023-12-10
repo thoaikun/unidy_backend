@@ -6,8 +6,10 @@ import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.UserDto;
 import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import com.unidy.backend.domains.entity.User;
+import com.unidy.backend.domains.entity.UserNode;
 import com.unidy.backend.domains.entity.UserProfileImage;
 import com.unidy.backend.mapper.DtoMapper;
+import com.unidy.backend.repositories.Neo4j_UserRepository;
 import com.unidy.backend.repositories.UserProfileImageRepository;
 import com.unidy.backend.repositories.UserRepository;
 import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
@@ -33,7 +35,8 @@ public class UserServiceIplm implements UserService {
     private final UserRepository repository;
     private final DtoMapper dtoMapper;
     private final S3Service s3Service;
-    private  final UserProfileImageRepository userProfileImageRepository;
+    private final UserProfileImageRepository userProfileImageRepository;
+    private final Neo4j_UserRepository neo4j_userRepository;
     public UserInformationRespond getUserInformation(Principal connectedUser){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         UserInformationRespond information = new UserInformationRespond() ;
@@ -136,8 +139,12 @@ public class UserServiceIplm implements UserService {
                 image.setUpdateDate(new Date());
                 image.setUserId(userId);
                 userProfileImageRepository.save(image);
+                UserNode userNode = neo4j_userRepository.findUserNodeByUserId(userId);
+                userNode.setProfileImageLink("/" + userId + "/" + profileImageId + fileContentType);
+                neo4j_userRepository.save(userNode);
                 String imageUrl = "/" + userId + "/" + profileImageId + fileContentType;
                 return ResponseEntity.ok().body(new SuccessReponse(imageUrl));
+
             } else {
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
             }
