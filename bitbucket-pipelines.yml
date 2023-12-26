@@ -13,7 +13,7 @@ pipelines:
           - chmod 600 ./$SSH_PRIVATE_KEY
 
           # Replace 'YOUR-EC2-IP' and 'PATH-TO-PRIVATE-KEY' with your EC2 IP and private key file path.
-          - scp -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no target/*.jar ubuntur@$EC2_IP:/home/ubuntu/
+          - scp -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no target/*.jar ubuntur@ec2-13-229-226-68.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
 
           - echo "SSHing into EC2 and running the JAR file"
-          - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ubuntu@$EC2_IP "nohup java -jar /home/ubuntu/*.jar > /dev/null 2>&1 &"
+          - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ubuntu@ec2-13-229-226-68.ap-southeast-1.compute.amazonaws.com "nohup java -jar /home/ubuntu/*.jar > /dev/null     2>&1 &"
