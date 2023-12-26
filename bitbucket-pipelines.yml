@@ -21,10 +21,10 @@ pipelines:
               AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
               APPLICATION_NAME: 'unidy_main_server_dev'
               COMMAND: 'upload'
-              S3_BUCKET: 'unidy'
+              S3_BUCKET: 's3://unidy'
               VERSION_LABEL: 'v$BITBUCKET_COMMIT' # Use the commit hash as the version label
               BUNDLE_TYPE: 'zip'
-              ZIP_FILE: 'target/your-application.jar' # Adjust the path accordingly
+              ZIP_FILE: 'target/unidy-0.0.1-SNAPSHOT.jar' # Adjust the path accordingly
               FILE_EXISTS_BEHAVIOR: 'OVERWRITE' # Adjust based on your requirements
               WAIT: 'true' # Wait for deployment to complete
               WAIT_INTERVAL: '15' # Adjust the interval based on your requirements
