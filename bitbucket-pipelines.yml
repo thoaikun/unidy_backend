@@ -6,7 +6,7 @@ pipelines:
         name: Build and Deploy to Dev
         deployment: Develop
         script:
-          - cat ~/.ssh/config
+          - ssh -i /opt/atlassian/pipelines/agent/ssh/id_rsa ubuntu@ec2-13-229-237-10.ap-southeast-1.compute.amazonaws.com
           #- scp -o StrictHostKeyChecking=no .env ubuntur@13.229.237.10:/home/ubuntu/
         
           #- echo "Building the Spring Boot project"
