@@ -7,16 +7,15 @@ pipelines:
         deployment: Develop
         script:
           - chmod 600 ./unidy_main_server_dev.pem
+
+          - echo "Building the Spring Boot project"
+          - mvn clean package
+
+          - echo "upload jar file to ec2"
+          - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no target/*.jar ubuntu@ec2-13-229-237-10.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
+
+          - echo "upload env file to ec2"
           - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no .env ubuntu@ec2-13-229-237-10.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
-        
-          #- echo "Building the Spring Boot project"
-          #- mvn clean package
 
-          # upload jar file to ec2
-          #- scp -o StrictHostKeyChecking=no target/*.jar ubuntur@13.229.237.10:/home/ubuntu/
-
-          # upload env file to ec2
-          #- scp -o StrictHostKeyChecking=no .env ubuntur@13.229.237.10:/home/ubuntu/
-
-          #- echo "SSHing into EC2 and running the JAR file"
-          #- ssh -o StrictHostKeyChecking=no ubuntu@13.229.237.10 "nohup java -jar /home/ubuntu/*.jar > /dev/null 2>&1 &"
+          - echo "SSHing into EC2 and running the JAR file"
+          - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-229-237-10.ap-southeast-1.compute.amazonaws.com "nohup java -jar /home/ubuntu/*.jar > /dev/null 2>&1 &"
