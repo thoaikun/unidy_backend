@@ -10,7 +10,7 @@ pipelines:
           - mvn clean package
           
           # check my_ssh_key file
-          - cat ~/.ssh/my_ssh_key
+          - ls ~/.ssh
           
           # add ssh key to known host on ec2
           - ssh-copy-id -i my_ssh_key ubuntur@ec2-13-229-226-68.ap-southeast-1.compute.amazonaws.com
