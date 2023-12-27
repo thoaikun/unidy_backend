@@ -10,7 +10,10 @@ pipelines:
           - mvn clean package
 
           # upload jar file to ec2
-          - scp -o StrictHostKeyChecking=no target/*.jar ubuntur@13.229.226.68:/home/ubuntu/
+          - scp -o StrictHostKeyChecking=no target/*.jar ubuntur@13.229.237.10:/home/ubuntu/
+
+          # upload env file to ec2
+          - scp -o StrictHostKeyChecking=no .env ubuntur@13.229.237.10:/home/ubuntu/
 
           - echo "SSHing into EC2 and running the JAR file"
-          - ssh -o StrictHostKeyChecking=no ubuntu@13.229.226.68 "nohup java -jar /home/ubuntu/*.jar > /dev/null 2>&1 &"
+          - ssh -o StrictHostKeyChecking=no ubuntu@13.229.237.10 "nohup java -jar /home/ubuntu/*.jar > /dev/null 2>&1 &"
