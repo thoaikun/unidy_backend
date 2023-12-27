@@ -8,18 +8,9 @@ pipelines:
         script:
           - echo "Building the Spring Boot project"
           - mvn clean package
-          
-          # check my_ssh_key file
-          - ls ~/.ssh
-          
-          # add ssh key to known host on ec2
-          - ssh-copy-id -i my_ssh_key ubuntur@ec2-13-229-226-68.ap-southeast-1.compute.amazonaws.com
-          
-          # test ssh key
-          - ssh -i ~/.ssh/my_ssh_key ubuntur@ec2-13-229-226-68.ap-southeast-1.compute.amazonaws.com
 
           # upload jar file to ec2
-          - scp -o StrictHostKeyChecking=no -i ~/.ssh/my_ssh_key target/*.jar ubuntur@ec2-13-229-226-68.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
+          - scp -o StrictHostKeyChecking=no target/*.jar ubuntur@ec2-13-229-226-68.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
 
           - echo "SSHing into EC2 and running the JAR file"
-          - ssh -o StrictHostKeyChecking=no -i ~/.ssh/my_ssh_key ubuntu@ec2-13-229-226-68.ap-southeast-1.compute.amazonaws.com "nohup java -jar /home/ubuntu/*.jar > /dev/null 2>&1 &"
+          - ssh -o StrictHostKeyChecking=no ubuntu@ec2-13-229-226-68.ap-southeast-1.compute.amazonaws.com "nohup java -jar /home/ubuntu/*.jar > /dev/null 2>&1 &"
