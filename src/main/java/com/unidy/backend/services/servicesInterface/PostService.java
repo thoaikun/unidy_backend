@@ -9,7 +9,7 @@ public interface PostService {
     public ResponseEntity<?> getPostById(String postId);
     public ResponseEntity<?> getPostByUserId(int userID);
 
-    ResponseEntity<?> getPost(Principal connectUser);
+    ResponseEntity<?> getPost(Principal connectUser, String cursor, int limit );
 
     ResponseEntity<?> createPost(Principal connectedUser, PostRequest request);
 

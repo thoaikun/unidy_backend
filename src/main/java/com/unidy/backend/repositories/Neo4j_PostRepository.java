@@ -17,10 +17,12 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
     @Query("MATCH (user:user {user_id: $userId})-[r:HAS_POST]->(post:post) RETURN post,r")
     List<PostNode> findPostNodeByUserId(@Param("userId") int userId);
 
-    @Query("MATCH (user:user {user_id: 2})-[:FRIEND]->(userNodes:user)-[r:HAS_POST]->(post:post)\n" +
+    @Query("MATCH (user:user {user_id: 1})-[:FRIEND]->(userNodes:user)-[r:HAS_POST]->(post:post)\n" +
+            "WHERE post.create_date < $cursor\n" +
             "OPTIONAL MATCH (userLike)-[r_like:LIKE]->(post)\n" +
             "WITH post, userNodes, r, count(userLike) AS likeCount\n" +
             "RETURN post, userNodes, r, likeCount\n" +
-            "ORDER BY post.create_date DESC\n")
-    List<PostResponse> findPost(@Param("userId") int userId);
+            "ORDER BY post.create_date DESC\n" +
+            "LIMIT $limit;")
+    List<PostResponse> findPost(@Param("userId") int userId, @Param("cursor") String cursor, @Param("limit") int limit);
 }

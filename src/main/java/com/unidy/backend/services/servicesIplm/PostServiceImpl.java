@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.text.SimpleDateFormat;
 import java.util.Optional;
 
 import java.security.Principal;
@@ -48,10 +50,10 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    public ResponseEntity<?> getPost(Principal connectedUser){
+    public ResponseEntity<?> getPost(Principal connectedUser, String cursor, int limit){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            List<PostResponse> listPost= neo4j_postRepository.findPost(user.getUserId());
+            List<PostResponse> listPost= neo4j_postRepository.findPost(user.getUserId(), cursor, limit);
             return ResponseEntity.ok().body(listPost);
         } catch(Exception e){
             return ResponseEntity.badRequest().body((new ErrorResponseDto(e.toString())));
@@ -67,10 +69,13 @@ public class PostServiceImpl implements PostService {
 
         PostNode post = new PostNode();
         UserNode userNode = userRepository.findUserNodeByUserId(user.getUserId());
-        post.setPostId(user.getUserId().toString()+'_'+ LocalDateTime.now());
+        post.setPostId(LocalDateTime.now().toString()+'_'+user.getUserId().toString());
         post.setContent(request.getContent());
         post.setStatus(request.getStatus());
-        post.setCreateDate(String.valueOf(new Date()));
+
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        post.setCreateDate(sdf.format(date));
         post.setUpdateDate(null);
         post.setIsBlock(false);
 

@@ -26,8 +26,8 @@ public class PostController {
     }
 
     @GetMapping("")
-    public ResponseEntity<?> getPost(Principal connectUser){
-        return postService.getPost(connectUser);
+    public ResponseEntity<?> getPost(Principal connectUser, @RequestParam String cursor, @RequestParam int limit){
+        return postService.getPost(connectUser, cursor, limit);
     }
 
 

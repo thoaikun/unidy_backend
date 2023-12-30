@@ -5,10 +5,10 @@ spring:
       password: dev
       driver-class-name: com.mysql.cj.jdbc.Driver
   neo4j:
-      uri: neo4j://localhost:7687
+      uri: neo4j+s://658792a8.databases.neo4j.io:7687
       authentication:
         username: neo4j
-        password: unidyteam
+        password: vIHyhg_R78Y_LyHx1spYHldFNySLR_TAqrltoycvQbo
   jpa:
     hibernate:
       ddl-auto: none
