@@ -6,6 +6,9 @@ pipelines:
         name: Build and Deploy to Dev
         deployment: Develop
         script:
+          - echo "kill current process"
+          - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-229-237-10.ap-southeast-1.compute.amazonaws.com "sudo fuser -k 8080/tcp"
+
           - chmod 600 ./unidy_main_server_dev.pem
 
           - echo "Building the Spring Boot project"
