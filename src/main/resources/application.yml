@@ -1,14 +1,16 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   datasource:
-      url: jdbc:mysql://localhost:3306/unidy_database
-      username: dev
-      password: dev
+      url: ${MYSQL_DEV_URI}
+      username: ${MYSQL_DEV_USERNAME}
+      password: ${MYSQL_DEV_PASSWORD}
       driver-class-name: com.mysql.cj.jdbc.Driver
   neo4j:
-      uri: neo4j+s://658792a8.databases.neo4j.io:7687
+      uri: ${NEO4J_DEV_URI}
       authentication:
-        username: neo4j
-        password: vIHyhg_R78Y_LyHx1spYHldFNySLR_TAqrltoycvQbo
+        username: ${NEO4J_DEV_USERNAME}
+        password: ${NEO4J_DEV_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: none
