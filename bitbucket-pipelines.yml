@@ -6,19 +6,19 @@ pipelines:
         name: Build and Deploy to Dev
         deployment: Develop
         script:
-          - chmod 600 ./unidy_main_server_dev.pem
+          - chmod 600 ./$SSH_PRIVATE_KEY
 
           - echo "kill current process"
-          - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-229-237-10.ap-southeast-1.compute.amazonaws.com "sudo fuser -k 8080/tcp"
+          - ssh -i ./$SSH_PRIVATE_KEY -o StrictHostKeyChecking=no $EC2_INSTANCE "sudo fuser -k 8080/tcp"
 
           - echo "Building the Spring Boot project"
           - mvn clean package
 
           - echo "upload jar file to ec2"
-          - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no target/*.jar ubuntu@ec2-13-229-237-10.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
+          - scp -i ./$SSH_PRIVATE_KEY -o StrictHostKeyChecking=no target/*.jar $EC2_INSTANCE:/home/ubuntu/
 
           - echo "upload env file to ec2"
-          - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no .env ubuntu@ec2-13-229-237-10.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
+          - scp -i ./$SSH_PRIVATE_KEY -o StrictHostKeyChecking=no .env $EC2_INSTANCE:/home/ubuntu/
 
           - echo "SSHing into EC2 and running the JAR file"
-          - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-229-237-10.ap-southeast-1.compute.amazonaws.com "nohup java -jar /home/ubuntu/*.jar > /dev/null 2>&1 &"
+          - ssh -i ./$SSH_PRIVATE_KEY -o StrictHostKeyChecking=no $EC2_INSTANCE "nohup java -jar /home/ubuntu/*.jar > /dev/null 2>&1 &"
