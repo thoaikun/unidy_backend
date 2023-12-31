@@ -8,8 +8,8 @@ pipelines:
         script:
           - chmod 600 ./unidy_main_server_dev.pem
 
-          - echo "kill current process"
-          - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com "sudo fuser -k 8080/tcp"
+          # - echo "kill current process"
+          # - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com "sudo fuser -k 8080/tcp"
           
           - echo "Remove old file"
           - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com "rm -rf .env *.jar"
