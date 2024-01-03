@@ -30,7 +30,6 @@ spring:
           auth: true
           starttls:
             enable: true
-
 application:
   security:
     jwt:
