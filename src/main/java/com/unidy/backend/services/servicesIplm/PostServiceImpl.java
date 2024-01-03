@@ -61,14 +61,50 @@ public class PostServiceImpl implements PostService {
     }
     public ResponseEntity<?> createPost(Principal connectedUser, PostRequest request){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        String postImageId = UUID.randomUUID().toString();
         // for mysql storage
-        MultipartFile imageFile = request.getImageFile();
-        String fileContentType = imageFile.getContentType();
 
 
         PostNode post = new PostNode();
         UserNode userNode = userRepository.findUserNodeByUserId(user.getUserId());
+        String listImageLink = "" ;
+        if (request.getListImageFile() != null){
+            for (MultipartFile image : request.getListImageFile()){
+                String postImageId = UUID.randomUUID().toString();
+                String fileContentType = image.getContentType();
+                try {
+                    if (fileContentType != null &&
+                            (fileContentType.equals("image/png") ||
+                                    fileContentType.equals("image/jpeg") ||
+                                    fileContentType.equals("image/jpg"))) {
+                        fileContentType = fileContentType.replace("image/",".");
+                        s3Service.putImage(
+                                "unidy",
+                                fileContentType,
+                                "post-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),
+                                image.getBytes()
+                        );
+
+//                UserProfileImage image = userProfileImageRepository.findByUserId(userId);
+//                if (image == null){
+//                    image = new UserProfileImage();
+//                }
+//                image.setLinkImage(profileImageId+fileContentType);
+//                image.setUpdateDate(new Date());
+//                image.setUserId(userId);
+//                userProfileImageRepository.save(image);
+                        String imageUrl = "/" + user.getUserId() + "/" + postImageId + fileContentType;
+                        listImageLink +="{ url: "+ imageUrl +"}"+",";
+                    } else {
+                        return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
+                    }
+                } catch (Exception e) {
+                    return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+                }
+            }
+        }
+
+
+        post.setLinkImage(listImageLink);
         post.setPostId(LocalDateTime.now().toString()+'_'+user.getUserId().toString());
         post.setContent(request.getContent());
         post.setStatus(request.getStatus());
@@ -80,35 +116,6 @@ public class PostServiceImpl implements PostService {
         post.setIsBlock(false);
 
         post.setUserNode(userNode);
-        try {
-            if (fileContentType != null &&
-                    (fileContentType.equals("image/png") ||
-                            fileContentType.equals("image/jpeg") ||
-                            fileContentType.equals("image/jpg"))) {
-                fileContentType = fileContentType.replace("image/",".");
-                s3Service.putImage(
-                        "unidy",
-                        fileContentType,
-                        "post-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),
-                        imageFile.getBytes()
-                );
-
-//                UserProfileImage image = userProfileImageRepository.findByUserId(userId);
-//                if (image == null){
-//                    image = new UserProfileImage();
-//                }
-//                image.setLinkImage(profileImageId+fileContentType);
-//                image.setUpdateDate(new Date());
-//                image.setUserId(userId);
-//                userProfileImageRepository.save(image);
-                String imageUrl = "/" + user.getUserId() + "/" + postImageId + fileContentType;
-                post.setLinkImage(imageUrl);
-            } else {
-                return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
-        }
         // for neo4j storage
         neo4j_postRepository.save(post);
         return ResponseEntity.ok().body(new SuccessReponse("Create success"));

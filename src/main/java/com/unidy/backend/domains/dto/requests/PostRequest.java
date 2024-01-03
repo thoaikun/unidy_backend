@@ -17,5 +17,5 @@ public class PostRequest {
     private String postId;
     private String content;
     private String status;
-    private MultipartFile imageFile;
+    private List<MultipartFile> listImageFile;
 }
