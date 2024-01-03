@@ -102,8 +102,7 @@ public class PostServiceImpl implements PostService {
                 }
             }
         }
-
-
+        
         post.setLinkImage(listImageLink);
         post.setPostId(LocalDateTime.now().toString()+'_'+user.getUserId().toString());
         post.setContent(request.getContent());
