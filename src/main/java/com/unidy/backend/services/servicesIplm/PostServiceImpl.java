@@ -11,6 +11,7 @@ import com.unidy.backend.repositories.Neo4j_PostRepository;
 import com.unidy.backend.repositories.Neo4j_UserRepository;
 import com.unidy.backend.services.servicesInterface.PostService;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONArray;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -41,9 +42,10 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    public ResponseEntity<?> getPostByUserId(int userID){
+    public ResponseEntity<?> getPostByUserId(Principal connectedUser, String cursor, int limit ){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            List<PostNode> listPost= neo4j_postRepository.findPostNodeByUserId(userID);
+            List<PostNode> listPost= neo4j_postRepository.findPostNodeByUserId(user.getUserId(),cursor,limit);
             return ResponseEntity.ok().body(listPost);
         } catch(Exception e){
             return ResponseEntity.badRequest().body((new ErrorResponseDto(e.toString())));
@@ -66,7 +68,7 @@ public class PostServiceImpl implements PostService {
 
         PostNode post = new PostNode();
         UserNode userNode = userRepository.findUserNodeByUserId(user.getUserId());
-        String listImageLink = "" ;
+        JSONArray listImageLink =  new JSONArray();
         if (request.getListImageFile() != null){
             for (MultipartFile image : request.getListImageFile()){
                 String postImageId = UUID.randomUUID().toString();
@@ -93,7 +95,7 @@ public class PostServiceImpl implements PostService {
 //                image.setUserId(userId);
 //                userProfileImageRepository.save(image);
                         String imageUrl = "/" + user.getUserId() + "/" + postImageId + fileContentType;
-                        listImageLink +="{ url: "+ imageUrl +"}"+",";
+                        listImageLink.put(imageUrl);
                     } else {
                         return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
                     }
@@ -102,8 +104,8 @@ public class PostServiceImpl implements PostService {
                 }
             }
         }
-        
-        post.setLinkImage(listImageLink);
+
+        post.setLinkImage(listImageLink.toString());
         post.setPostId(LocalDateTime.now().toString()+'_'+user.getUserId().toString());
         post.setContent(request.getContent());
         post.setStatus(request.getStatus());
@@ -139,6 +141,38 @@ public class PostServiceImpl implements PostService {
                 if (updateRequest.getStatus() != null) {
                     post.setStatus(updateRequest.getStatus());
                 }
+                if (updateRequest.getArrayImageLink() != null) {
+                    post.setLinkImage(post.getLinkImage());
+                }
+                JSONArray listImageLink =  new JSONArray();
+                if (updateRequest.getListImageFile() != null ){
+                    for (MultipartFile image : updateRequest.getListImageFile()){
+                        String postImageId = UUID.randomUUID().toString();
+                        String fileContentType = image.getContentType();
+                        try {
+                            if (fileContentType != null &&
+                                    (fileContentType.equals("image/png") ||
+                                            fileContentType.equals("image/jpeg") ||
+                                            fileContentType.equals("image/jpg"))) {
+                                fileContentType = fileContentType.replace("image/",".");
+                                s3Service.putImage(
+                                        "unidy",
+                                        fileContentType,
+                                        "post-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),
+                                        image.getBytes()
+                                );
+
+                                String imageUrl = "/" + user.getUserId() + "/" + postImageId + fileContentType;
+                                listImageLink.put(imageUrl);
+                            } else {
+                                return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
+                            }
+                        } catch (Exception e) {
+                            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+                        }
+                    }
+                }
+                post.setLinkImage(post.getLinkImage().replace("]","")+ "," + listImageLink.toString().substring(1) );
                 post.setUpdateDate(String.valueOf(new Date()));
                 neo4j_postRepository.save(post);
                 return ResponseEntity.ok().body(new SuccessReponse("Update post success"));
