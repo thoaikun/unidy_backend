@@ -164,6 +164,7 @@ public class PostServiceImpl implements PostService {
 
                                 String imageUrl = "/" + user.getUserId() + "/" + postImageId + fileContentType;
                                 listImageLink.put(imageUrl);
+
                             } else {
                                 return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
                             }
@@ -171,8 +172,8 @@ public class PostServiceImpl implements PostService {
                             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
                         }
                     }
+                    post.setLinkImage(post.getLinkImage().replace("]","")+ "," + listImageLink.toString().substring(1) );
                 }
-                post.setLinkImage(post.getLinkImage().replace("]","")+ "," + listImageLink.toString().substring(1) );
                 post.setUpdateDate(String.valueOf(new Date()));
                 neo4j_postRepository.save(post);
                 return ResponseEntity.ok().body(new SuccessReponse("Update post success"));
