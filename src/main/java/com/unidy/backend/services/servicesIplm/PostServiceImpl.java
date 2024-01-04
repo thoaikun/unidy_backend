@@ -86,14 +86,6 @@ public class PostServiceImpl implements PostService {
                                 image.getBytes()
                         );
 
-//                UserProfileImage image = userProfileImageRepository.findByUserId(userId);
-//                if (image == null){
-//                    image = new UserProfileImage();
-//                }
-//                image.setLinkImage(profileImageId+fileContentType);
-//                image.setUpdateDate(new Date());
-//                image.setUserId(userId);
-//                userProfileImageRepository.save(image);
                         String imageUrl = "/" + user.getUserId() + "/" + postImageId + fileContentType;
                         listImageLink.put(imageUrl);
                     } else {
