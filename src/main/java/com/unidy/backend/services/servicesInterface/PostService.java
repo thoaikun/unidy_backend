@@ -7,9 +7,9 @@ import java.security.Principal;
 
 public interface PostService {
     public ResponseEntity<?> getPostById(String postId);
-    public ResponseEntity<?> getPostByUserId(int userID);
+    public ResponseEntity<?> getPostByUserId(Principal connectUser, String cursor, int limit );
 
-    ResponseEntity<?> getPost(Principal connectUser);
+    ResponseEntity<?> getPost(Principal connectUser, String cursor, int limit);
 
     ResponseEntity<?> createPost(Principal connectedUser, PostRequest request);
 

@@ -2,15 +2,15 @@ spring:
   config:
     import: optional:file:.env[.properties]
   datasource:
-      url: ${MYSQL_DEV_URI}
-      username: ${MYSQL_DEV_USERNAME}
-      password: ${MYSQL_DEV_PASSWORD}
-      driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MYSQL_DEV_URI}
+    username: ${MYSQL_DEV_USERNAME}
+    password: ${MYSQL_DEV_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
   neo4j:
-      uri: ${NEO4J_DEV_URI}
-      authentication:
-        username: ${NEO4J_DEV_USERNAME}
-        password: ${NEO4J_DEV_PASSWORD}
+    uri: ${NEO4J_DEV_URI}
+    authentication:
+      username: ${NEO4J_DEV_USERNAME}
+      password: ${NEO4J_DEV_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: none
@@ -32,7 +32,6 @@ spring:
           auth: true
           starttls:
             enable: true
-
 application:
   security:
     jwt:
@@ -45,7 +44,7 @@ application:
 aws:
   region: "ap-southeast-1"
   credentials:
-    access-key: AKIAWSQ776R3OBAEGHEB
-    secret-key: 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
+    access-key: ${AWS_ACCESS_KEY}
+    secret-key: ${AWS_SECRET_KEY}
 
 

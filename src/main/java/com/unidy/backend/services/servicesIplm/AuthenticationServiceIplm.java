@@ -68,7 +68,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
       saveUserToken(savedUser, jwtToken);
       return ResponseEntity.ok().header("Register").body("Register success");
     }catch (Exception e){
-      return ResponseEntity.badRequest().body("Register fail");
+      return ResponseEntity.badRequest().body(e);
     }
   }
 

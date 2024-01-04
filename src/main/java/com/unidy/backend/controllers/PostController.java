@@ -21,13 +21,13 @@ public class PostController {
     }
 
     @GetMapping("/get-post-by-userId")
-    public ResponseEntity<?> getPostByUserId(@RequestParam int userId){
-        return postService.getPostByUserId(userId);
+    public ResponseEntity<?> getPostByUserId(Principal connectUser, @RequestParam String cursor, @RequestParam int limit){
+        return postService.getPostByUserId(connectUser, cursor, limit);
     }
 
     @GetMapping("")
-    public ResponseEntity<?> getPost(Principal connectUser){
-        return postService.getPost(connectUser);
+    public ResponseEntity<?> getPost(Principal connectUser, @RequestParam String cursor, @RequestParam int limit){
+        return postService.getPost(connectUser, cursor, limit);
     }
 
 

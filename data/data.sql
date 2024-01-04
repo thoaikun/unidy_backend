@@ -1,4 +1,4 @@
-DROP DATABASE unidy_database;
+# DROP DATABASE unidy_database;
 CREATE DATABASE unidy_database;
 USE unidy_database;
 CREATE TABLE user (
