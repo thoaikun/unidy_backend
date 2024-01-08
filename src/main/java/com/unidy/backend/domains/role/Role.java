@@ -27,7 +27,7 @@ public enum Role {
                   Permission.MANAGER_CREATE
           )
   ),
-  MANAGER(
+  ORGANIZATION(
           Set.of(
                   Permission.MANAGER_READ,
                   Permission.MANAGER_UPDATE,

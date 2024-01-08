@@ -31,4 +31,7 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
             "ORDER BY post.create_date DESC\n" +
             "LIMIT $limit;")
     List<PostResponse> findPost(@Param("userId") int userId, @Param("cursor") String cursor, @Param("limit") int limit);
+
+    @Query("MATCH (p : user {user_id:$userId})-[r:LIKE]->(post: post {post_id: $postId}) DELETE r ;")
+    void cancelLikePost(@Param("userId") int userId, @Param("postId") String postId);
 }

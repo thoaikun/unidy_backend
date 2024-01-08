@@ -4,6 +4,7 @@ import com.unidy.backend.domains.dto.requests.PostRequest;
 import com.unidy.backend.domains.entity.PostNode;
 import com.unidy.backend.services.servicesInterface.PostService;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.IdGeneratorType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,4 +46,15 @@ public class PostController {
     public  ResponseEntity<?> updatePost(Principal connectedUser, @RequestParam String postId){
         return postService.deletePost(connectedUser, postId);
     }
+
+    @GetMapping("/like")
+    public  ResponseEntity<?> likePost(Principal connectedUser, @RequestParam String postId){
+        return postService.likePost(connectedUser,postId);
+    }
+
+    @GetMapping("/unlike")
+    public  ResponseEntity<?> cancelLike(Principal connectedUser, @RequestParam String postId){
+        return postService.cancelLikePost(connectedUser,postId);
+    }
+
 }

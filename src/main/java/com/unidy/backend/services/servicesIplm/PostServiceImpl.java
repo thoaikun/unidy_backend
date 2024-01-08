@@ -195,4 +195,51 @@ public class PostServiceImpl implements PostService {
             return ResponseEntity.badRequest().body(e.toString());
         }
     }
+
+    public ResponseEntity<?> likePost(Principal connectedUser, String postId){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        UserNode userNode = userRepository.findUserNodeByUserId(user.getUserId());
+
+        try {
+            Optional<List<PostNode>> optionalPost = Optional.ofNullable( neo4j_postRepository.findPostNodeByPostId(postId));
+            if (optionalPost.isPresent()) {
+                PostNode post = optionalPost.get().get(0);
+                List<UserNode> usersLike = post.getUserLikes();
+                usersLike.add(userNode);
+                post.setUserLikes(usersLike);
+                neo4j_postRepository.save(post);
+                return ResponseEntity.ok().body(new SuccessReponse("Like post success"));
+            }
+            else {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find this post"));
+            }
+        }
+        catch(Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+    public ResponseEntity<?> cancelLikePost(Principal connectedUser, String postId){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        UserNode userNode = userRepository.findUserNodeByUserId(user.getUserId());
+
+        try {
+            Optional<List<PostNode>> optionalPost = Optional.ofNullable( neo4j_postRepository.findPostNodeByPostId(postId));
+            if (optionalPost.isPresent()) {
+                PostNode post = optionalPost.get().get(0);
+//                List<UserNode> usersLike = post.getUserLikes();
+//                usersLike.remove(userNode);
+//                post.setUserLikes(usersLike);
+//                neo4j_postRepository.save(post);
+                neo4j_postRepository.cancelLikePost(user.getUserId(),postId);
+                return ResponseEntity.ok().body(new SuccessReponse("Cancel like post success"));
+            }
+            else {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find this post"));
+            }
+        }
+        catch(Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
 }

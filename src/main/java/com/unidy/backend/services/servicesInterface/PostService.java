@@ -16,4 +16,8 @@ public interface PostService {
     ResponseEntity<?> updatePost(Principal connectedUser, PostRequest updateRequest);
 
     ResponseEntity<?> deletePost(Principal connectedUser, String postId);
+
+    ResponseEntity<?> likePost(Principal connectedUser, String postId);
+
+    ResponseEntity<?> cancelLikePost(Principal connectedUser, String postId);
 }
