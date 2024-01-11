@@ -47,12 +47,12 @@ public class PostController {
         return postService.deletePost(connectedUser, postId);
     }
 
-    @GetMapping("/like")
+    @PatchMapping("/like")
     public  ResponseEntity<?> likePost(Principal connectedUser, @RequestParam String postId){
         return postService.likePost(connectedUser,postId);
     }
 
-    @GetMapping("/unlike")
+    @PatchMapping("/unlike")
     public  ResponseEntity<?> cancelLike(Principal connectedUser, @RequestParam String postId){
         return postService.cancelLikePost(connectedUser,postId);
     }
