@@ -13,7 +13,6 @@ import com.unidy.backend.services.servicesInterface.CampaignService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -80,4 +79,9 @@ public class CampaignServiceIplm implements CampaignService {
         campaignRepository.save(campaign);
         return ResponseEntity.ok().body(new SuccessReponse("Create campaign success")) ;
     }
+    public ResponseEntity<?> registerCampaign(Principal userConnected, int campaignId){
+        return null;
+
+    }
+
 }

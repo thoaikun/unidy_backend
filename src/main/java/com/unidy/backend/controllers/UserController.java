@@ -61,7 +61,23 @@ public class UserController {
     }
 
     @PostMapping("/update-profile-image")
-    public  ResponseEntity<?> updateProfileImage(@ModelAttribute UserInformationRequest request, Principal connectedUser){
+    public ResponseEntity<?> updateProfileImage(@ModelAttribute UserInformationRequest request, Principal connectedUser){
         return userService.updateProfileImage(request.getProfileImage(), connectedUser);
+    }
+
+    @PostMapping("/add-friend")
+    public ResponseEntity<?> addFriend(Principal connectedUser, @RequestParam int friendId){
+        return userService.addFriend(connectedUser,friendId);
+    }
+
+
+    @PostMapping("/accept-friend")
+    public ResponseEntity<?> acceptRequest(Principal connectedUser, @RequestParam int friendId){
+        return userService.acceptFriendInvite(connectedUser,friendId);
+    }
+
+    @PostMapping("/unfriend")
+    public ResponseEntity<?> unFriend(Principal connectedUser, @RequestParam int friendId){
+        return userService.unfriend(connectedUser,friendId);
     }
 }

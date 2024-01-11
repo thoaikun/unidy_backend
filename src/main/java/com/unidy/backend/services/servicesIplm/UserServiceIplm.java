@@ -153,5 +153,40 @@ public class UserServiceIplm implements UserService {
         }
     }
 
+    public ResponseEntity<?> addFriend(Principal connectedUser, int friendId){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            neo4j_userRepository.friendInviteRequest(user.getUserId(), friendId);
+            return ResponseEntity.ok().body(new SuccessReponse("Send invite success"));
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
+        }
+    }
 
+    public ResponseEntity<?> acceptFriendInvite(Principal connectedUser, int friendId){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            boolean check = neo4j_userRepository.checkInviteRequest(user.getUserId(), friendId).isResult();
+            if (neo4j_userRepository.checkInviteRequest(user.getUserId(), friendId).isResult()){
+                neo4j_userRepository.deleteInviteRequest(user.getUserId(),friendId);
+                neo4j_userRepository.createFriendship(user.getUserId(),friendId);
+
+                return ResponseEntity.ok().body(new SuccessReponse("Accept invite success"));
+            } else {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Must have invite yet"));
+            }
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
+        }
+    }
+
+    public ResponseEntity<?> unfriend(Principal connectedUser, int friendId) {
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            neo4j_userRepository.unfriend(user.getUserId(), friendId);
+            return ResponseEntity.ok().body(new SuccessReponse("Unfriend success"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
+        }
+    }
 }

@@ -7,10 +7,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
@@ -25,6 +22,10 @@ public class CampaignController {
     @PostMapping("")
     public ResponseEntity<?> createCampaign(Principal connectedUser, @ModelAttribute CampaignRequest request){
         return campaignService.createCampaign(connectedUser,request);
-//        return ResponseEntity.ok().body("not permission");
+    }
+
+    @GetMapping("/register")
+    public ResponseEntity<?> registerCampaign(Principal connectedUser, @RequestParam int campaignId){
+        return campaignService.registerCampaign(connectedUser, campaignId);
     }
 }
