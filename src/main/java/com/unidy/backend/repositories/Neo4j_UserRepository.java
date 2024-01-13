@@ -8,6 +8,8 @@ import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @Repository
 @Transactional
 public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> {
@@ -34,4 +36,8 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
              "OPTIONAL MATCH (user1_2: user {user_id: $userId})-[r2:FRIEND]->(user2_2: user {user_id: $friendId})\n" +
              "DELETE r1,r2 ")
      void unfriend(Integer userId, int friendId);
+
+     @Query("MATCH (user : user{user_id : $userId}) <- [:INVITE_FRIEND] - (user2: user)\n" +
+             "RETURN user2")
+     List<UserNode> getListInvite(Integer userId);
 }

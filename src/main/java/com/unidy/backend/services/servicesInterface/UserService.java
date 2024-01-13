@@ -19,4 +19,6 @@ public interface UserService {
     ResponseEntity<?> addFriend(Principal connectedUser, int friendId);
     ResponseEntity<?> acceptFriendInvite(Principal connectedUser, int friendId);
     ResponseEntity<?> unfriend(Principal connectedUser, int friendId);
+    ResponseEntity<?> getListInvite(Principal connectedUser);
+    ResponseEntity<?> deleteInvite(Principal connectedUser, int friendId);
 }

@@ -21,10 +21,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.net.URL;
 import java.security.Principal;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -50,11 +50,6 @@ public class UserServiceIplm implements UserService {
         information.setRole(user.getRole());
         information.setWorkLocation(user.getWorkLocation());
 
-//        byte[] profileImage = s3Service.getObject(
-//                "unidy",
-//                "profile-images/%s/%s".formatted(userId, image.getLinkImage())
-//        );
-//        information.setImage(profileImage);
         UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
         if (image != null){
             URL urlImage = s3Service.getObjectUrl(
@@ -166,7 +161,6 @@ public class UserServiceIplm implements UserService {
     public ResponseEntity<?> acceptFriendInvite(Principal connectedUser, int friendId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            boolean check = neo4j_userRepository.checkInviteRequest(user.getUserId(), friendId).isResult();
             if (neo4j_userRepository.checkInviteRequest(user.getUserId(), friendId).isResult()){
                 neo4j_userRepository.deleteInviteRequest(user.getUserId(),friendId);
                 neo4j_userRepository.createFriendship(user.getUserId(),friendId);
@@ -185,6 +179,26 @@ public class UserServiceIplm implements UserService {
         try {
             neo4j_userRepository.unfriend(user.getUserId(), friendId);
             return ResponseEntity.ok().body(new SuccessReponse("Unfriend success"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
+        }
+    }
+
+    public ResponseEntity<?> getListInvite(Principal connectedUser){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            List<UserNode> listInvite = neo4j_userRepository.getListInvite(user.getUserId());
+            return ResponseEntity.ok().body(listInvite);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
+        }
+    }
+
+    public ResponseEntity<?> deleteInvite(Principal connectedUser, int friendId){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+             neo4j_userRepository.deleteInviteRequest(user.getUserId(),friendId);
+            return ResponseEntity.ok().body("Delete success");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
         }

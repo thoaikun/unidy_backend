@@ -65,19 +65,29 @@ public class UserController {
         return userService.updateProfileImage(request.getProfileImage(), connectedUser);
     }
 
-    @PostMapping("/add-friend")
+    @PatchMapping("/add-friend")
     public ResponseEntity<?> addFriend(Principal connectedUser, @RequestParam int friendId){
         return userService.addFriend(connectedUser,friendId);
     }
 
 
-    @PostMapping("/accept-friend")
+    @PatchMapping("/accept-friend")
     public ResponseEntity<?> acceptRequest(Principal connectedUser, @RequestParam int friendId){
         return userService.acceptFriendInvite(connectedUser,friendId);
     }
 
-    @PostMapping("/unfriend")
+    @PatchMapping("/unfriend")
     public ResponseEntity<?> unFriend(Principal connectedUser, @RequestParam int friendId){
         return userService.unfriend(connectedUser,friendId);
+    }
+
+    @GetMapping("/list-invite")
+    public ResponseEntity<?> getListInvite(Principal connectedUser){
+        return userService.getListInvite(connectedUser);
+    }
+
+    @PatchMapping("/delete-invite")
+    public ResponseEntity<?> deleteInvite(Principal connectedUser, @RequestParam int friendId){
+        return userService.deleteInvite(connectedUser,friendId);
     }
 }
