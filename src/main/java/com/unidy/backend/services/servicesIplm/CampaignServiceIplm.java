@@ -7,8 +7,11 @@ import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.entity.CampaignNode;
 import com.unidy.backend.domains.entity.User;
 import com.unidy.backend.domains.entity.UserNode;
+import com.unidy.backend.domains.entity.VolunteerJoinCampaign;
+import com.unidy.backend.pubnub.PubnubService;
 import com.unidy.backend.repositories.Neo4j_CampaignRepository;
 import com.unidy.backend.repositories.Neo4j_UserRepository;
+import com.unidy.backend.repositories.VolunteerJoinCampaignRepository;
 import com.unidy.backend.services.servicesInterface.CampaignService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
@@ -28,11 +31,16 @@ public class CampaignServiceIplm implements CampaignService {
     private final S3Service s3Service;
     private final Neo4j_CampaignRepository campaignRepository;
     private final Neo4j_UserRepository neo4jUserRepository;
+    private final VolunteerJoinCampaignRepository joinCampaign;
+    private final PubnubService pubnubService;
     @Override
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) {
-        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
+        //MySQL
 
+
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        //neo4j
+        UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
         CampaignNode campaign = new CampaignNode() ;
         campaign.setCampaignId(LocalDateTime.now().toString()+'_'+user.getUserId().toString());
         campaign.setContent(request.getContent());
@@ -77,11 +85,19 @@ public class CampaignServiceIplm implements CampaignService {
 
 
         campaignRepository.save(campaign);
+
         return ResponseEntity.ok().body(new SuccessReponse("Create campaign success")) ;
     }
     public ResponseEntity<?> registerCampaign(Principal userConnected, int campaignId){
-        return null;
-
+        var user = (User) ((UsernamePasswordAuthenticationToken) userConnected).getPrincipal();
+        VolunteerJoinCampaign userJoin = new VolunteerJoinCampaign();
+        userJoin.setVolunteerId(user.getUserId());
+        userJoin.setCampaignId(campaignId);
+        userJoin.setTimeJoin(new Date());
+        userJoin.setStatus("join");
+//        joinCampaign.save(userJoin);
+        pubnubService.sendNotification("a","Join campaign successful");
+        return  ResponseEntity.ok().body(new SuccessReponse("Join success"));
     }
 
 }
