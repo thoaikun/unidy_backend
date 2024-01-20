@@ -18,6 +18,7 @@ import com.unidy.backend.repositories.VolunteerRepository;
 import com.unidy.backend.services.servicesInterface.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -40,6 +41,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
   private final AuthenticationManager authenticationManager;
   private final Neo4j_UserRepository neo4j_userRepository;
   private final VolunteerRepository volunteerRepository;
+  @Transactional
   public ResponseEntity<?> register(RegisterRequest request) {
     try {
       var findUser = repository.findByEmail(request.getEmail());
@@ -70,9 +72,9 @@ public class AuthenticationServiceIplm implements AuthenticationService {
       neo4j_userRepository.save(userNode);
       saveUserToken(savedUser, jwtToken);
 
-      Volunteer volunteer = new Volunteer() ;
-      volunteer.setUserId(registerUser.get().getUserId());
-      volunteerRepository.save(volunteer);
+//      Volunteer volunteer = new Volunteer() ;
+//      volunteer.setUserId(registerUser.get().getUserId());
+//      volunteerRepository.save(volunteer);
       return ResponseEntity.ok().header("Register").body("Register success");
     }catch (Exception e){
       return ResponseEntity.badRequest().body(e);

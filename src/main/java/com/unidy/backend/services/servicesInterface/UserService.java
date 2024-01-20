@@ -21,4 +21,6 @@ public interface UserService {
     ResponseEntity<?> unfriend(Principal connectedUser, int friendId);
     ResponseEntity<?> getListInvite(Principal connectedUser);
     ResponseEntity<?> deleteInvite(Principal connectedUser, int friendId);
+
+    ResponseEntity<?> getRecommendFriend(Principal connectedUser, int skip, int limit, int rangeEnd);
 }

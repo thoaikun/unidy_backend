@@ -90,4 +90,10 @@ public class UserController {
     public ResponseEntity<?> deleteInvite(Principal connectedUser, @RequestParam int friendId){
         return userService.deleteInvite(connectedUser,friendId);
     }
+
+    @GetMapping("/get-recommend-friend")
+    public ResponseEntity<?> getRecommendationFriend(Principal connectedUser,@RequestParam int skip,@RequestParam int limit,@RequestParam int rangeEnd){
+        return userService.getRecommendFriend(connectedUser,skip,limit,rangeEnd);
+    }
+
 }

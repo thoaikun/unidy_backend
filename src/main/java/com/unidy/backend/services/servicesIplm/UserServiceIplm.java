@@ -4,6 +4,7 @@ import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.UserDto;
+import com.unidy.backend.domains.dto.responses.RecommendFriendResponse;
 import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import com.unidy.backend.domains.entity.User;
 import com.unidy.backend.domains.entity.UserNode;
@@ -201,6 +202,16 @@ public class UserServiceIplm implements UserService {
             return ResponseEntity.ok().body("Delete success");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
+        }
+    }
+
+    public ResponseEntity<?> getRecommendFriend(Principal connectedUser, int skip, int limit, int rangeEnd){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            List<RecommendFriendResponse> recommendFriend = neo4j_userRepository.getRecommendFriend(user.getUserId(), limit, skip, rangeEnd);
+            return ResponseEntity.ok().body(recommendFriend);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
 }
