@@ -4,6 +4,7 @@ import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.UserDto;
+import com.unidy.backend.domains.dto.responses.InviteFriend;
 import com.unidy.backend.domains.dto.responses.RecommendFriendResponse;
 import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import com.unidy.backend.domains.entity.User;
@@ -20,10 +21,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URL;
 import java.security.Principal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -152,7 +155,9 @@ public class UserServiceIplm implements UserService {
     public ResponseEntity<?> addFriend(Principal connectedUser, int friendId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            neo4j_userRepository.friendInviteRequest(user.getUserId(), friendId);
+            Date date = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            neo4j_userRepository.friendInviteRequest(user.getUserId(), friendId, sdf.format(date).toString());
             return ResponseEntity.ok().body(new SuccessReponse("Send invite success"));
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
@@ -185,10 +190,10 @@ public class UserServiceIplm implements UserService {
         }
     }
 
-    public ResponseEntity<?> getListInvite(Principal connectedUser){
+    public ResponseEntity<?> getListInvite(Principal connectedUser, String cursor, int limit){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            List<UserNode> listInvite = neo4j_userRepository.getListInvite(user.getUserId());
+            List<InviteFriend> listInvite = neo4j_userRepository.getListInvite(user.getUserId(),cursor,limit);
             return ResponseEntity.ok().body(listInvite);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
@@ -209,6 +214,16 @@ public class UserServiceIplm implements UserService {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
             List<RecommendFriendResponse> recommendFriend = neo4j_userRepository.getRecommendFriend(user.getUserId(), limit, skip, rangeEnd);
+            return ResponseEntity.ok().body(recommendFriend);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    public ResponseEntity<?> getListFriend(Principal connectedUser, int limit, int cursor){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            List<UserNode> recommendFriend = neo4j_userRepository.getListFriend(user.getUserId(), limit, cursor);
             return ResponseEntity.ok().body(recommendFriend);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));

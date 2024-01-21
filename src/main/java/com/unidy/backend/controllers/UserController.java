@@ -82,8 +82,8 @@ public class UserController {
     }
 
     @GetMapping("/list-invite")
-    public ResponseEntity<?> getListInvite(Principal connectedUser){
-        return userService.getListInvite(connectedUser);
+    public ResponseEntity<?> getListInvite(Principal connectedUser, @RequestParam String cursor, @RequestParam int limit){
+        return userService.getListInvite(connectedUser, cursor, limit);
     }
 
     @PatchMapping("/delete-invite")
@@ -94,6 +94,11 @@ public class UserController {
     @GetMapping("/get-recommend-friend")
     public ResponseEntity<?> getRecommendationFriend(Principal connectedUser,@RequestParam int skip,@RequestParam int limit,@RequestParam int rangeEnd){
         return userService.getRecommendFriend(connectedUser,skip,limit,rangeEnd);
+    }
+
+    @GetMapping("/get-list-friend")
+    public ResponseEntity<?> getListFriend(Principal connectedUser,@RequestParam int limit, @RequestParam int cursor){
+        return userService.getListFriend(connectedUser,limit,cursor);
     }
 
 }
