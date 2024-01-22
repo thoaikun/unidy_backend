@@ -155,7 +155,10 @@ public class UserServiceIplm implements UserService {
     public ResponseEntity<?> addFriend(Principal connectedUser, int friendId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            Date date = new Date();
+            if (neo4j_userRepository.checkInviteRequest(user.getUserId(), friendId).isResult()) {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("You have requested yet"));
+            }
+                Date date = new Date();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
             neo4j_userRepository.friendInviteRequest(user.getUserId(), friendId, sdf.format(date).toString());
             return ResponseEntity.ok().body(new SuccessReponse("Send invite success"));
