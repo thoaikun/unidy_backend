@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 
 @RestController
-@PreAuthorize("hasRole('ORGANIZATION')")
+//@PreAuthorize("hasRole('ORGANIZATION')")
 @RequiredArgsConstructor
 
 @RequestMapping("/api/v1/campaign")
@@ -27,5 +27,10 @@ public class CampaignController {
     @GetMapping("/register")
     public ResponseEntity<?> registerCampaign(Principal connectedUser, @RequestParam int campaignId){
         return campaignService.registerCampaign(connectedUser, campaignId);
+    }
+
+    @GetMapping("/getRecommendCampaign")
+    public ResponseEntity<?> registerCampaign(Principal connectedUser){
+        return campaignService.getRecommend(connectedUser);
     }
 }

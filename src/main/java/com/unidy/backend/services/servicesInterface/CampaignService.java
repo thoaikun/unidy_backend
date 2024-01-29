@@ -8,4 +8,6 @@ import java.security.Principal;
 public interface CampaignService {
     ResponseEntity<?> createCampaign(Principal userConnected, CampaignRequest request);
     ResponseEntity<?> registerCampaign(Principal userConnected, int campaignId);
+
+    ResponseEntity<?> getRecommend(Principal connectedUser);
 }
