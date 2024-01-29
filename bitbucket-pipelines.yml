@@ -9,12 +9,6 @@ pipelines:
           script:
             - chmod 600 ./unidy_main_server_dev.pem
 
-            # - echo "kill current process"
-            # - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com "sudo fuser -k 8080/tcp"
-
-            - echo "Remove old file"
-            - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com "rm -rf .env *.jar"
-
             - echo "Building the Spring Boot project"
             - mvn clean package
 
@@ -25,4 +19,4 @@ pipelines:
             - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no .env ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
 
             - echo "SSHing into EC2 and running the JAR file"
-            - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com "nohup java -jar /home/ubuntu/*.jar > /dev/null 2>&1 &"
+            - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com "sh deploy_script.sh"
