@@ -7,6 +7,7 @@ import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.pubnub.PubnubService;
 import com.unidy.backend.repositories.*;
+import lombok.Value;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import com.unidy.backend.services.servicesInterface.CampaignService;
@@ -20,6 +21,8 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import org.springframework.core.env.Environment;
+
 @Service
 @RequiredArgsConstructor
 public class CampaignServiceIplm implements CampaignService {
@@ -30,6 +33,8 @@ public class CampaignServiceIplm implements CampaignService {
     private final PubnubService pubnubService;
     private final FavoriteActivitiesRepository favoriteActivitiesRepository;
     private final CampaignRepository campaignRepository;
+    private final Environment environment;
+
     @Override
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) {
 
@@ -96,6 +101,10 @@ public class CampaignServiceIplm implements CampaignService {
     }
     public ResponseEntity<?> getRecommend(Principal connectedUser) {
         try {
+
+            String api_recommendation_flask = environment.getProperty("API_RECOMMENDATION_FLASK");
+
+
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
             FavoriteActivities favoriteActivities = favoriteActivitiesRepository.findByUserId(user.getUserId());
 
@@ -109,8 +118,9 @@ public class CampaignServiceIplm implements CampaignService {
             List<List<Double>> requestData = List.of(attribute);
 
             HttpEntity<List<List<Double>>> requestEntity = new HttpEntity<>(requestData, headers);
-            String flaskAPIRecommend = "http://0.0.0.0:8000/recommend-campaign";
-            ResponseEntity<String> response = restTemplate.postForEntity(flaskAPIRecommend, requestEntity, String.class);
+//            String flaskAPIRecommend = "http://0.0.0.0:8000/recommend-campaign";
+            assert api_recommendation_flask != null;
+            ResponseEntity<String> response = restTemplate.postForEntity(api_recommendation_flask, requestEntity, String.class);
             String responseData = response.getBody();
             if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't call api from recommend service"));
