@@ -16,4 +16,11 @@ public interface UserService {
     ResponseEntity<?>  changePassword(ChangePasswordRequest request, Principal connectedUser);
     ResponseEntity<?>  newPassword(ChangePasswordRequest request, Principal connectedUser);
     ResponseEntity<?> updateProfileImage(MultipartFile imageFile, Principal connectedUser);
+    ResponseEntity<?> addFriend(Principal connectedUser, int friendId);
+    ResponseEntity<?> acceptFriendInvite(Principal connectedUser, int friendId);
+    ResponseEntity<?> unfriend(Principal connectedUser, int friendId);
+    ResponseEntity<?> getListInvite(Principal connectedUser, String cursor, int limit);
+    ResponseEntity<?> deleteInvite(Principal connectedUser, int friendId);
+    ResponseEntity<?> getRecommendFriend(Principal connectedUser, int skip, int limit, int rangeEnd);
+    ResponseEntity<?> getListFriend(Principal connectedUser, int limit, int cursor);
 }

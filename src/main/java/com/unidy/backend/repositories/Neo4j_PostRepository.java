@@ -25,10 +25,14 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
 
     @Query("MATCH (user:user {user_id: $userId})-[:FRIEND]->(userNodes:user)-[r:HAS_POST]->(post:post)\n" +
             "WHERE post.create_date < $cursor\n" +
-            "OPTIONAL MATCH (userLike)-[r_like:LIKE]->(post)\n" +
-            "WITH post, userNodes, r, count(userLike) AS likeCount\n" +
-            "RETURN post, userNodes, r, likeCount\n" +
+            "OPTIONAL MATCH (user)-[isLiked:LIKE]->(post)\n" +
+            "OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)\n" +
+            "WITH post, userNodes, r, count(r_like) AS likeCount, r_like, isLiked\n" +
+            "RETURN post, userNodes, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked\n" +
             "ORDER BY post.create_date DESC\n" +
             "LIMIT $limit;")
     List<PostResponse> findPost(@Param("userId") int userId, @Param("cursor") String cursor, @Param("limit") int limit);
+
+    @Query("MATCH (p : user {user_id:$userId})-[r:LIKE]->(post: post {post_id: $postId}) DELETE r ;")
+    void cancelLikePost(@Param("userId") int userId, @Param("postId") String postId);
 }

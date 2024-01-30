@@ -52,4 +52,12 @@ public class S3Service {
             throw new RuntimeException(e);
         }
     }
+
+    public void deleteObject(String bucketName, String containType, String key){
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+        s3.deleteObject(deleteObjectRequest);
+    }
 }

@@ -61,7 +61,44 @@ public class UserController {
     }
 
     @PostMapping("/update-profile-image")
-    public  ResponseEntity<?> updateProfileImage(@ModelAttribute UserInformationRequest request, Principal connectedUser){
+    public ResponseEntity<?> updateProfileImage(@ModelAttribute UserInformationRequest request, Principal connectedUser){
         return userService.updateProfileImage(request.getProfileImage(), connectedUser);
     }
+
+    @PatchMapping("/add-friend")
+    public ResponseEntity<?> addFriend(Principal connectedUser, @RequestParam int friendId){
+        return userService.addFriend(connectedUser,friendId);
+    }
+
+
+    @PatchMapping("/accept-friend")
+    public ResponseEntity<?> acceptRequest(Principal connectedUser, @RequestParam int friendId){
+        return userService.acceptFriendInvite(connectedUser,friendId);
+    }
+
+    @PatchMapping("/unfriend")
+    public ResponseEntity<?> unFriend(Principal connectedUser, @RequestParam int friendId){
+        return userService.unfriend(connectedUser,friendId);
+    }
+
+    @GetMapping("/list-invite")
+    public ResponseEntity<?> getListInvite(Principal connectedUser, @RequestParam String cursor, @RequestParam int limit){
+        return userService.getListInvite(connectedUser, cursor, limit);
+    }
+
+    @PatchMapping("/delete-invite")
+    public ResponseEntity<?> deleteInvite(Principal connectedUser, @RequestParam int friendId){
+        return userService.deleteInvite(connectedUser,friendId);
+    }
+
+    @GetMapping("/get-recommend-friend")
+    public ResponseEntity<?> getRecommendationFriend(Principal connectedUser,@RequestParam int skip,@RequestParam int limit,@RequestParam int rangeEnd){
+        return userService.getRecommendFriend(connectedUser,skip,limit,rangeEnd);
+    }
+
+    @GetMapping("/get-list-friend")
+    public ResponseEntity<?> getListFriend(Principal connectedUser,@RequestParam int limit, @RequestParam int cursor){
+        return userService.getListFriend(connectedUser,limit,cursor);
+    }
+
 }

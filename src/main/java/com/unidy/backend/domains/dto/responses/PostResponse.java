@@ -24,5 +24,6 @@ public class PostResponse {
     private String linkImage;
     private UserNode userNodes;
 //    private List<UserNode> userLikes;
+    private Boolean isLiked;
     private int likeCount ;
 }

@@ -25,7 +25,8 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: unidyteam@gmail.com
-    password: gsne smbm pkhi qgws
+    password: qmax kecv fcul cfuw
+
     properties:
       mail:
         smtp:
