@@ -4,13 +4,16 @@ import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.UserDto;
+import com.unidy.backend.domains.dto.requests.ChoseFavoriteRequest;
 import com.unidy.backend.domains.dto.responses.InviteFriend;
 import com.unidy.backend.domains.dto.responses.RecommendFriendResponse;
 import com.unidy.backend.domains.dto.responses.UserInformationRespond;
+import com.unidy.backend.domains.entity.FavoriteActivities;
 import com.unidy.backend.domains.entity.User;
 import com.unidy.backend.domains.entity.UserNode;
 import com.unidy.backend.domains.entity.UserProfileImage;
 import com.unidy.backend.mapper.DtoMapper;
+import com.unidy.backend.repositories.FavoriteActivitiesRepository;
 import com.unidy.backend.repositories.Neo4j_UserRepository;
 import com.unidy.backend.repositories.UserProfileImageRepository;
 import com.unidy.backend.repositories.UserRepository;
@@ -41,6 +44,7 @@ public class UserServiceIplm implements UserService {
     private final S3Service s3Service;
     private final UserProfileImageRepository userProfileImageRepository;
     private final Neo4j_UserRepository neo4j_userRepository;
+    private final FavoriteActivitiesRepository favoriteActivitiesRepository;
     public UserInformationRespond getUserInformation(Principal connectedUser){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         UserInformationRespond information = new UserInformationRespond() ;
@@ -229,6 +233,27 @@ public class UserServiceIplm implements UserService {
             List<UserNode> recommendFriend = neo4j_userRepository.getListFriend(user.getUserId(), limit, cursor);
             return ResponseEntity.ok().body(recommendFriend);
         } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    public ResponseEntity<?> choseFavoriteActivities(Principal connectedUser, ChoseFavoriteRequest request){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            FavoriteActivities favorite = FavoriteActivities
+                    .builder()
+                    .userId(user.getUserId())
+                    .communityType(request.getCommunity_type())
+                    .education(request.getEducation_type())
+                    .environment(request.getEnvironment())
+                    .emergencyPreparedness(request.getEmergency_preparedness())
+                    .helpOther(request.getHelp_other())
+                    .healthy(request.getHealthy())
+                    .research(request.getResearch_writing_editing())
+                    .build();
+            favoriteActivitiesRepository.save(favorite);
+            return ResponseEntity.ok().body(new SuccessReponse("Success"));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
