@@ -7,6 +7,7 @@ import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.pubnub.PubnubService;
 import com.unidy.backend.repositories.*;
+import jakarta.transaction.Transactional;
 import lombok.Value;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
@@ -127,6 +128,7 @@ public class CampaignServiceIplm implements CampaignService {
                     .link_image(listImageLink.toString())
                     .owner(user.getUserId())
                     .categories(request.getCategories())
+                    .numberVolunteerRegistered(0)
                     .build();
             campaignRepository.save(campaign);
             return ResponseEntity.ok().body(new SuccessReponse("Create campaign success")) ;
@@ -135,21 +137,36 @@ public class CampaignServiceIplm implements CampaignService {
         }
 
     }
+    @Transactional
     public ResponseEntity<?> registerCampaign(Principal userConnected, int campaignId){
-        var user = (User) ((UsernamePasswordAuthenticationToken) userConnected).getPrincipal();
-        VolunteerJoinCampaign volunteer = joinCampaign.findVolunteerJoinCampaignByVolunteerIdAndCampaignId(user.getUserId(),campaignId);
-        if (volunteer != null){
-            return ResponseEntity.badRequest().body(new ErrorResponseDto("you have joined yet"));
-        }
-        VolunteerJoinCampaign userJoin = new VolunteerJoinCampaign();
-        userJoin.setVolunteerId(user.getUserId());
-        userJoin.setCampaignId(campaignId);
-        userJoin.setTimeJoin(new Date());
-        userJoin.setStatus("join");
-        joinCampaign.save(userJoin);
+        try{
+            var user = (User) ((UsernamePasswordAuthenticationToken) userConnected).getPrincipal();
+            VolunteerJoinCampaign volunteer = joinCampaign.findVolunteerJoinCampaignByVolunteerIdAndCampaignId(user.getUserId(),campaignId);
+            if (volunteer != null){
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("you have joined yet"));
+            }
+            VolunteerJoinCampaign userJoin = new VolunteerJoinCampaign();
+            userJoin.setVolunteerId(user.getUserId());
+            userJoin.setCampaignId(campaignId);
+            userJoin.setTimeJoin(new Date());
+            userJoin.setStatus("join");
 
-        pubnubService.sendNotification("a","Join campaign successful");
-        return  ResponseEntity.ok().body(new SuccessReponse("Join success"));
+            Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
+            if (campaign.getNumberVolunteerRegistered() >= campaign.getNumberVolunteer()){
+                return ResponseEntity.ok().body(new ErrorResponseDto("Full slot"));
+            } else {
+                campaign.setNumberVolunteerRegistered(campaign.getNumberVolunteerRegistered()+1);
+                campaignRepository.save(campaign);
+            }
+
+            joinCampaign.save(userJoin);
+
+            pubnubService.sendNotification("a","Join campaign successful");
+            return  ResponseEntity.ok().body(new SuccessReponse("Join success"));
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+
     }
 
 
