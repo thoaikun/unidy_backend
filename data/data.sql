@@ -112,7 +112,7 @@ CREATE TABLE organize_campaign (
 
 
 CREATE TABLE volunteer_join_campaign (
-                                         volunteer_id    BIGINT ,
+                                         volunteer_id    BIGINT AUTO_INCREMENT,
                                          campaign_id     INTEGER ,
                                          time_join       DATE    ,
                                          status          VARCHAR(10),

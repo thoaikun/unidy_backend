@@ -16,7 +16,6 @@ import java.util.Date;
 @Table(name = "volunteer_join_campaign")
 public class VolunteerJoinCampaign {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "volunteer_id")
     private int volunteerId;
 
