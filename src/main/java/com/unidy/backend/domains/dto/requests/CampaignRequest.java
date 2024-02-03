@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Getter
 @Setter
@@ -15,12 +16,18 @@ import java.util.List;
 @AllArgsConstructor
 public class CampaignRequest {
     private String campaignId;
-    private String content;
+    private String title;
+    private String categories;
+    private String description;
     private String status;
     private String hashTag;
     private int numOfVolunteer;
-    private String startDate;
-    private String endDate;
+    private int numberRegistered;
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private Date startDate;
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private Date endDate;
     private List<MultipartFile> listImageFile;
     private String arrayImageLink ;
+    private int owner;
 }

@@ -1,6 +1,7 @@
 package com.unidy.backend.controllers;
 
 import com.unidy.backend.domains.dto.UserDto;
+import com.unidy.backend.domains.dto.requests.ChoseFavoriteRequest;
 import com.unidy.backend.domains.dto.requests.UserInformationRequest;
 import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import com.unidy.backend.domains.entity.User;
@@ -101,4 +102,9 @@ public class UserController {
         return userService.getListFriend(connectedUser,limit,cursor);
     }
 
+
+    @PostMapping("/choose-favorite-activities")
+    public ResponseEntity<?> choseFavoriteActivities(Principal connectedUser, @RequestBody ChoseFavoriteRequest choseFavoriteRequest){
+        return userService.choseFavoriteActivities(connectedUser,choseFavoriteRequest);
+    }
 }

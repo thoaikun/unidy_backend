@@ -7,6 +7,7 @@ import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.pubnub.PubnubService;
 import com.unidy.backend.repositories.*;
+import jakarta.transaction.Transactional;
 import lombok.Value;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
@@ -40,18 +41,53 @@ public class CampaignServiceIplm implements CampaignService {
 
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         //neo4j
-        UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
-        CampaignNode campaign = new CampaignNode() ;
-        campaign.setCampaignId(LocalDateTime.now().toString()+'_'+user.getUserId().toString());
-        campaign.setContent(request.getContent());
-        campaign.setStatus(request.getStatus());
-        campaign.setNumOfRegister(request.getNumOfVolunteer());
-        campaign.setCreateDate(new Date().toString());
-        campaign.setStartDate(request.getStartDate());
-        campaign.setEndDate(request.getEndDate());
-        campaign.setIsBlock(false);
-        campaign.setHashTag(request.getHashTag());
-        campaign.setUserNode(campaignOrganization);
+//        UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
+//        CampaignNode campaign = new CampaignNode() ;
+//        campaign.setCampaignId(LocalDateTime.now().toString()+'_'+user.getUserId().toString());
+//        campaign.setContent(request.getContent());
+//        campaign.setStatus(request.getStatus());
+//        campaign.setNumOfRegister(request.getNumOfVolunteer());
+//        campaign.setCreateDate(new Date().toString());
+//        campaign.setStartDate(request.getStartDate());
+//        campaign.setEndDate(request.getEndDate());
+//        campaign.setIsBlock(false);
+//        campaign.setHashTag(request.getHashTag());
+//        campaign.setUserNode(campaignOrganization);
+//        JSONArray listImageLink =  new JSONArray();
+//        if (null != request.getListImageFile()){
+//            for (MultipartFile image : request.getListImageFile()){
+//                String postImageId = UUID.randomUUID().toString();
+//                String fileContentType = image.getContentType();
+//                try {
+//                    if (fileContentType != null &&
+//                            (fileContentType.equals("image/png") ||
+//                                    fileContentType.equals("image/jpeg") ||
+//                                    fileContentType.equals("image/jpg"))) {
+//                        fileContentType = fileContentType.replace("image/",".");
+//                        s3Service.putImage(
+//                                "unidy",
+//                                fileContentType,
+//                                "post-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),
+//                                image.getBytes()
+//                        );
+//
+//                        String imageUrl = "/" + user.getUserId() + "/" + postImageId + fileContentType;
+//                        listImageLink.put(imageUrl);
+//                    } else {
+//                        return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
+//                    }
+//                } catch (Exception e) {
+//                    return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+//                }
+//            }
+//        }
+//        campaign.setLinkImage(listImageLink.toString());
+//        campaign.setUpdateDate(null);
+//
+//
+//        neo4jCampaignRepository.save(campaign);
+
+
         JSONArray listImageLink =  new JSONArray();
         if (null != request.getListImageFile()){
             for (MultipartFile image : request.getListImageFile()){
@@ -66,7 +102,7 @@ public class CampaignServiceIplm implements CampaignService {
                         s3Service.putImage(
                                 "unidy",
                                 fileContentType,
-                                "post-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),
+                                "campaign-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),
                                 image.getBytes()
                         );
 
@@ -80,25 +116,60 @@ public class CampaignServiceIplm implements CampaignService {
                 }
             }
         }
-        campaign.setLinkImage(listImageLink.toString());
-        campaign.setUpdateDate(null);
+        try {
+            Campaign campaign = Campaign.builder()
+                    .title(request.getTitle())
+                    .description(request.getDescription())
+                    .status(request.getStatus())
+                    .numberVolunteer(request.getNumOfVolunteer())
+                    .startDate(request.getStartDate())
+                    .endDate((request.getEndDate()))
+                    .hashTag(request.getHashTag())
+                    .link_image(listImageLink.toString())
+                    .owner(user.getUserId())
+                    .categories(request.getCategories())
+                    .numberVolunteerRegistered(0)
+                    .build();
+            campaignRepository.save(campaign);
+            return ResponseEntity.ok().body(new SuccessReponse("Create campaign success")) ;
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
 
-
-        neo4jCampaignRepository.save(campaign);
-
-        return ResponseEntity.ok().body(new SuccessReponse("Create campaign success")) ;
     }
+    @Transactional
     public ResponseEntity<?> registerCampaign(Principal userConnected, int campaignId){
-        var user = (User) ((UsernamePasswordAuthenticationToken) userConnected).getPrincipal();
-        VolunteerJoinCampaign userJoin = new VolunteerJoinCampaign();
-        userJoin.setVolunteerId(user.getUserId());
-        userJoin.setCampaignId(campaignId);
-        userJoin.setTimeJoin(new Date());
-        userJoin.setStatus("join");
-//        joinCampaign.save(userJoin);
-        pubnubService.sendNotification("a","Join campaign successful");
-        return  ResponseEntity.ok().body(new SuccessReponse("Join success"));
+        try{
+            var user = (User) ((UsernamePasswordAuthenticationToken) userConnected).getPrincipal();
+            VolunteerJoinCampaign volunteer = joinCampaign.findVolunteerJoinCampaignByVolunteerIdAndCampaignId(user.getUserId(),campaignId);
+            if (volunteer != null){
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("you have joined yet"));
+            }
+            VolunteerJoinCampaign userJoin = new VolunteerJoinCampaign();
+            userJoin.setVolunteerId(user.getUserId());
+            userJoin.setCampaignId(campaignId);
+            userJoin.setTimeJoin(new Date());
+            userJoin.setStatus("join");
+
+            Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
+            if (campaign.getNumberVolunteerRegistered() >= campaign.getNumberVolunteer()){
+                return ResponseEntity.ok().body(new ErrorResponseDto("Full slot"));
+            } else {
+                campaign.setNumberVolunteerRegistered(campaign.getNumberVolunteerRegistered()+1);
+                campaignRepository.save(campaign);
+            }
+
+            joinCampaign.save(userJoin);
+
+            pubnubService.sendNotification("a","Join campaign successful");
+            return  ResponseEntity.ok().body(new SuccessReponse("Join success"));
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+
     }
+
+
     public ResponseEntity<?> getRecommend(Principal connectedUser) {
         try {
 

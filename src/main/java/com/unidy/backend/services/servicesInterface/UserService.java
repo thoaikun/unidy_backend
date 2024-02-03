@@ -2,6 +2,7 @@ package com.unidy.backend.services.servicesInterface;
 
 import com.unidy.backend.domains.dto.UserDto;
 import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
+import com.unidy.backend.domains.dto.requests.ChoseFavoriteRequest;
 import com.unidy.backend.domains.dto.requests.UserInformationRequest;
 import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import com.unidy.backend.domains.entity.User;
@@ -23,4 +24,6 @@ public interface UserService {
     ResponseEntity<?> deleteInvite(Principal connectedUser, int friendId);
     ResponseEntity<?> getRecommendFriend(Principal connectedUser, int skip, int limit, int rangeEnd);
     ResponseEntity<?> getListFriend(Principal connectedUser, int limit, int cursor);
+
+    ResponseEntity<?> choseFavoriteActivities(Principal connectedUser, ChoseFavoriteRequest choseFavoriteRequest);
 }
