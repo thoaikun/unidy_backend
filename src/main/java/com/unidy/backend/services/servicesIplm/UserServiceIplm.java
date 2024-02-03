@@ -20,6 +20,7 @@ import com.unidy.backend.repositories.UserRepository;
 import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
 import com.unidy.backend.services.servicesInterface.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,6 +46,8 @@ public class UserServiceIplm implements UserService {
     private final UserProfileImageRepository userProfileImageRepository;
     private final Neo4j_UserRepository neo4j_userRepository;
     private final FavoriteActivitiesRepository favoriteActivitiesRepository;
+    private final Environment environment;
+
     public UserInformationRespond getUserInformation(Principal connectedUser){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         UserInformationRespond information = new UserInformationRespond() ;
@@ -116,6 +119,7 @@ public class UserServiceIplm implements UserService {
     }
 
     public ResponseEntity<?> updateProfileImage(MultipartFile imageFile, Principal connectedUser){
+        String linkS3 = environment.getProperty("LINK_S3");
         String profileImageId = UUID.randomUUID().toString();
         String fileContentType = imageFile.getContentType();
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
@@ -142,10 +146,11 @@ public class UserServiceIplm implements UserService {
                 image.setUpdateDate(new Date());
                 image.setUserId(userId);
                 userProfileImageRepository.save(image);
+
+                String imageUrl = linkS3 + "profile-images/" + userId + "/" + profileImageId + fileContentType;
                 UserNode userNode = neo4j_userRepository.findUserNodeByUserId(userId);
-                userNode.setProfileImageLink("/" + userId + "/" + profileImageId + fileContentType);
+                userNode.setProfileImageLink(imageUrl);
                 neo4j_userRepository.save(userNode);
-                String imageUrl = "/" + userId + "/" + profileImageId + fileContentType;
                 return ResponseEntity.ok().body(new SuccessReponse(imageUrl));
 
             } else {
