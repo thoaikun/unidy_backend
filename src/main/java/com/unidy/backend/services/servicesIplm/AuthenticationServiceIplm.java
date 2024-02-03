@@ -98,7 +98,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
       return ResponseEntity.ok().body(AuthenticationResponse.builder()
             .accessToken(jwtToken)
             .refreshToken(refreshToken)
-            .isChosedFavorite(check)
+            .isChosenFavorite(check)
             .build());
     } catch (Exception e){
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponseDto("Email hoặc mật khẩu không đúng"));

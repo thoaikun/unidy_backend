@@ -103,7 +103,7 @@ public class UserController {
     }
 
 
-    @PostMapping("/chose-favorite-activities")
+    @PostMapping("/choose-favorite-activities")
     public ResponseEntity<?> choseFavoriteActivities(Principal connectedUser, @RequestBody ChoseFavoriteRequest choseFavoriteRequest){
         return userService.choseFavoriteActivities(connectedUser,choseFavoriteRequest);
     }
