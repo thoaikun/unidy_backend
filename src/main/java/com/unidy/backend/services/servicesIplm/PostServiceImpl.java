@@ -67,7 +67,7 @@ public class PostServiceImpl implements PostService {
     public ResponseEntity<?> createPost(Principal connectedUser, PostRequest request){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         // for mysql storage
-        String link_S3 = environment.getProperty("LINK_S3");
+        String linkS3 = environment.getProperty("LINK_S3");
 
 
         PostNode post = new PostNode();
@@ -90,7 +90,7 @@ public class PostServiceImpl implements PostService {
                                 image.getBytes()
                         );
 
-                        String imageUrl = link_S3 + "post-images/" + user.getUserId() + "/" + postImageId + fileContentType;
+                        String imageUrl = linkS3 + "post-images/" + user.getUserId() + "/" + postImageId + fileContentType;
                         listImageLink.put(imageUrl);
                     } else {
                         return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
@@ -120,7 +120,7 @@ public class PostServiceImpl implements PostService {
 
     public ResponseEntity<?> updatePost(Principal connectedUser, PostRequest updateRequest){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        String link_S3 = environment.getProperty("LINK_S3");
+        String linkS3 = environment.getProperty("LINK_S3");
 
         if (updateRequest.getPostId() == null){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Post id must not be null"));
@@ -159,7 +159,7 @@ public class PostServiceImpl implements PostService {
                                         image.getBytes()
                                 );
 
-                                String imageUrl = link_S3 + "post-images/" + user.getUserId() + "/" + postImageId + fileContentType;
+                                String imageUrl = linkS3 + "post-images/" + user.getUserId() + "/" + postImageId + fileContentType;
                                 listImageLink.put(imageUrl);
 
                             } else {
