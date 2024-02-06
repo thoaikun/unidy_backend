@@ -34,6 +34,14 @@ public enum Role {
                   Permission.MANAGER_DELETE,
                   Permission.MANAGER_CREATE
           )
+  ),
+  SPONSOR(
+          Set.of(
+                  Permission.MANAGER_READ,
+                  Permission.MANAGER_UPDATE,
+                  Permission.MANAGER_DELETE,
+                  Permission.MANAGER_CREATE
+          )
   )
 
   ;

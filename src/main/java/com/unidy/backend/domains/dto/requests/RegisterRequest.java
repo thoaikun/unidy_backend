@@ -16,7 +16,6 @@ public class RegisterRequest {
   @NotNull(message = "Họ và tên không thể trống")
   private String fullName;
   private String address;
-  @NotNull
   private Date dayOfBirth;
   private String sex;
   @NotNull
@@ -30,4 +29,6 @@ public class RegisterRequest {
   @Size(min = 8, message = "Password phải từ 8 kí tự trở lên")
   private String password;
   private Role role;
+
+  private String country;
 }

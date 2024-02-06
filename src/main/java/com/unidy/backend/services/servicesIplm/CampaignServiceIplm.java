@@ -41,53 +41,18 @@ public class CampaignServiceIplm implements CampaignService {
 
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         //neo4j
-//        UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
-//        CampaignNode campaign = new CampaignNode() ;
-//        campaign.setCampaignId(LocalDateTime.now().toString()+'_'+user.getUserId().toString());
-//        campaign.setContent(request.getContent());
-//        campaign.setStatus(request.getStatus());
-//        campaign.setNumOfRegister(request.getNumOfVolunteer());
-//        campaign.setCreateDate(new Date().toString());
-//        campaign.setStartDate(request.getStartDate());
-//        campaign.setEndDate(request.getEndDate());
-//        campaign.setIsBlock(false);
-//        campaign.setHashTag(request.getHashTag());
-//        campaign.setUserNode(campaignOrganization);
-//        JSONArray listImageLink =  new JSONArray();
-//        if (null != request.getListImageFile()){
-//            for (MultipartFile image : request.getListImageFile()){
-//                String postImageId = UUID.randomUUID().toString();
-//                String fileContentType = image.getContentType();
-//                try {
-//                    if (fileContentType != null &&
-//                            (fileContentType.equals("image/png") ||
-//                                    fileContentType.equals("image/jpeg") ||
-//                                    fileContentType.equals("image/jpg"))) {
-//                        fileContentType = fileContentType.replace("image/",".");
-//                        s3Service.putImage(
-//                                "unidy",
-//                                fileContentType,
-//                                "post-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),
-//                                image.getBytes()
-//                        );
-//
-//                        String imageUrl = "/" + user.getUserId() + "/" + postImageId + fileContentType;
-//                        listImageLink.put(imageUrl);
-//                    } else {
-//                        return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
-//                    }
-//                } catch (Exception e) {
-//                    return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
-//                }
-//            }
-//        }
-//        campaign.setLinkImage(listImageLink.toString());
-//        campaign.setUpdateDate(null);
-//
-//
-//        neo4jCampaignRepository.save(campaign);
-
-
+        UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
+        CampaignNode campaign = new CampaignNode() ;
+        campaign.setCampaignId(LocalDateTime.now().toString()+'_'+user.getUserId().toString());
+        campaign.setContent(request.getDescription());
+        campaign.setStatus(request.getStatus());
+        campaign.setNumOfRegister(request.getNumOfVolunteer());
+        campaign.setCreateDate(new Date().toString());
+        campaign.setStartDate(request.getStartDate().toString());
+        campaign.setEndDate(request.getEndDate().toString());
+        campaign.setIsBlock(false);
+        campaign.setHashTag(request.getHashTag());
+        campaign.setUserNode(campaignOrganization);
         JSONArray listImageLink =  new JSONArray();
         if (null != request.getListImageFile()){
             for (MultipartFile image : request.getListImageFile()){
@@ -116,8 +81,12 @@ public class CampaignServiceIplm implements CampaignService {
                 }
             }
         }
+        campaign.setLinkImage(listImageLink.toString());
+        campaign.setUpdateDate(null);
+        neo4jCampaignRepository.save(campaign);
+
         try {
-            Campaign campaign = Campaign.builder()
+            Campaign campaign_mysql = Campaign.builder()
                     .title(request.getTitle())
                     .description(request.getDescription())
                     .status(request.getStatus())
@@ -130,7 +99,7 @@ public class CampaignServiceIplm implements CampaignService {
                     .categories(request.getCategories())
                     .numberVolunteerRegistered(0)
                     .build();
-            campaignRepository.save(campaign);
+            campaignRepository.save(campaign_mysql);
             return ResponseEntity.ok().body(new SuccessReponse("Create campaign success")) ;
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
