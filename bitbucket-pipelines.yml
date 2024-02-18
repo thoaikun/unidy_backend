@@ -17,16 +17,10 @@ pipelines:
           script:
             - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com "rm -rf .env *.jar"
       - step:
-          name: Build the Spring Boot project
+          name: Build the Spring Boot project and upload to ec2
           script:
             - mvn clean package
-      - step:
-          name: Upload jar file to ec2
-          script:
             - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no target/*.jar ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
-      - step:
-          name: Upload env file to ec2
-          script:
             - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no .env ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
       - step:
           name: Start the server
