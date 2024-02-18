@@ -9,17 +9,11 @@ pipelines:
   branches:
     master:
       - step:
-          name: Update file priority
-          script:
-            - chmod 600 ./unidy_main_server_dev.pem
-      - step:
-          name: Remove old file
-          script:
-            - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com "rm -rf .env *.jar"
-      - step:
           name: Build the Spring Boot project and upload to ec2
           script:
             - mvn clean package
+            - chmod 600 ./unidy_main_server_dev.pem
+            - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com "rm -rf .env *.jar"
             - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no target/*.jar ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
             - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no .env ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
       - step:
