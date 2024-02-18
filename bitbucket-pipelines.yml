@@ -3,19 +3,38 @@ image: maven:3.8.4
 pipelines:
   default:
     - step:
-        name: Build and Deploy to Dev
-        deployment: Develop
         script:
-          - chmod 600 ./unidy_main_server_dev.pem
-          
-          - echo "Remove old file"
-          - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com "rm -rf .env *.jar"
+          - echo "Starting deploy ..."
 
-          - echo "Building the Spring Boot project"
-          - mvn clean package
-
-          - echo "upload jar file to ec2"
-          - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no target/*.jar ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
-
-          - echo "upload env file to ec2"
-          - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no .env ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
+  branches:
+    master:
+      - step:
+          name: Update file priority
+          deployment: Develop
+          script:
+            - chmod 600 ./unidy_main_server_dev.pem
+      - step:
+          name: Remove old file
+          deployment: Develop
+          script:
+            - ssh -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com "rm -rf .env *.jar"
+      - step:
+          name: Build the Spring Boot project
+          deployment: Develop
+          script:
+            - mvn clean package
+      - step:
+          name: Upload jar file to ec2
+          deployment: Develop
+          script:
+            - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no target/*.jar ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
+      - step:
+          name: Upload env file to ec2
+          deployment: Develop
+          script:
+            - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no .env ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com:/home/ubuntu/
+      - step:
+          name: Start the server
+          deployment: Develop
+          script:
+            - scp -i ./unidy_main_server_dev.pem -o StrictHostKeyChecking=no ubuntu@ec2-13-212-52-184.ap-southeast-1.compute.amazonaws.com "sh deploy_main_server_script.sh"
