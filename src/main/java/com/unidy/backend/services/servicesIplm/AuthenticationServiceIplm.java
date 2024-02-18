@@ -5,16 +5,10 @@ import com.unidy.backend.domains.dto.requests.RegisterRequest;
 import com.unidy.backend.config.JwtService;
 import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
 import com.unidy.backend.domains.dto.responses.AuthenticationResponse;
-import com.unidy.backend.domains.entity.Token;
-import com.unidy.backend.domains.entity.UserNode;
-import com.unidy.backend.domains.entity.Volunteer;
-import com.unidy.backend.repositories.Neo4j_UserRepository;
-import com.unidy.backend.repositories.TokenRepository;
+import com.unidy.backend.domains.entity.*;
+import com.unidy.backend.repositories.*;
 import com.unidy.backend.domains.TokenType;
-import com.unidy.backend.domains.entity.User;
-import com.unidy.backend.repositories.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.unidy.backend.repositories.VolunteerRepository;
 import com.unidy.backend.services.servicesInterface.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -41,6 +35,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
   private final AuthenticationManager authenticationManager;
   private final Neo4j_UserRepository neo4j_userRepository;
   private final VolunteerRepository volunteerRepository;
+  private final FavoriteActivitiesRepository favoriteActivitiesRepository;
   @Transactional
   public ResponseEntity<?> register(RegisterRequest request) {
     try {
@@ -83,6 +78,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
 
   public ResponseEntity<?> authenticate(AuthenticationRequest request) {
     try {
+      boolean check = false;
       authenticationManager.authenticate(
               new UsernamePasswordAuthenticationToken(
                       request.getEmail(),
@@ -95,10 +91,15 @@ public class AuthenticationServiceIplm implements AuthenticationService {
       var refreshToken = jwtService.generateRefreshToken(user);
       revokeAllUserTokens(user);
       saveUserToken(user, jwtToken);
-        return ResponseEntity.ok().body(AuthenticationResponse.builder()
-              .accessToken(jwtToken)
-              .refreshToken(refreshToken)
-              .build());
+      FavoriteActivities favorite = favoriteActivitiesRepository.findByUserId(user.getUserId());
+      if (favorite != null) {
+        check = true;
+      }
+      return ResponseEntity.ok().body(AuthenticationResponse.builder()
+            .accessToken(jwtToken)
+            .refreshToken(refreshToken)
+            .isChosenFavorite(check)
+            .build());
     } catch (Exception e){
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponseDto("Email hoặc mật khẩu không đúng"));
     }

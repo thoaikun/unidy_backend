@@ -12,6 +12,7 @@ import com.unidy.backend.repositories.Neo4j_UserRepository;
 import com.unidy.backend.services.servicesInterface.PostService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,8 @@ public class PostServiceImpl implements PostService {
     private final Neo4j_UserRepository userRepository;
     private final S3Service s3Service;
     private final MySQL_PostRepository mySQL_postRepository;
+    private final Environment environment;
+
     public ResponseEntity<?> getPostById(String postID){
         try {
             List<PostNode> postList = neo4j_postRepository.findPostNodeByPostId(postID);
@@ -64,6 +67,7 @@ public class PostServiceImpl implements PostService {
     public ResponseEntity<?> createPost(Principal connectedUser, PostRequest request){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         // for mysql storage
+        String linkS3 = environment.getProperty("LINK_S3");
 
 
         PostNode post = new PostNode();
@@ -86,7 +90,7 @@ public class PostServiceImpl implements PostService {
                                 image.getBytes()
                         );
 
-                        String imageUrl = "/" + user.getUserId() + "/" + postImageId + fileContentType;
+                        String imageUrl = linkS3 + "post-images/" + user.getUserId() + "/" + postImageId + fileContentType;
                         listImageLink.put(imageUrl);
                     } else {
                         return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
@@ -116,6 +120,7 @@ public class PostServiceImpl implements PostService {
 
     public ResponseEntity<?> updatePost(Principal connectedUser, PostRequest updateRequest){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        String linkS3 = environment.getProperty("LINK_S3");
 
         if (updateRequest.getPostId() == null){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Post id must not be null"));
@@ -154,7 +159,7 @@ public class PostServiceImpl implements PostService {
                                         image.getBytes()
                                 );
 
-                                String imageUrl = "/" + user.getUserId() + "/" + postImageId + fileContentType;
+                                String imageUrl = linkS3 + "post-images/" + user.getUserId() + "/" + postImageId + fileContentType;
                                 listImageLink.put(imageUrl);
 
                             } else {
