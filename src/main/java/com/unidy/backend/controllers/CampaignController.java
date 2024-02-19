@@ -12,23 +12,26 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 
 @RestController
-//@PreAuthorize("hasRole('ORGANIZATION')")
 @RequiredArgsConstructor
 
 @RequestMapping("/api/v1/campaign")
 
 public class CampaignController {
     private final CampaignService campaignService;
+
+    @PreAuthorize("hasRole('ORGANIZATION')")
     @PostMapping("")
     public ResponseEntity<?> createCampaign(Principal connectedUser, @ModelAttribute CampaignRequest request){
         return campaignService.createCampaign(connectedUser,request);
     }
 
+    @PreAuthorize("hasRole('ORGANIZATION')")
     @GetMapping("/register")
     public ResponseEntity<?> registerCampaign(Principal connectedUser, @RequestParam int campaignId){
         return campaignService.registerCampaign(connectedUser, campaignId);
     }
 
+    @PreAuthorize("hasRole('VOLUNTEER')")
     @GetMapping("/getRecommendCampaign")
     public ResponseEntity<?> registerCampaign(Principal connectedUser){
         return campaignService.getRecommend(connectedUser);

@@ -4,6 +4,7 @@ import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
+import com.unidy.backend.domains.dto.responses.CampaignResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.pubnub.PubnubService;
 import com.unidy.backend.repositories.*;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import org.springframework.core.env.Environment;
+import software.amazon.awssdk.services.s3.model.Owner;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +37,8 @@ public class CampaignServiceIplm implements CampaignService {
     private final FavoriteActivitiesRepository favoriteActivitiesRepository;
     private final CampaignRepository campaignRepository;
     private final Environment environment;
-
+    private final OrganizationRepository organizationRepository;
+    private final UserProfileImageRepository userProfileImageRepository;
     @Override
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) {
 
@@ -50,6 +53,7 @@ public class CampaignServiceIplm implements CampaignService {
         campaign.setCreateDate(new Date().toString());
         campaign.setStartDate(request.getStartDate().toString());
         campaign.setEndDate(request.getEndDate().toString());
+        campaign.setTimeTakePlace(request.getTimeTakePlace().toString());
         campaign.setIsBlock(false);
         campaign.setHashTag(request.getHashTag());
         campaign.setUserNode(campaignOrganization);
@@ -93,6 +97,7 @@ public class CampaignServiceIplm implements CampaignService {
                     .numberVolunteer(request.getNumOfVolunteer())
                     .startDate(request.getStartDate())
                     .endDate((request.getEndDate()))
+                    .timeTakePlace(request.getTimeTakePlace())
                     .hashTag(request.getHashTag())
                     .link_image(listImageLink.toString())
                     .owner(user.getUserId())
@@ -166,20 +171,42 @@ public class CampaignServiceIplm implements CampaignService {
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't call api from recommend service"));
             }
             System.out.println(responseData);
-            List<Campaign> listActivities = new ArrayList<>();;
+            List<CampaignResponse> responses = new ArrayList<>();
             int[] arrayId = stringToArray(responseData);
             for (int id : arrayId) {
                 Optional<Campaign> campaign = campaignRepository.findById(id);
-
-                if (campaign.isPresent()) {
-                    listActivities.add(campaign.get());
-                } else {
-                    System.err.println("Campaign with id " + id + " not found.");
+                Campaign info = campaign.get();
+                Optional<Organization> organization = organizationRepository.findByUserId(info.getOwner());
+                UserProfileImage userProfileImage = userProfileImageRepository.findByUserId(info.getOwner());
+                CampaignResponse campaignInfo = CampaignResponse.builder()
+                        .campaignId(info.getCampaignId())
+                        .title(info.getTitle())
+                        .description(info.getDescription())
+                        .categories(info.getCategories())
+                        .numberVolunteer(info.getNumberVolunteer())
+                        .numberVolunteerRegistered(info.getNumberVolunteerRegistered())
+                        .donationBudget(info.getDonationBudget())
+                        .donationBudgetReceived(info.getDonationBudgetReceived())
+                        .startDate(info.getStartDate())
+                        .endDate(info.getEndDate())
+                        .timeTakePlace(info.getTimeTakePlace())
+                        .location(info.getLocation())
+                        .status(info.getStatus())
+                        .createDate(info.getCreateDate())
+                        .updateDate(info.getUpdateDate())
+                        .ownerId(organization.get().getOrganizationId())
+                        .ownerName(organization.get().getOrganizationName())
+                        .ownerProfileImage(null)
+                        .hashTag(info.getHashTag())
+                        .linkImage(info.getLink_image())
+                        .build();
+                if (userProfileImage != null){
+                    campaignInfo.setOwnerProfileImage(userProfileImage.getLinkImage());
                 }
+                responses.add(campaignInfo);
             }
 
-//            return ResponseEntity.ok().body(requestData);
-            return ResponseEntity.ok().body(listActivities);
+            return ResponseEntity.ok().body(responses);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.toString());
         }
