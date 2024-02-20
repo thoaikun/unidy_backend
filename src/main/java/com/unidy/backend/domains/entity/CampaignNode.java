@@ -37,6 +37,9 @@ public class CampaignNode {
     @Property("time_take_place")
     private String timeTakePlace;
 
+    @Property("location")
+    private String location;
+
     @Property("num_of_register")
     private int numOfRegister;
 

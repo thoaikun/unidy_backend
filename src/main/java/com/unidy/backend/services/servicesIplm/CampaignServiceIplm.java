@@ -60,6 +60,7 @@ public class CampaignServiceIplm implements CampaignService {
         campaign.setStartDate(request.getStartDate().toString());
         campaign.setEndDate(request.getEndDate().toString());
         campaign.setTimeTakePlace(request.getTimeTakePlace().toString());
+        campaign.setLocation(request.getLocation());
         campaign.setIsBlock(false);
         campaign.setHashTag(request.getHashTag());
         campaign.setUserNode(campaignOrganization);
@@ -105,6 +106,7 @@ public class CampaignServiceIplm implements CampaignService {
                     .startDate(request.getStartDate())
                     .endDate((request.getEndDate()))
                     .timeTakePlace(request.getTimeTakePlace())
+                    .location(request.getLocation())
                     .createDate(dateFormat.format(new Date()))
                     .hashTag(request.getHashTag())
                     .link_image(listImageLink.toString())

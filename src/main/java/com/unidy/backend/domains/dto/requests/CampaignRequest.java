@@ -23,6 +23,7 @@ public class CampaignRequest {
     private String description;
     private String status;
     private String hashTag;
+    private String location;
     private int donationBudget;
     private int numOfVolunteer;
     private int numberRegistered;
