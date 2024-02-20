@@ -1,11 +1,14 @@
 package com.unidy.backend.services.servicesIplm;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignResponse;
 import com.unidy.backend.domains.entity.*;
+import com.unidy.backend.domains.entity.relationship.CampaignType;
 import com.unidy.backend.pubnub.PubnubService;
 import com.unidy.backend.repositories.*;
 import jakarta.transaction.Transactional;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -39,9 +43,11 @@ public class CampaignServiceIplm implements CampaignService {
     private final Environment environment;
     private final OrganizationRepository organizationRepository;
     private final UserProfileImageRepository userProfileImageRepository;
+    private final CampaignTypeRepository campaignTypeRepository;
     @Override
-    public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) {
-
+    @Transactional
+    public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) throws JsonProcessingException {
+        try {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         //neo4j
         UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
@@ -89,22 +95,31 @@ public class CampaignServiceIplm implements CampaignService {
         campaign.setUpdateDate(null);
         neo4jCampaignRepository.save(campaign);
 
-        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Campaign campaign_mysql = Campaign.builder()
                     .title(request.getTitle())
                     .description(request.getDescription())
                     .status(request.getStatus())
                     .numberVolunteer(request.getNumOfVolunteer())
+                    .donationBudget(request.getDonationBudget())
                     .startDate(request.getStartDate())
                     .endDate((request.getEndDate()))
                     .timeTakePlace(request.getTimeTakePlace())
+                    .createDate(dateFormat.format(new Date()))
                     .hashTag(request.getHashTag())
                     .link_image(listImageLink.toString())
                     .owner(user.getUserId())
-                    .categories(request.getCategories())
+                    .categories("OK")
                     .numberVolunteerRegistered(0)
                     .build();
             campaignRepository.save(campaign_mysql);
+
+            int campaignId = campaign_mysql.getCampaignId();
+            ObjectMapper objectMapper = new ObjectMapper();
+            CampaignType campaignType = objectMapper.readValue(request.getCategories(), CampaignType.class);
+            campaignType.setCampaignId(campaignId);
+            campaignTypeRepository.save(campaignType);
+
             return ResponseEntity.ok().body(new SuccessReponse("Create campaign success")) ;
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -144,6 +159,7 @@ public class CampaignServiceIplm implements CampaignService {
     }
 
 
+    @Transactional
     public ResponseEntity<?> getRecommend(Principal connectedUser) {
         try {
 

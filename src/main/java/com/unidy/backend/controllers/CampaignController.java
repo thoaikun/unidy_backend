@@ -1,5 +1,6 @@
 package com.unidy.backend.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.requests.PostRequest;
 import com.unidy.backend.services.servicesInterface.CampaignService;
@@ -21,7 +22,7 @@ public class CampaignController {
 
     @PreAuthorize("hasRole('ORGANIZATION')")
     @PostMapping("")
-    public ResponseEntity<?> createCampaign(Principal connectedUser, @ModelAttribute CampaignRequest request){
+    public ResponseEntity<?> createCampaign(Principal connectedUser, @ModelAttribute CampaignRequest request) throws JsonProcessingException {
         return campaignService.createCampaign(connectedUser,request);
     }
 
