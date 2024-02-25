@@ -164,7 +164,7 @@ public class CampaignServiceIplm implements CampaignService {
 
 
     @Transactional
-    public ResponseEntity<?> getRecommend(Principal connectedUser) {
+    public ResponseEntity<?> getRecommend(Principal connectedUser, int offset, int limit) {
         try {
 
             String api_recommendation_flask = environment.getProperty("API_RECOMMENDATION_FLASK");
@@ -192,7 +192,7 @@ public class CampaignServiceIplm implements CampaignService {
             }
             System.out.println(responseData);
             List<CampaignResponse> responses = new ArrayList<>();
-            int[] arrayId = stringToArray(responseData);
+            int[] arrayId = Arrays.copyOfRange(stringToArray(responseData),offset,offset+limit);
             for (int id : arrayId) {
                 Optional<Campaign> campaign = campaignRepository.findById(id);
                 Campaign info = campaign.get();
