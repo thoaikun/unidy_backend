@@ -37,4 +37,9 @@ public class CampaignController {
     public ResponseEntity<?> registerCampaign(Principal connectedUser){
         return campaignService.getRecommend(connectedUser);
     }
+
+    @GetMapping("/getCampaignPost")
+    public ResponseEntity<?> getCampaignPost(Principal connectedUser,@RequestParam String cursor,@RequestParam int limit){
+        return campaignService.getCampaignPost(connectedUser, cursor, limit);
+    }
 }

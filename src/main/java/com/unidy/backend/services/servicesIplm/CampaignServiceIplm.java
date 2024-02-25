@@ -6,6 +6,7 @@ import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
+import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.dto.responses.CampaignResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.relationship.CampaignType;
@@ -49,14 +50,15 @@ public class CampaignServiceIplm implements CampaignService {
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) throws JsonProcessingException {
         try {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        //neo4j
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            //neo4j
         UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
         CampaignNode campaign = new CampaignNode() ;
         campaign.setCampaignId(LocalDateTime.now().toString()+'_'+user.getUserId().toString());
         campaign.setContent(request.getDescription());
         campaign.setStatus(request.getStatus());
         campaign.setNumOfRegister(request.getNumOfVolunteer());
-        campaign.setCreateDate(new Date().toString());
+        campaign.setCreateDate(sdf.format(new Date()));
         campaign.setStartDate(request.getStartDate().toString());
         campaign.setEndDate(request.getEndDate().toString());
         campaign.setTimeTakePlace(request.getTimeTakePlace().toString());
@@ -238,6 +240,16 @@ public class CampaignServiceIplm implements CampaignService {
             resultArray[i] = Integer.parseInt(elements[i]);
         }
         return resultArray;
+    }
+
+    public ResponseEntity<?> getCampaignPost(Principal connectedUser, String cursor, int limit){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            List<CampaignPostResponse> listCampaign = neo4jCampaignRepository.findCampaign(user.getUserId(),cursor,limit);
+            return ResponseEntity.ok().body(listCampaign);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
+        }
     }
 
 }
