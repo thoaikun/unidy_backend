@@ -55,6 +55,12 @@ public class CampaignNode {
     @Property("link_image")
     private String linkImage;
 
+    @Property("donation_budget")
+    private int donation_budget;
+
+    @Property("donation_budget_received")
+    private int donation_budget_received;
+
     @Relationship(type = "HAS_CAMPAIGN", direction = Relationship.Direction.INCOMING)
     private UserNode userNode;
 

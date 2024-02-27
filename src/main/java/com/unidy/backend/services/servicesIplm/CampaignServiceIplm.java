@@ -125,6 +125,8 @@ public class CampaignServiceIplm implements CampaignService {
             campaign.setUserNode(campaignOrganization);
             campaign.setLinkImage(listImageLink.toString());
             campaign.setUpdateDate(null);
+            campaign.setDonation_budget(request.getDonationBudget());
+            campaign.setDonation_budget_received(0);
             neo4jCampaignRepository.save(campaign);
 
 
