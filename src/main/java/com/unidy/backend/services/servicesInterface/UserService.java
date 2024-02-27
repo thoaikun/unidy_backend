@@ -24,6 +24,6 @@ public interface UserService {
     ResponseEntity<?> deleteInvite(Principal connectedUser, int friendId);
     ResponseEntity<?> getRecommendFriend(Principal connectedUser, int skip, int limit, int rangeEnd);
     ResponseEntity<?> getListFriend(Principal connectedUser, int limit, int cursor);
-
     ResponseEntity<?> choseFavoriteActivities(Principal connectedUser, ChoseFavoriteRequest choseFavoriteRequest);
+    ResponseEntity<?> followOrganization(Principal connectedUser, int organizationId);
 }

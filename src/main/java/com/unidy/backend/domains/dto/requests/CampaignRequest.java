@@ -1,5 +1,7 @@
 package com.unidy.backend.domains.dto.requests;
 
+import com.unidy.backend.domains.entity.FavoriteActivities;
+import com.unidy.backend.domains.entity.relationship.CampaignType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,12 +23,16 @@ public class CampaignRequest {
     private String description;
     private String status;
     private String hashTag;
+    private String location;
+    private int donationBudget;
     private int numOfVolunteer;
     private int numberRegistered;
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private Date startDate;
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private Date endDate;
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private Date timeTakePlace;
     private List<MultipartFile> listImageFile;
     private String arrayImageLink ;
     private int owner;

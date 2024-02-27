@@ -48,6 +48,9 @@ public class Campaign {
     @Column(name = "end_day")
     private Date endDate;
 
+    @Column(name = "time_take_place")
+    private Date timeTakePlace;
+
     @Column(name = "location")
     private String location;
 

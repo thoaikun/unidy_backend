@@ -65,4 +65,13 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
              "RETURN friend\n" +
              "LIMIT $limit;")
      List<UserNode> getListFriend(Integer userId, int limit, int cursor);
+
+     @Query(" OPTIONAL MATCH (user1: user {user_id: $userId})-[r:FOLLOW_ORGANIZATION]->(user2: user {user_id: $organizationId})\n" +
+             "RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result")
+     CheckResult checkFollowRequest(Integer userId, int organizationId);
+
+     @Query("MATCH (user1:user {user_id: $userId})\n" +
+             "MATCH (user2:user {user_id: $organizationId})\n" +
+             "MERGE (user1)-[:FOLLOW_ORGANIZATION {request_at: $date}]->(user2)\n")
+     void sendFollowRequest(Integer userId, int organizationId, String date);
 }

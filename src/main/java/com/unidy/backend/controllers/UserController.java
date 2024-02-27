@@ -102,9 +102,14 @@ public class UserController {
         return userService.getListFriend(connectedUser,limit,cursor);
     }
 
-
     @PostMapping("/choose-favorite-activities")
     public ResponseEntity<?> choseFavoriteActivities(Principal connectedUser, @RequestBody ChoseFavoriteRequest choseFavoriteRequest){
         return userService.choseFavoriteActivities(connectedUser,choseFavoriteRequest);
     }
+
+    @PatchMapping("/follow-organization")
+    public ResponseEntity<?> followOrganization(Principal connectedUser, @RequestParam int organizationId){
+        return userService.followOrganization(connectedUser,organizationId);
+    }
+
 }

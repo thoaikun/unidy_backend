@@ -34,6 +34,12 @@ public class CampaignNode {
     @Property("end_date")
     private String endDate;
 
+    @Property("time_take_place")
+    private String timeTakePlace;
+
+    @Property("location")
+    private String location;
+
     @Property("num_of_register")
     private int numOfRegister;
 
@@ -48,6 +54,12 @@ public class CampaignNode {
 
     @Property("link_image")
     private String linkImage;
+
+    @Property("donation_budget")
+    private int donation_budget;
+
+    @Property("donation_budget_received")
+    private int donation_budget_received;
 
     @Relationship(type = "HAS_CAMPAIGN", direction = Relationship.Direction.INCOMING)
     private UserNode userNode;

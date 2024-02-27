@@ -262,4 +262,19 @@ public class UserServiceIplm implements UserService {
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
+
+    public ResponseEntity<?> followOrganization(Principal connectedUser, int organizationId){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            if (neo4j_userRepository.checkFollowRequest(user.getUserId(), organizationId).isResult()) {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("You have follow requested yet"));
+            }
+            Date date = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            neo4j_userRepository.sendFollowRequest(user.getUserId(), organizationId, sdf.format(date));
+            return ResponseEntity.ok().body(new SuccessReponse("Follow success"));
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
+        }
+    }
 }

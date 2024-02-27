@@ -27,6 +27,9 @@ public class UserNode {
 
     @Property("profile_image_link")
     private String profileImageLink;
+
+    @Property("role")
+    private String role;
 //    @Property("__nodeLabels__")
 //    private List<String> nodeLabels;
 
