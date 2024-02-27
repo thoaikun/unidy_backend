@@ -19,6 +19,9 @@ public class CampaignNode {
     @Property("campaign_id")
     private String campaignId;
 
+    @Property("title")
+    private String title;
+
     @Property("hash_tag")
     private String hashTag;
 
