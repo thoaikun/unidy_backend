@@ -42,4 +42,9 @@ public class CampaignController {
     public ResponseEntity<?> getCampaignPost(Principal connectedUser,@RequestParam String cursor,@RequestParam int limit){
         return campaignService.getCampaignPost(connectedUser, cursor, limit);
     }
+
+    @GetMapping("/get-organization-campaign")
+    public ResponseEntity<?> getCampaignByOrganizationId(@RequestParam int organizationId,@RequestParam String cursor,@RequestParam int limit){
+        return campaignService.getCampaignByOrganizationID(organizationId, cursor, limit);
+    }
 }

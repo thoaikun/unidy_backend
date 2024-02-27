@@ -11,4 +11,5 @@ public interface CampaignService {
     ResponseEntity<?> registerCampaign(Principal userConnected, int campaignId);
     ResponseEntity<?> getRecommend(Principal connectedUser, int offset, int limit);
     ResponseEntity<?> getCampaignPost(Principal connectedUser, String cursor, int limit);
+    ResponseEntity<?> getCampaignByOrganizationID(int organizationId,String cursor,int limit);
 }

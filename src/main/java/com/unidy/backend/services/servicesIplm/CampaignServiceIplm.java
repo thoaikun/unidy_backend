@@ -52,20 +52,7 @@ public class CampaignServiceIplm implements CampaignService {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
             //neo4j
-        UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
-        CampaignNode campaign = new CampaignNode() ;
-        campaign.setCampaignId(LocalDateTime.now().toString()+'_'+user.getUserId().toString());
-        campaign.setContent(request.getDescription());
-        campaign.setStatus(request.getStatus());
-        campaign.setNumOfRegister(request.getNumOfVolunteer());
-        campaign.setCreateDate(sdf.format(new Date()));
-        campaign.setStartDate(request.getStartDate().toString());
-        campaign.setEndDate(request.getEndDate().toString());
-        campaign.setTimeTakePlace(request.getTimeTakePlace().toString());
-        campaign.setLocation(request.getLocation());
-        campaign.setIsBlock(false);
-        campaign.setHashTag(request.getHashTag());
-        campaign.setUserNode(campaignOrganization);
+
         JSONArray listImageLink =  new JSONArray();
         if (null != request.getListImageFile()){
             for (MultipartFile image : request.getListImageFile()){
@@ -94,9 +81,7 @@ public class CampaignServiceIplm implements CampaignService {
                 }
             }
         }
-        campaign.setLinkImage(listImageLink.toString());
-        campaign.setUpdateDate(null);
-        neo4jCampaignRepository.save(campaign);
+
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Campaign campaign_mysql = Campaign.builder()
@@ -123,6 +108,25 @@ public class CampaignServiceIplm implements CampaignService {
             CampaignType campaignType = objectMapper.readValue(request.getCategories(), CampaignType.class);
             campaignType.setCampaignId(campaignId);
             campaignTypeRepository.save(campaignType);
+
+            UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
+            CampaignNode campaign = new CampaignNode() ;
+            campaign.setCampaignId(campaign_mysql.getCampaignId().toString());
+            campaign.setContent(request.getDescription());
+            campaign.setStatus(request.getStatus());
+            campaign.setNumOfRegister(request.getNumOfVolunteer());
+            campaign.setCreateDate(sdf.format(new Date()));
+            campaign.setStartDate(request.getStartDate().toString());
+            campaign.setEndDate(request.getEndDate().toString());
+            campaign.setTimeTakePlace(request.getTimeTakePlace().toString());
+            campaign.setLocation(request.getLocation());
+            campaign.setIsBlock(false);
+            campaign.setHashTag(request.getHashTag());
+            campaign.setUserNode(campaignOrganization);
+            campaign.setLinkImage(listImageLink.toString());
+            campaign.setUpdateDate(null);
+            neo4jCampaignRepository.save(campaign);
+
 
             return ResponseEntity.ok().body(new SuccessReponse("Create campaign success")) ;
         } catch (Exception e){
@@ -191,39 +195,41 @@ public class CampaignServiceIplm implements CampaignService {
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't call api from recommend service"));
             }
             System.out.println(responseData);
-            List<CampaignResponse> responses = new ArrayList<>();
+            List<CampaignPostResponse> responses = new ArrayList<>();
             int[] arrayId = Arrays.copyOfRange(stringToArray(responseData),offset,offset+limit);
             for (int id : arrayId) {
-                Optional<Campaign> campaign = campaignRepository.findById(id);
-                Campaign info = campaign.get();
-                Optional<Organization> organization = organizationRepository.findByUserId(info.getOwner());
-                UserProfileImage userProfileImage = userProfileImageRepository.findByUserId(info.getOwner());
-                CampaignResponse campaignInfo = CampaignResponse.builder()
-                        .campaignId(info.getCampaignId())
-                        .title(info.getTitle())
-                        .description(info.getDescription())
-                        .categories(info.getCategories())
-                        .numberVolunteer(info.getNumberVolunteer())
-                        .numberVolunteerRegistered(info.getNumberVolunteerRegistered())
-                        .donationBudget(info.getDonationBudget())
-                        .donationBudgetReceived(info.getDonationBudgetReceived())
-                        .startDate(info.getStartDate())
-                        .endDate(info.getEndDate())
-                        .timeTakePlace(info.getTimeTakePlace())
-                        .location(info.getLocation())
-                        .status(info.getStatus())
-                        .createDate(info.getCreateDate())
-                        .updateDate(info.getUpdateDate())
-                        .ownerId(organization.get().getOrganizationId())
-                        .ownerName(organization.get().getOrganizationName())
-                        .ownerProfileImage(null)
-                        .hashTag(info.getHashTag())
-                        .linkImage(info.getLink_image())
-                        .build();
-                if (userProfileImage != null){
-                    campaignInfo.setOwnerProfileImage(userProfileImage.getLinkImage());
-                }
-                responses.add(campaignInfo);
+//                Optional<Campaign> campaign = campaignRepository.findById(id);
+//                Campaign info = campaign.get();
+//                Optional<Organization> organization = organizationRepository.findByUserId(info.getOwner());
+//                UserProfileImage userProfileImage = userProfileImageRepository.findByUserId(info.getOwner());
+//                CampaignResponse campaignInfo = CampaignResponse.builder()
+//                        .campaignId(info.getCampaignId())
+//                        .title(info.getTitle())
+//                        .description(info.getDescription())
+//                        .categories(info.getCategories())
+//                        .numberVolunteer(info.getNumberVolunteer())
+//                        .numberVolunteerRegistered(info.getNumberVolunteerRegistered())
+//                        .donationBudget(info.getDonationBudget())
+//                        .donationBudgetReceived(info.getDonationBudgetReceived())
+//                        .startDate(info.getStartDate())
+//                        .endDate(info.getEndDate())
+//                        .timeTakePlace(info.getTimeTakePlace())
+//                        .location(info.getLocation())
+//                        .status(info.getStatus())
+//                        .createDate(info.getCreateDate())
+//                        .updateDate(info.getUpdateDate())
+//                        .ownerId(organization.get().getOrganizationId())
+//                        .ownerName(organization.get().getOrganizationName())
+//                        .ownerProfileImage(null)
+//                        .hashTag(info.getHashTag())
+//                        .linkImage(info.getLink_image())
+//                        .build();
+//                if (userProfileImage != null){
+//                    campaignInfo.setOwnerProfileImage(userProfileImage.getLinkImage());
+//                }
+
+                CampaignPostResponse campaignPost = neo4jCampaignRepository.findCampaignNodeByCampaignId(String.valueOf(id));
+                responses.add(campaignPost);
             }
 
             return ResponseEntity.ok().body(responses);
@@ -252,4 +258,12 @@ public class CampaignServiceIplm implements CampaignService {
         }
     }
 
+    public ResponseEntity<?> getCampaignByOrganizationID(int organizationId,String cursor,int limit){
+        try {
+            List<CampaignPostResponse> listCampaign = neo4jCampaignRepository.findCampaignByOrganizationID(organizationId,cursor,limit);
+            return ResponseEntity.ok().body(listCampaign);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
+        }
+    }
 }
