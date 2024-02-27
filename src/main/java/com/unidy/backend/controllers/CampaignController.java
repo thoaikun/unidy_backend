@@ -34,12 +34,17 @@ public class CampaignController {
 
     @PreAuthorize("hasRole('VOLUNTEER')")
     @GetMapping("/getRecommendCampaign")
-    public ResponseEntity<?> registerCampaign(Principal connectedUser){
-        return campaignService.getRecommend(connectedUser);
+    public ResponseEntity<?> registerCampaign(Principal connectedUser,@RequestParam int offset, @RequestParam int limit){
+        return campaignService.getRecommend(connectedUser, offset, limit);
     }
 
     @GetMapping("/getCampaignPost")
     public ResponseEntity<?> getCampaignPost(Principal connectedUser,@RequestParam String cursor,@RequestParam int limit){
         return campaignService.getCampaignPost(connectedUser, cursor, limit);
+    }
+
+    @GetMapping("/get-organization-campaign")
+    public ResponseEntity<?> getCampaignByOrganizationId(@RequestParam int organizationId,@RequestParam String cursor,@RequestParam int limit){
+        return campaignService.getCampaignByOrganizationID(organizationId, cursor, limit);
     }
 }
