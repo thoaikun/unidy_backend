@@ -7,29 +7,23 @@ import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
-import com.unidy.backend.domains.dto.responses.CampaignResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.relationship.CampaignType;
-import com.unidy.backend.pubnub.PubnubService;
 import com.unidy.backend.repositories.*;
-import jakarta.transaction.Transactional;
-import lombok.Value;
-import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
 import com.unidy.backend.services.servicesInterface.CampaignService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
+import org.springframework.core.env.Environment;
+import org.springframework.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.*;
-
-import org.springframework.core.env.Environment;
-import software.amazon.awssdk.services.s3.model.Owner;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +32,6 @@ public class CampaignServiceIplm implements CampaignService {
     private final Neo4j_CampaignRepository neo4jCampaignRepository;
     private final Neo4j_UserRepository neo4jUserRepository;
     private final VolunteerJoinCampaignRepository joinCampaign;
-    private final PubnubService pubnubService;
     private final FavoriteActivitiesRepository favoriteActivitiesRepository;
     private final CampaignRepository campaignRepository;
     private final Environment environment;
@@ -160,7 +153,6 @@ public class CampaignServiceIplm implements CampaignService {
 
             joinCampaign.save(userJoin);
 
-            pubnubService.sendNotification("a","Join campaign successful");
             return  ResponseEntity.ok().body(new SuccessReponse("Join success"));
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
