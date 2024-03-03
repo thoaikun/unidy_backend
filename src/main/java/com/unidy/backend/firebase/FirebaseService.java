@@ -1,6 +1,7 @@
 package com.unidy.backend.firebase;
 
 import com.google.firebase.messaging.*;
+import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.entity.User;
 import com.unidy.backend.domains.entity.UserDeviceFcmToken;
 import com.unidy.backend.repositories.UserDeviceFcmTokenRepository;
@@ -35,17 +36,18 @@ public class FirebaseService {
         }
     }
 
-    public void pushNotification(String deviceToken, String title, String body) {
+    public void removeFcmToken(String fcmToken) {
         try {
-            Notification notification = Notification.builder()
-                    .setTitle(title)
-                    .setBody(body)
-                    .build();
+            userDeviceFcmTokenRepository.deleteByFcmToken(fcmToken);
+        }
+        catch (Exception error) {
+            throw new RuntimeException(error);
+        }
+    }
 
-            Message message = Message.builder()
-                    .setNotification(notification)
-                    .setToken(deviceToken)
-                    .build();
+    public void pushNotification(NotificationDto notificationDto) {
+        try {
+            Message message = notificationDto.toFirebaseMessage();
             String response = firebaseMessaging.send(message);
         }
         catch (FirebaseMessagingException error) {
@@ -53,17 +55,9 @@ public class FirebaseService {
         }
     }
 
-    public void pushNotificationToTopic(String topic, String title, String body) {
+    public void pushNotificationToTopic(NotificationDto notificationDto) {
         try {
-            Notification notification = Notification.builder()
-                    .setTitle(title)
-                    .setBody(body)
-                    .build();
-
-            Message message = Message.builder()
-                    .setNotification(notification)
-                    .setTopic(topic)
-                    .build();
+            Message message = notificationDto.toFirebaseMessage();
             String response =firebaseMessaging.send(message);
         }
         catch (FirebaseMessagingException error) {
@@ -71,18 +65,9 @@ public class FirebaseService {
         }
     }
 
-    public void pushNotificationToMultipleDevices(ArrayList<String> deviceTokens, String title, String body) {
+    public void pushNotificationToMultipleDevices(NotificationDto notificationDto) {
         try {
-            Notification notification = Notification.builder()
-                    .setTitle(title)
-                    .setBody(body)
-                    .build();
-
-            MulticastMessage multicastMessage = MulticastMessage.builder()
-                    .setNotification(notification)
-                    .addAllTokens(deviceTokens)
-                    .build();
-
+            MulticastMessage multicastMessage = notificationDto.toFirebaseMulticastMessage();
             BatchResponse response = firebaseMessaging.sendMulticast(multicastMessage);
         }
         catch (FirebaseMessagingException error) {
