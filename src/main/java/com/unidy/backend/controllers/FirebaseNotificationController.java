@@ -26,6 +26,12 @@ public class FirebaseNotificationController {
     ) {
         try {
             firebaseService.saveFcmToken(request.getFcmToken(), connectedUser);
+
+            firebaseService.pushNotification(
+                request.getFcmToken(),
+                "Welcome to Unidy",
+                "You have successfully registered to Unidy"
+            );
             return ResponseEntity.ok().body(new SuccessReponse("Fcm Token Saved"));
         }
         catch (Exception error) {
