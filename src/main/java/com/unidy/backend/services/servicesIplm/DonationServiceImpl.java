@@ -81,10 +81,16 @@ public class DonationServiceImpl implements DonationService {
     }
 
 
-    public void handleTransaction(MomoResponse momoResponse){
+    public void handleTransaction(MomoResponse momoResponse) throws NoSuchAlgorithmException, InvalidKeyException {
         //confirm transaction
         String url = "https://test-payment.momo.vn:443/v2/gateway/api/create";
 
+        String partnerCode = environment.getProperty("PARTNER_CODE");
+        String accessKey = environment.getProperty("ACCESS_KEY");
+        String secretKey = environment.getProperty("SECRET_KEY");
+        String description = "Ủng hộ tiền thành công";
+        assert secretKey != null;
+        String signature = generateSignatureConfirm(accessKey, momoResponse.getAmount(),description, momoResponse.getOrderId(),partnerCode, momoResponse.getRequestId(), "capture",secretKey);
         try {
             if (momoResponse.getResultCode().equals(9000)) {
                 System.out.println(momoResponse.getSignature());
@@ -98,8 +104,8 @@ public class DonationServiceImpl implements DonationService {
                         .requestType("capture")
                         .lang("en")
                         .amount(momoResponse.getAmount())
-                        .description("Ủng hộ tiền thành công")
-                        .signature(momoResponse.getSignature())
+                        .description(description)
+                        .signature(signature)
                         .build();
                 HttpEntity<MomoConfirmRequest> requestEntity = new HttpEntity<>(request, headers);
                 ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
@@ -152,6 +158,27 @@ public class DonationServiceImpl implements DonationService {
                 "&orderInfo=" + orderInfo +
                 "&partnerCode=" + partnerCode +
                 "&redirectUrl=" + redirectUrl +
+                "&requestId=" + requestId +
+                "&requestType=" + requestType;
+
+        Mac sha256Hmac = Mac.getInstance("HmacSHA256");
+        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
+        sha256Hmac.init(secretKeySpec);
+
+        byte[] signatureBytes = sha256Hmac.doFinal(rawSignature.getBytes());
+
+        return byteArrayToHexString(signatureBytes);
+    }
+
+    public static String generateSignatureConfirm(String accessKey, Long amount, String description,
+                                           String orderId, String partnerCode,
+                                           String requestId, String requestType, String secretKey)
+            throws NoSuchAlgorithmException, InvalidKeyException {
+        String rawSignature = "accessKey=" + accessKey +
+                "&amount=" + amount +
+                "&description=" + description +
+                "&orderId=" + orderId +
+                "&partnerCode=" + partnerCode +
                 "&requestId=" + requestId +
                 "&requestType=" + requestType;
 
