@@ -11,14 +11,12 @@ import java.security.Principal;
 @RestController
 @RequiredArgsConstructor
 
-@PreAuthorize("hasRole('ORGANIZATION')")
 @RequestMapping("/api/v1/organization")
 public class OrganizationController {
-    private OrganizationService organizationService;
+    private final OrganizationService organizationService;
 
-    @PostMapping("/get-profile")
+    @GetMapping("/get-profile")
     public ResponseEntity<?> getProfile(@RequestParam int organizationId){
        return organizationService.getProfileOrganization(organizationId);
     }
-
 }
