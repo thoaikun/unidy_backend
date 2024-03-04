@@ -105,9 +105,9 @@ public class DonationServiceImpl implements DonationService {
                 String responseData = response.getBody();
                 System.out.println(responseData);
                 // Check response
-                if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
-                    System.out.println("Transaction fail");
-                }
+//                if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
+//                    System.out.println("Transaction fail");
+//                }
                 System.out.println("Transaction success");
             }
             else {
@@ -135,7 +135,7 @@ public class DonationServiceImpl implements DonationService {
                 System.out.println("Transaction cancel");
             }
         } catch (Exception e){
-            System.out.println("Transaction fail");
+            System.out.println(e.toString());
         }
     }
 
