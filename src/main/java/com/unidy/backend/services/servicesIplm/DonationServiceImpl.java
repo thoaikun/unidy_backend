@@ -90,7 +90,8 @@ public class DonationServiceImpl implements DonationService {
         String secretKey = environment.getProperty("SECRET_KEY");
         String description = "Ủng hộ tiền thành công";
         assert secretKey != null;
-        String signature = generateSignatureConfirm(accessKey, momoResponse.getAmount(),description, momoResponse.getOrderId(), partnerCode, momoResponse.getRequestId(), "capture",secretKey);
+        String signature = generateSignatureConfirm(accessKey, momoResponse.getAmount(),description, momoResponse.getOrderId(),partnerCode, momoResponse.getRequestId(), "capture",secretKey);
+        System.out.println(momoResponse.getOrderId().toString() + momoResponse.getAmount().toString()+ momoResponse.getRequestId().toString());
         try {
             if (momoResponse.getResultCode().equals(9000)) {
                 System.out.println(momoResponse.getSignature());
