@@ -10,5 +10,5 @@ import java.security.Principal;
 public interface DonationService {
     ResponseEntity<?> executeTransaction (Principal connectedUser, Long totalAmount) throws NoSuchAlgorithmException, InvalidKeyException;
 
-    ResponseEntity<?> handleTransaction(MomoResponse momoResponse);
+    void handleTransaction(MomoResponse momoResponse);
 }

@@ -25,12 +25,11 @@ public class DonationController {
 
     @PostMapping("/callBack-momo")
     public void callback_MOMO_IPN (@RequestBody MomoResponse momoResponse){
-//        try {
-//            return donationService.handleTransaction(momoResponse);
-//        } catch (Exception e) {
-//            return ResponseEntity.ok().body(e.toString());
-//        }
-        System.out.println("momo response");
+        try {
+            donationService.handleTransaction(momoResponse);
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
     }
 
 }

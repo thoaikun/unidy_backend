@@ -81,7 +81,7 @@ public class DonationServiceImpl implements DonationService {
     }
 
 
-    public ResponseEntity<?> handleTransaction(MomoResponse momoResponse){
+    public void handleTransaction(MomoResponse momoResponse){
         //confirm transaction
         String url = "https://test-payment.momo.vn:443/v2/gateway/api/create";
 
@@ -106,9 +106,9 @@ public class DonationServiceImpl implements DonationService {
                 System.out.println(responseData);
                 // Check response
                 if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
-                    return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't call api from recommend service"));
+                    System.out.println("Transaction fail");
                 }
-                return ResponseEntity.ok().body(new SuccessReponse("Transaction success"));
+                System.out.println("Transaction success");
             }
             else {
                 RestTemplate restTemplate = new RestTemplate();
@@ -130,12 +130,12 @@ public class DonationServiceImpl implements DonationService {
                 System.out.println(responseData);
                 // Check response
                 if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
-                    return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't call api from recommend service"));
+                    System.out.println("Transaction fail");
                 }
-                return ResponseEntity.badRequest().body(new SuccessReponse("Transaction cancel"));
+                System.out.println("Transaction cancel");
             }
         } catch (Exception e){
-            return ResponseEntity.badRequest().body("Transaction fail");
+            System.out.println("Transaction fail");
         }
     }
 
