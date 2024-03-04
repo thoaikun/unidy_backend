@@ -1,7 +1,10 @@
 package com.unidy.backend.services.servicesIplm;
 
 import com.unidy.backend.domains.ErrorResponseDto;
+import com.unidy.backend.domains.SuccessReponse;
+import com.unidy.backend.domains.dto.requests.MomoConfirmRequest;
 import com.unidy.backend.domains.dto.requests.MomoRequest;
+import com.unidy.backend.domains.dto.responses.MomoResponse;
 import com.unidy.backend.domains.entity.User;
 import com.unidy.backend.services.servicesInterface.DonationService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +13,7 @@ import org.springframework.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import software.amazon.awssdk.services.glacier.model.StatusCode;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -77,11 +81,62 @@ public class DonationServiceImpl implements DonationService {
     }
 
 
-    public ResponseEntity<?> handleTransaction(){
+    public ResponseEntity<?> handleTransaction(MomoResponse momoResponse){
         //confirm transaction
+        String url = "https://test-payment.momo.vn:443/v2/gateway/api/create";
 
-        //log transaction
-        return null ;
+        try {
+            if (momoResponse.getResultCode().equals(HttpStatus.valueOf(9000).value())) {
+                RestTemplate restTemplate = new RestTemplate();
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                MomoConfirmRequest request = MomoConfirmRequest.builder()
+                        .partnerCode(momoResponse.getPartnerCode())
+                        .requestId(momoResponse.getRequestId())
+                        .requestId(momoResponse.getOrderId())
+                        .requestType("capture")
+                        .lang("en")
+                        .amount(momoResponse.getAmount())
+                        .description("Ủng hộ tiền thành công")
+                        .signature(momoResponse.getSignature())
+                        .build();
+                HttpEntity<MomoConfirmRequest> requestEntity = new HttpEntity<>(request, headers);
+                ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
+                String responseData = response.getBody();
+                System.out.println(responseData);
+                // Check response
+                if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
+                    return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't call api from recommend service"));
+                }
+                return ResponseEntity.ok().body(new SuccessReponse("Transaction success"));
+            }
+            else {
+                RestTemplate restTemplate = new RestTemplate();
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                MomoConfirmRequest request = MomoConfirmRequest.builder()
+                        .partnerCode(momoResponse.getPartnerCode())
+                        .requestId(momoResponse.getRequestId())
+                        .requestId(momoResponse.getOrderId())
+                        .requestType("cancel")
+                        .lang("en")
+                        .amount(momoResponse.getAmount())
+                        .description("Giao dịch không thành công")
+                        .signature(momoResponse.getSignature())
+                        .build();
+                HttpEntity<MomoConfirmRequest> requestEntity = new HttpEntity<>(request, headers);
+                ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
+                String responseData = response.getBody();
+                System.out.println(responseData);
+                // Check response
+                if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
+                    return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't call api from recommend service"));
+                }
+                return ResponseEntity.badRequest().body(new SuccessReponse("Transaction cancel"));
+            }
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body("Transaction fail");
+        }
     }
 
     public static String generateSignature(String accessKey, Long amount, String extraData, String ipnUrl,
