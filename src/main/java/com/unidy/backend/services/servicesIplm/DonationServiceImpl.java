@@ -87,6 +87,7 @@ public class DonationServiceImpl implements DonationService {
 
         try {
             if (momoResponse.getResultCode().equals(9000)) {
+                System.out.println(momoResponse.getSignature());
                 RestTemplate restTemplate = new RestTemplate();
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
