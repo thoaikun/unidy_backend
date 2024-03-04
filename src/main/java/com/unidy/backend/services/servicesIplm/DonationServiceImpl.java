@@ -86,7 +86,7 @@ public class DonationServiceImpl implements DonationService {
         String url = "https://test-payment.momo.vn:443/v2/gateway/api/create";
 
         try {
-            if (momoResponse.getResultCode().equals(HttpStatus.valueOf(9000).value())) {
+            if (momoResponse.getResultCode().equals(9000)) {
                 RestTemplate restTemplate = new RestTemplate();
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
