@@ -135,7 +135,7 @@ public class DonationServiceImpl implements DonationService {
                 System.out.println("Transaction cancel");
             }
         } catch (Exception e){
-            System.out.println(e.toString());
+            System.out.println("exception: "+ e.toString());
         }
     }
 
