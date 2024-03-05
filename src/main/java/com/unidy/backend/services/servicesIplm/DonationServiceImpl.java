@@ -55,7 +55,7 @@ public class DonationServiceImpl implements DonationService {
         String redirectURL = environment.getProperty("REDIRECT_URL");
         String url = "https://test-payment.momo.vn:443/v2/gateway/api/create";
         String extraData = "";
-        String orderId = partnerCode +  outputFormat.format(new Date()) + "-" + user.getEmail();
+        String orderId = partnerCode +  outputFormat.format(new Date()) + "-" + user.getUserId();
         String orderInfo = user.getFullName() + " donation";
         String requestId = partnerCode + outputFormat.format(new Date());
 
@@ -110,33 +110,30 @@ public class DonationServiceImpl implements DonationService {
                         .build();
 
                 transactionRepository.save(transaction);
-                String regex = "(?<=-)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}";
-                Pattern pattern = Pattern.compile(regex);
+                String orderId = momoResponse.getOrderId();
+                int indexOfDash = orderId.indexOf("-");
 
-                Matcher matcher = pattern.matcher(momoResponse.getOrderId());
-                if (matcher.find()) {
-                    String email = matcher.group();
-                    System.out.println("Email: " + email);
-                    Optional<User> user = userRepository.findByEmail(email);
-                    if (!user.get().getRole().equals(Role.SPONSOR)){
-                        user.get().setRole(Role.SPONSOR);
-                        userRepository.save(user.get());
-                        Sponsor sponsor = Sponsor.builder()
-                                .sponsorName(user.get().getFullName())
-                                .userId(user.get().getUserId())
-                                .build();
-                        sponsorRepository.save(sponsor);
-                    }
+                String userIdString = orderId.substring(indexOfDash + 1);
+                int userId = Integer.parseInt(userIdString);
 
-                    Optional<Sponsor> sponsor = sponsorRepository.findByUserId(user.get().getUserId());
-                    SponsorTransaction newTransaction = SponsorTransaction.builder()
-                            .sponsorId(sponsor.get().getSponsorId())
+                System.out.println("userId: " + userId);
+                User user = userRepository.findByUserId(userId);
+                if (!user.getRole().equals(Role.SPONSOR)){
+                    user.setRole(Role.SPONSOR);
+                    userRepository.save(user);
+                    Sponsor sponsor = Sponsor.builder()
+                            .sponsorName(user.getFullName())
+                            .userId(user.getUserId())
                             .build();
-                    sponsorTransactionRepository.save(newTransaction);
-                    System.out.println("Log Transaction Successful");
-                } else {
-                    System.out.println("Không tìm thấy địa chỉ email trong chuỗi.");
+                    sponsorRepository.save(sponsor);
                 }
+
+                Optional<Sponsor> sponsor = sponsorRepository.findByUserId(user.getUserId());
+                SponsorTransaction newTransaction = SponsorTransaction.builder()
+                        .sponsorId(sponsor.get().getSponsorId())
+                        .build();
+                sponsorTransactionRepository.save(newTransaction);
+                System.out.println("Log Transaction Successful");
             }
             else {
                 System.out.println("Transaction fail");
