@@ -14,7 +14,6 @@ import java.security.Principal;
 
 @RestController
 @RequiredArgsConstructor
-
 @RequestMapping("/api/v1/campaign")
 
 public class CampaignController {
