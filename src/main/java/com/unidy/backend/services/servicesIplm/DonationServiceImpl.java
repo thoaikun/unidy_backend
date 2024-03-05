@@ -92,12 +92,12 @@ public class DonationServiceImpl implements DonationService {
         String ipnURL = environment.getProperty("IPN_URL");
         String redirectURL = environment.getProperty("REDIRECT_URL");
 
-        String description = "Ủng hộ tiền thành công";
-        assert secretKey != null;
-        String signature = generateMomoConfirmSignature(accessKey,momoResponse.getAmount(),description,momoResponse.getOrderId(),partnerCode,momoResponse.getRequestId(),"capture",secretKey);
 
         try {
             if (momoResponse.getResultCode().equals(9000)) {
+                String description = "Ủng hộ tiền thành công";
+                assert secretKey != null;
+                String signature = generateMomoConfirmSignature(accessKey,momoResponse.getAmount(),description,momoResponse.getOrderId(),partnerCode,momoResponse.getRequestId(),"capture",secretKey);
                 System.out.println(momoResponse.getSignature());
                 RestTemplate restTemplate = new RestTemplate();
                 HttpHeaders headers = new HttpHeaders();
@@ -109,7 +109,6 @@ public class DonationServiceImpl implements DonationService {
                         .requestType("capture")
                         .lang("en")
                         .amount(momoResponse.getAmount())
-                        .description(description)
                         .signature(signature)
                         .build();
                 HttpEntity<MomoConfirmRequest> requestEntity = new HttpEntity<>(request, headers);
@@ -123,6 +122,9 @@ public class DonationServiceImpl implements DonationService {
                 System.out.println("Transaction success");
             }
             else {
+                String description = "Người dùng hủy giao dịch";
+                assert secretKey != null;
+                String signature = generateMomoConfirmSignature(accessKey,momoResponse.getAmount(),description,momoResponse.getOrderId(),partnerCode,momoResponse.getRequestId(),"capture",secretKey);
                 RestTemplate restTemplate = new RestTemplate();
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
@@ -132,8 +134,8 @@ public class DonationServiceImpl implements DonationService {
                         .requestId(momoResponse.getOrderId())
                         .requestType("cancel")
                         .lang("en")
+                        .description(description)
                         .amount(momoResponse.getAmount())
-                        .description("Giao dịch không thành công")
                         .signature(signature)
                         .build();
                 HttpEntity<MomoConfirmRequest> requestEntity = new HttpEntity<>(request, headers);
