@@ -53,6 +53,7 @@ CREATE TABLE token
 (
     id         INTEGER AUTO_INCREMENT not null,
     token      VARCHAR(255) unique,
+    refresh_token VARCHAR(255) unique,
     token_type VARCHAR(255) check (token_type in ('BEARER')),
     expired    BOOLEAN                not null,
     revoked    BOOLEAN                not null,
