@@ -253,23 +253,26 @@ CREATE TABLE volunteer_achievement
 
 CREATE TABLE transaction
 (
-    transaction_id     INTEGER PRIMARY KEY,
+    transaction_id     INTEGER AUTO_INCREMENT PRIMARY KEY,
     transaction_type   VARCHAR(30),
     transaction_time   DATE,
-    transaction_amount BIGINT
+    transaction_amount BIGINT,
+    transaction_code   VARCHAR(255),
+    signature          VARCHAR(255)
 );
 
 CREATE TABLE sponsor_transaction
 (
-    transaction_id INTEGER PRIMARY KEY,
+    transaction_id INTEGER AUTO_INCREMENT PRIMARY KEY,
     sponsor_id     INTEGER,
     FOREIGN KEY (transaction_id) REFERENCES transaction (transaction_id),
     FOREIGN KEY (sponsor_id) REFERENCES sponsor (sponsor_id)
 );
 
+
 CREATE TABLE organization_transaction
 (
-    transaction_id  INTEGER PRIMARY KEY,
+    transaction_id  INTEGER AUTO_INCREMENT PRIMARY KEY,
     organization_id INTEGER,
     FOREIGN KEY (transaction_id) REFERENCES transaction (transaction_id),
     FOREIGN KEY (organization_id) REFERENCES organization (organization_id)

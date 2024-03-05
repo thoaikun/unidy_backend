@@ -124,6 +124,7 @@ public class DonationServiceImpl implements DonationService {
                     Sponsor sponsor = Sponsor.builder()
                             .sponsorName(user.getFullName())
                             .userId(user.getUserId())
+                            .email(user.getEmail())
                             .build();
                     sponsorRepository.save(sponsor);
                 }
