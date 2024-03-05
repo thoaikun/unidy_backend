@@ -94,6 +94,7 @@ public class DonationServiceImpl implements DonationService {
 
 
         try {
+            System.out.println(new Gson().toJson(momoResponse));
             if (momoResponse.getResultCode().equals(9000)) {
                 String description = "Ủng hộ tiền thành công";
                 assert secretKey != null;
