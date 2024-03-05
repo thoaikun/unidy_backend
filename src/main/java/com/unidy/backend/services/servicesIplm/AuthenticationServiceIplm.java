@@ -147,6 +147,11 @@ public class AuthenticationServiceIplm implements AuthenticationService {
       if (jwtTokens.get("isExpired").equals("true")){
         saveUserToken(user, jwtTokens.get("accessToken"), jwtTokens.get("refreshToken"));
       }
+
+      FavoriteActivities favorite = favoriteActivitiesRepository.findByUserId(user.getUserId());
+      if (favorite != null) {
+        check = true;
+      }
       return ResponseEntity.ok().body(AuthenticationResponse.builder()
               .accessToken(jwtTokens.get("accessToken"))
               .refreshToken(jwtTokens.get("refreshToken"))
