@@ -89,16 +89,14 @@ public class DonationServiceImpl implements DonationService {
         String partnerCode = environment.getProperty("PARTNER_CODE");
         String accessKey = environment.getProperty("ACCESS_KEY");
         String secretKey = environment.getProperty("SECRET_KEY");
-        String ipnURL = environment.getProperty("IPN_URL");
-        String redirectURL = environment.getProperty("REDIRECT_URL");
-
 
         try {
-            System.out.println(new Gson().toJson(momoResponse));
             if (momoResponse.getResultCode().equals(9000)) {
                 String description = "Ủng hộ tiền thành công";
                 assert secretKey != null;
-                String signature = generateMomoConfirmSignature(accessKey,momoResponse.getAmount(),description,momoResponse.getOrderId(),partnerCode,momoResponse.getRequestId(),"capture",secretKey);
+                String signature = generateMomoConfirmSignature(accessKey,momoResponse.getAmount(),description,
+                                                                momoResponse.getOrderId(),partnerCode,momoResponse.getRequestId(),
+                                                                "capture",secretKey);
                 System.out.println(momoResponse.getSignature());
                 RestTemplate restTemplate = new RestTemplate();
                 HttpHeaders headers = new HttpHeaders();
@@ -106,7 +104,7 @@ public class DonationServiceImpl implements DonationService {
                 MomoConfirmRequest request = MomoConfirmRequest.builder()
                         .partnerCode(momoResponse.getPartnerCode())
                         .requestId(momoResponse.getRequestId())
-                        .requestId(momoResponse.getOrderId())
+                        .orderId(momoResponse.getOrderId())
                         .requestType("capture")
                         .lang("en")
                         .amount(momoResponse.getAmount())
