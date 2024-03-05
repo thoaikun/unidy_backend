@@ -1,9 +1,11 @@
 package com.unidy.backend.services.servicesIplm;
 
+import com.google.gson.Gson;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.requests.MomoConfirmRequest;
 import com.unidy.backend.domains.dto.requests.MomoRequest;
+import com.unidy.backend.domains.dto.requests.MomoWebHookRequest;
 import com.unidy.backend.domains.dto.responses.MomoResponse;
 import com.unidy.backend.domains.entity.User;
 import com.unidy.backend.services.servicesInterface.DonationService;
@@ -74,16 +76,17 @@ public class DonationServiceImpl implements DonationService {
             if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't call api from recommend service"));
             }
-            return ResponseEntity.ok().body(responseData);
+            MomoResponse momoResponse = new Gson().fromJson(responseData, MomoResponse.class);
+            return ResponseEntity.ok().body(momoResponse);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.toString());
         }
     }
 
 
-    public void handleTransaction(MomoResponse momoResponse) throws NoSuchAlgorithmException, InvalidKeyException {
+    public void handleTransaction(MomoWebHookRequest momoResponse) throws NoSuchAlgorithmException, InvalidKeyException {
         //confirm transaction
-        String url = "https://test-payment.momo.vn:443/v2/gateway/api/create";
+        String url = "https://test-payment.momo.vn:443/v2/gateway/api/confirm";
 
         String partnerCode = environment.getProperty("PARTNER_CODE");
         String accessKey = environment.getProperty("ACCESS_KEY");
@@ -94,7 +97,7 @@ public class DonationServiceImpl implements DonationService {
         String description = "Ủng hộ tiền thành công";
         assert secretKey != null;
 //        String signature = generateSignatureConfirm(accessKey, momoResponse.getAmount(),description, momoResponse.getOrderId(),partnerCode, momoResponse.getRequestId(), "captureWallet",secretKey);
-        String signature = generateSignature(accessKey, momoResponse.getAmount(), "",ipnURL, momoResponse.getOrderId(), momoResponse.getOrderInfo(), partnerCode,redirectURL, momoResponse.getRequestId(), "captureWallet",secretKey);
+//        String signature = generateSignature(accessKey, momoResponse.getAmount(), "",ipnURL, momoResponse.getOrderId(), momoResponse.getOrderInfo(), partnerCode,redirectURL, momoResponse.getRequestId(), "captureWallet",secretKey);
 
 //        System.out.println(momoResponse.getOrderId().toString() + momoResponse.getAmount().toString()+ momoResponse.getRequestId().toString());
         try {
@@ -111,16 +114,16 @@ public class DonationServiceImpl implements DonationService {
                         .lang("en")
                         .amount(momoResponse.getAmount())
                         .description(description)
-                        .signature(signature)
+                        .signature(momoResponse.getSignature())
                         .build();
                 HttpEntity<MomoConfirmRequest> requestEntity = new HttpEntity<>(request, headers);
                 ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
                 String responseData = response.getBody();
                 System.out.println(responseData);
-                // Check response
-//                if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
-//                    System.out.println("Transaction fail");
-//                }
+//                 Check response
+                if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
+                    System.out.println("Transaction fail");
+                }
                 System.out.println("Transaction success");
             }
             else {

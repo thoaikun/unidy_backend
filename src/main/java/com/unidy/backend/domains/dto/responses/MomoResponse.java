@@ -1,5 +1,6 @@
 package com.unidy.backend.domains.dto.responses;
 
+import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,16 +10,19 @@ import lombok.Setter;
 @Builder
 public class MomoResponse {
     String partnerCode;
-    String orderId;
     String requestId;
+    String orderId;
     Long amount;
-    String orderInfo;
-    String orderType;
-    Long transId;
-    Integer resultCode;
-    String message;
-    String payType;
     Long responseTime;
-    String extraData;
+    String message;
+    Integer resultCode;
+    String payUrl;
+    @Nullable
+    String deeplink;
+    @Nullable
+    String qrCodeUrl;
+    @Nullable
+    String deeplinkMiniApp;
+    Long transId;
     String signature;
 }

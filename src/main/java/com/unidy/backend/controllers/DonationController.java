@@ -1,6 +1,7 @@
 package com.unidy.backend.controllers;
 
 
+import com.unidy.backend.domains.dto.requests.MomoWebHookRequest;
 import com.unidy.backend.domains.dto.responses.MomoResponse;
 import com.unidy.backend.services.servicesInterface.DonationService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class DonationController {
     }
 
     @PostMapping("/callBack-momo")
-    public void callback_MOMO_IPN (@RequestBody MomoResponse momoResponse){
+    public void callback_MOMO_IPN (@RequestBody MomoWebHookRequest momoResponse){
         try {
             donationService.handleTransaction(momoResponse);
         } catch (Exception e) {

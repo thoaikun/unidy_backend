@@ -1,5 +1,6 @@
 package com.unidy.backend.domains.dto.requests;
 
+import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -11,18 +12,25 @@ import lombok.Setter;
 @Builder
 public class MomoRequest {
     String partnerCode;
-    String accessKey;
-    String secretKey;
-    String requestId;
+    @Nullable
+    String subPartnerCode;
+    @Nullable
+    String storeName;
+    @Nullable
+    String storeId;
     Long amount;
     String orderId;
     String orderInfo;
-    Boolean autoCapture;
+    @Nullable
+    String orderGroupId;
     String redirectUrl;
+    String requestId;
     String ipnUrl;
-    String extraData;
     String requestType;
-    String storeId;
-    String signature;
+    String extraData;
+    String accessKey;
+    String secretKey;
+    Boolean autoCapture;
     String lang;
+    String signature;
 }

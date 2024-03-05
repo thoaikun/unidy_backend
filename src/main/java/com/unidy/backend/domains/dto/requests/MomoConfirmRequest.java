@@ -12,8 +12,8 @@ public class MomoConfirmRequest {
     String requestId;
     String orderId;
     String requestType;
-    String lang;
     Long amount;
+    String lang;
     String description;
     String signature;
 }
