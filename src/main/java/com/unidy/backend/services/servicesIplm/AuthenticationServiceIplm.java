@@ -24,6 +24,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -88,7 +90,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
                 .build();
         var savedUser = repository.save(user);
         var jwtToken = jwtService.generateToken(user);
-        //      var refreshToken = jwtService.generateRefreshToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
         Optional<User> registerUser = repository.findByEmail(request.getEmail());
         UserNode userNode = new UserNode() ;
         userNode.setUserId(registerUser.get().getUserId());
@@ -96,7 +98,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
         userNode.setIsBlock(false);
         userNode.setProfileImageLink(null);
         neo4j_userRepository.save(userNode);
-        saveUserToken(savedUser, jwtToken);
+        saveUserToken(savedUser, jwtToken, jwtToken);
       } else {
         var user = User.builder()
                 .role(Role.SPONSOR)
@@ -140,17 +142,14 @@ public class AuthenticationServiceIplm implements AuthenticationService {
       );
       var user = repository.findByEmail(request.getEmail())
               .orElseThrow();
-      var jwtToken = jwtService.generateToken(user);
-      var refreshToken = jwtService.generateRefreshToken(user);
-      revokeAllUserTokens(user);
-      saveUserToken(user, jwtToken);
-      FavoriteActivities favorite = favoriteActivitiesRepository.findByUserId(user.getUserId());
-      if (favorite != null) {
-        check = true;
+
+      Map<String, String> jwtTokens = getJwtToken(user);
+      if (jwtTokens.get("isExpired").equals("true")){
+        saveUserToken(user, jwtTokens.get("accessToken"), jwtTokens.get("refreshToken"));
       }
       return ResponseEntity.ok().body(AuthenticationResponse.builder()
-              .accessToken(jwtToken)
-              .refreshToken(refreshToken)
+              .accessToken(jwtTokens.get("accessToken"))
+              .refreshToken(jwtTokens.get("refreshToken"))
               .isChosenFavorite(check)
               .role(user.getRole())
               .build());
@@ -159,17 +158,31 @@ public class AuthenticationServiceIplm implements AuthenticationService {
     }
   }
 
+  private Map<String, String> getJwtToken(User user) {
+    List<Token> previousTokens = tokenRepository.findAllValidTokenByUser(user.getUserId());
 
+    for (Token token : previousTokens) {
+      if (isTokenStillValid(token)) {
+        return Map.of("accessToken", token.getToken(), "refreshToken", token.getRefreshToken(), "isExpired", "false");
+      }
+    }
+    return Map.of("accessToken", jwtService.generateToken(user), "refreshToken", jwtService.generateRefreshToken(user), "isExpired", "true");
+  }
 
-  private void saveUserToken(User user, String jwtToken) {
+  private void saveUserToken(User user, String jwtToken, String refreshToken) {
     var token = Token.builder()
         .user(user)
         .token(jwtToken)
+        .refreshToken(refreshToken)
         .tokenType(TokenType.BEARER)
         .expired(false)
         .revoked(false)
         .build();
     tokenRepository.save(token);
+  }
+
+  private boolean isTokenStillValid(Token token) {
+    return !token.isExpired() && !token.isRevoked();
   }
 
   private void revokeAllUserTokens(User user) {
@@ -182,6 +195,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
     });
     tokenRepository.saveAll(validUserTokens);
   }
+
 
   public ResponseEntity<?> refreshToken(
           HttpServletRequest request,
@@ -201,7 +215,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
       if (jwtService.isTokenValid(refreshToken, user)) {
         var accessToken = jwtService.generateToken(user);
         revokeAllUserTokens(user);
-        saveUserToken(user, accessToken);
+        saveUserToken(user, accessToken, refreshToken);
         var authResponse = AuthenticationResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
