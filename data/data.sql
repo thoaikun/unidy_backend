@@ -259,7 +259,11 @@ CREATE TABLE transaction
     transaction_time   DATE,
     transaction_amount BIGINT,
     transaction_code   VARCHAR(255),
-    signature          VARCHAR(255)
+    signature          VARCHAR(255),
+    organization_id    INTEGER,
+    campaign_id        INTEGER,
+    FOREIGN KEY (organization_id) REFERENCES organization(organization_id),
+    FOREIGN KEY (campaign_id) REFERENCES campaign(campaign_id)
 );
 
 CREATE TABLE sponsor_transaction

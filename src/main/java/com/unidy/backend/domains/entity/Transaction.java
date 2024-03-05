@@ -35,5 +35,11 @@ public class Transaction {
 
     @Column(name = "signature")
     private String signature;
+
+    @Column(name = "organization_id")
+    private Integer organizationId;
+
+    @Column(name = "campaign_id")
+    private Integer campaignId;
 }
 

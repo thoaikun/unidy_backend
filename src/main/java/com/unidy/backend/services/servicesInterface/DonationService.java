@@ -9,7 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 
 public interface DonationService {
-    ResponseEntity<?> executeTransaction (Principal connectedUser, Long totalAmount) throws NoSuchAlgorithmException, InvalidKeyException;
+    ResponseEntity<?> executeTransaction (Principal connectedUser, Long totalAmount, int organizationId, int campaignId) throws NoSuchAlgorithmException, InvalidKeyException;
 
     void handleTransaction(MomoWebHookRequest momoResponse) throws NoSuchAlgorithmException, InvalidKeyException;
 }

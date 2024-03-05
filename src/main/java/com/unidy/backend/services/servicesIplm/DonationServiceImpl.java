@@ -17,6 +17,7 @@ import com.unidy.backend.repositories.TransactionRepository;
 import com.unidy.backend.repositories.UserRepository;
 import com.unidy.backend.services.servicesInterface.DonationService;
 import jakarta.transaction.Transactional;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.http.*;
@@ -33,9 +34,7 @@ import java.util.Date;
 import java.util.Formatter;
 import java.text.SimpleDateFormat;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
@@ -45,8 +44,13 @@ public class DonationServiceImpl implements DonationService {
     private final UserRepository userRepository;
     private final SponsorRepository sponsorRepository;
     private final SponsorTransactionRepository sponsorTransactionRepository;
-    public ResponseEntity<?> executeTransaction (Principal connectedUser, Long totalAmount) throws NoSuchAlgorithmException, InvalidKeyException {
+    public ResponseEntity<?> executeTransaction (Principal connectedUser, Long totalAmount, int organizationId, int campaignId) throws NoSuchAlgorithmException, InvalidKeyException {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        String jsonData = "{\"campaignId\":" + campaignId + ",\"organizationId\":" + organizationId + "}";
+
+        String base64Data = encodeBase64(jsonData);
+
+
         SimpleDateFormat outputFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         String partnerCode = environment.getProperty("PARTNER_CODE");
         String accessKey = environment.getProperty("ACCESS_KEY");
@@ -54,10 +58,11 @@ public class DonationServiceImpl implements DonationService {
         String ipnURL = environment.getProperty("IPN_URL");
         String redirectURL = environment.getProperty("REDIRECT_URL");
         String url = "https://test-payment.momo.vn:443/v2/gateway/api/create";
-        String extraData = "";
-        String orderId = partnerCode +  outputFormat.format(new Date()) + "-" + user.getUserId();
+        String extraData = base64Data;
+        String orderId = partnerCode +  outputFormat.format(new Date()) + "-" + user.getUserId() ;
         String orderInfo = user.getFullName() + " donation";
         String requestId = partnerCode + outputFormat.format(new Date());
+
 
         try {
             assert secretKey != null;
@@ -100,7 +105,8 @@ public class DonationServiceImpl implements DonationService {
     @Transactional
     public void handleTransaction(MomoWebHookRequest momoResponse) {
         try {
-            System.out.println(momoResponse);
+            Gson gson = new Gson();
+            MyDataObject dataObject = gson.fromJson(decodeBase64(momoResponse.getExtraData().trim()), MyDataObject.class);
             if (momoResponse.getResultCode().equals(0)){
                 Transaction transaction = Transaction.builder()
                         .transactionCode(momoResponse.getRequestId())
@@ -108,6 +114,8 @@ public class DonationServiceImpl implements DonationService {
                         .transactionType(momoResponse.getOrderType())
                         .transactionAmount(momoResponse.getAmount())
                         .signature(momoResponse.getSignature())
+                        .organizationId(dataObject.getOrganizationId())
+                        .campaignId(dataObject.campaignId)
                         .build();
 
                 transactionRepository.save(transaction);
@@ -132,6 +140,7 @@ public class DonationServiceImpl implements DonationService {
 
                 Optional<Sponsor> sponsor = sponsorRepository.findByUserId(user.getUserId());
                 SponsorTransaction newTransaction = SponsorTransaction.builder()
+                        .transactionId(transaction.getTransactionId())
                         .sponsorId(sponsor.get().getSponsorId())
                         .build();
                 sponsorTransactionRepository.save(newTransaction);
@@ -174,5 +183,22 @@ public class DonationServiceImpl implements DonationService {
             formatter.format("%02x", b);
         }
         return formatter.toString();
+    }
+
+    private static String encodeBase64(String jsonData) {
+        byte[] encodedBytes = Base64.getEncoder().encode(jsonData.getBytes());
+        return new String(encodedBytes);
+    }
+
+    private static String decodeBase64(String base64Data) {
+        byte[] decodedBytes = Base64.getDecoder().decode(base64Data.getBytes());
+        return new String(decodedBytes);
+    }
+
+    @Getter
+    static class MyDataObject {
+        private int organizationId;
+        private int campaignId;
+
     }
 }

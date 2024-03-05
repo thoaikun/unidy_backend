@@ -20,8 +20,8 @@ public class DonationController {
     private final DonationService donationService;
 
     @GetMapping("")
-    public ResponseEntity<?> donation (Principal connectedUser, @RequestParam ("amount") Long amount) throws NoSuchAlgorithmException, InvalidKeyException {
-        return donationService.executeTransaction(connectedUser,amount);
+    public ResponseEntity<?> donation (Principal connectedUser, @RequestParam ("amount") Long amount,@RequestParam ("organizationId") int organizationId,@RequestParam ("campaignId") int campaignId) throws NoSuchAlgorithmException, InvalidKeyException {
+        return donationService.executeTransaction(connectedUser,amount,organizationId,campaignId);
     }
 
     @PostMapping("/callBack-momo")
