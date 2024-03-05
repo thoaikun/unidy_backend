@@ -6,8 +6,17 @@ import com.unidy.backend.domains.dto.requests.MomoConfirmRequest;
 import com.unidy.backend.domains.dto.requests.MomoRequest;
 import com.unidy.backend.domains.dto.requests.MomoWebHookRequest;
 import com.unidy.backend.domains.dto.responses.MomoResponse;
+import com.unidy.backend.domains.entity.Sponsor;
+import com.unidy.backend.domains.entity.SponsorTransaction;
+import com.unidy.backend.domains.entity.Transaction;
 import com.unidy.backend.domains.entity.User;
+import com.unidy.backend.domains.role.Role;
+import com.unidy.backend.repositories.SponsorRepository;
+import com.unidy.backend.repositories.SponsorTransactionRepository;
+import com.unidy.backend.repositories.TransactionRepository;
+import com.unidy.backend.repositories.UserRepository;
 import com.unidy.backend.services.servicesInterface.DonationService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.http.*;
@@ -23,12 +32,19 @@ import java.security.Principal;
 import java.util.Date;
 import java.util.Formatter;
 import java.text.SimpleDateFormat;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service
 @RequiredArgsConstructor
 public class DonationServiceImpl implements DonationService {
     private final Environment environment;
+    private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
+    private final SponsorRepository sponsorRepository;
+    private final SponsorTransactionRepository sponsorTransactionRepository;
     public ResponseEntity<?> executeTransaction (Principal connectedUser, Long totalAmount) throws NoSuchAlgorithmException, InvalidKeyException {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         SimpleDateFormat outputFormat = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -39,8 +55,8 @@ public class DonationServiceImpl implements DonationService {
         String redirectURL = environment.getProperty("REDIRECT_URL");
         String url = "https://test-payment.momo.vn:443/v2/gateway/api/create";
         String extraData = "";
-        String orderId = partnerCode +  outputFormat.format(new Date());
-        String orderInfo = user.getUserId().toString() + "Donation";
+        String orderId = partnerCode +  outputFormat.format(new Date()) + "-" + user.getEmail();
+        String orderInfo = user.getFullName() + " donation";
         String requestId = partnerCode + outputFormat.format(new Date());
 
         try {
@@ -81,77 +97,54 @@ public class DonationServiceImpl implements DonationService {
         }
     }
 
-
-    public void handleTransaction(MomoWebHookRequest momoResponse) throws NoSuchAlgorithmException, InvalidKeyException {
-        //confirm transaction
-        String url = "https://test-payment.momo.vn:443/v2/gateway/api/confirm";
-
-        String partnerCode = environment.getProperty("PARTNER_CODE");
-        String accessKey = environment.getProperty("ACCESS_KEY");
-        String secretKey = environment.getProperty("SECRET_KEY");
-
+    @Transactional
+    public void handleTransaction(MomoWebHookRequest momoResponse) {
         try {
-            if (momoResponse.getResultCode().equals(9000)) {
-                String description = "Ủng hộ tiền thành công";
-                assert secretKey != null;
-                String signature = generateMomoConfirmSignature(accessKey,momoResponse.getAmount(),description,
-                                                                momoResponse.getOrderId(),partnerCode,momoResponse.getRequestId(),
-                                                                "capture",secretKey);
-                System.out.println(momoResponse.getSignature());
-                RestTemplate restTemplate = new RestTemplate();
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                MomoConfirmRequest request = MomoConfirmRequest.builder()
-                        .partnerCode(momoResponse.getPartnerCode())
-                        .requestId(momoResponse.getRequestId())
-                        .orderId(momoResponse.getOrderId())
-                        .requestType("capture")
-                        .lang("en")
-                        .amount(momoResponse.getAmount())
-                        .signature(signature)
+            if (momoResponse.getResultCode().equals(0)){
+                Transaction transaction = Transaction.builder()
+                        .transactionCode(momoResponse.getRequestId())
+                        .transactionTime(new Date(momoResponse.getResponseTime()))
+                        .transactionType(momoResponse.getOrderType())
+                        .transactionAmount(momoResponse.getAmount())
+                        .signature(momoResponse.getSignature())
                         .build();
-                HttpEntity<MomoConfirmRequest> requestEntity = new HttpEntity<>(request, headers);
-                ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
-                String responseData = response.getBody();
-                System.out.println(responseData);
-//                 Check response
-                if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
-                    System.out.println("Transaction fail");
+
+                transactionRepository.save(transaction);
+                String regex = "(?<=-)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}";
+                Pattern pattern = Pattern.compile(regex);
+
+                Matcher matcher = pattern.matcher(momoResponse.getOrderId());
+                if (matcher.find()) {
+                    String email = matcher.group();
+                    System.out.println("Email: " + email);
+                    Optional<User> user = userRepository.findByEmail(email);
+                    if (!user.get().getRole().equals(Role.SPONSOR)){
+                        user.get().setRole(Role.SPONSOR);
+                        userRepository.save(user.get());
+                        Sponsor sponsor = Sponsor.builder()
+                                .sponsorName(user.get().getFullName())
+                                .userId(user.get().getUserId())
+                                .build();
+                        sponsorRepository.save(sponsor);
+                    }
+
+                    Optional<Sponsor> sponsor = sponsorRepository.findByUserId(user.get().getUserId());
+                    SponsorTransaction newTransaction = SponsorTransaction.builder()
+                            .sponsorId(sponsor.get().getSponsorId())
+                            .build();
+                    sponsorTransactionRepository.save(newTransaction);
+                    System.out.println("Log Transaction Successful");
+                } else {
+                    System.out.println("Không tìm thấy địa chỉ email trong chuỗi.");
                 }
-                System.out.println("Transaction success");
             }
             else {
-                String description = "Người dùng hủy giao dịch";
-                assert secretKey != null;
-                String signature = generateMomoConfirmSignature(accessKey,momoResponse.getAmount(),description,momoResponse.getOrderId(),partnerCode,momoResponse.getRequestId(),"capture",secretKey);
-                RestTemplate restTemplate = new RestTemplate();
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                MomoConfirmRequest request = MomoConfirmRequest.builder()
-                        .partnerCode(momoResponse.getPartnerCode())
-                        .requestId(momoResponse.getRequestId())
-                        .requestId(momoResponse.getOrderId())
-                        .requestType("cancel")
-                        .lang("en")
-                        .description(description)
-                        .amount(momoResponse.getAmount())
-                        .signature(signature)
-                        .build();
-                HttpEntity<MomoConfirmRequest> requestEntity = new HttpEntity<>(request, headers);
-                ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
-                String responseData = response.getBody();
-                System.out.println(responseData);
-                // Check response
-                if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
-                    System.out.println("Transaction fail");
-                }
-                System.out.println("Transaction cancel");
+                System.out.println("Transaction fail");
             }
         } catch (Exception e){
-            System.out.println("exception: "+ e.toString());
+            System.out.println(e.toString());
         }
     }
-
     public static String generateMomoCreateTransactionSignature(String accessKey, Long amount, String extraData, String ipnUrl,
                                                                 String orderId, String orderInfo, String partnerCode, String redirectUrl,
                                                                 String requestId, String requestType, String secretKey)
@@ -164,26 +157,6 @@ public class DonationServiceImpl implements DonationService {
                 "&orderInfo=" + orderInfo +
                 "&partnerCode=" + partnerCode +
                 "&redirectUrl=" + redirectUrl +
-                "&requestId=" + requestId +
-                "&requestType=" + requestType;
-
-        Mac sha256Hmac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
-        sha256Hmac.init(secretKeySpec);
-
-        byte[] signatureBytes = sha256Hmac.doFinal(rawSignature.getBytes());
-
-        return byteArrayToHexString(signatureBytes);
-    }
-
-    public static String generateMomoConfirmSignature(String accessKey, Long amount, String description, String orderId,
-                                                        String partnerCode, String requestId, String requestType, String secretKey)
-            throws NoSuchAlgorithmException, InvalidKeyException {
-        String rawSignature = "accessKey=" + accessKey +
-                "&amount=" + amount +
-                "&description=" + description +
-                "&orderId=" + orderId +
-                "&partnerCode=" + partnerCode +
                 "&requestId=" + requestId +
                 "&requestType=" + requestType;
 
