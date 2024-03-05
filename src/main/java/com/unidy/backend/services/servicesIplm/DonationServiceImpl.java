@@ -100,6 +100,7 @@ public class DonationServiceImpl implements DonationService {
     @Transactional
     public void handleTransaction(MomoWebHookRequest momoResponse) {
         try {
+            System.out.println(momoResponse);
             if (momoResponse.getResultCode().equals(0)){
                 Transaction transaction = Transaction.builder()
                         .transactionCode(momoResponse.getRequestId())
