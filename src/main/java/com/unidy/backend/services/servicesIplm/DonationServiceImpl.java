@@ -2,7 +2,6 @@ package com.unidy.backend.services.servicesIplm;
 
 import com.google.gson.Gson;
 import com.unidy.backend.domains.ErrorResponseDto;
-import com.unidy.backend.domains.dto.requests.MomoConfirmRequest;
 import com.unidy.backend.domains.dto.requests.MomoRequest;
 import com.unidy.backend.domains.dto.requests.MomoWebHookRequest;
 import com.unidy.backend.domains.dto.responses.MomoResponse;
@@ -44,9 +43,9 @@ public class DonationServiceImpl implements DonationService {
     private final UserRepository userRepository;
     private final SponsorRepository sponsorRepository;
     private final SponsorTransactionRepository sponsorTransactionRepository;
-    public ResponseEntity<?> executeTransaction (Principal connectedUser, Long totalAmount, int organizationId, int campaignId) throws NoSuchAlgorithmException, InvalidKeyException {
+    public ResponseEntity<?> executeTransaction (Principal connectedUser, Long totalAmount, int organizationUserId, int campaignId) throws NoSuchAlgorithmException, InvalidKeyException {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        String jsonData = "{\"campaignId\":" + campaignId + ",\"organizationId\":" + organizationId + "}";
+        String jsonData = "{\"campaignId\":" + campaignId + ",\"organizationUserId\":" + organizationUserId + "}";
 
         String base64Data = encodeBase64(jsonData);
 
@@ -114,7 +113,7 @@ public class DonationServiceImpl implements DonationService {
                         .transactionType(momoResponse.getOrderType())
                         .transactionAmount(momoResponse.getAmount())
                         .signature(momoResponse.getSignature())
-                        .organizationId(dataObject.getOrganizationId())
+                        .organizationUserId(dataObject.getOrganizationUserId())
                         .campaignId(dataObject.campaignId)
                         .build();
 
@@ -197,7 +196,7 @@ public class DonationServiceImpl implements DonationService {
 
     @Getter
     static class MyDataObject {
-        private int organizationId;
+        private int organizationUserId;
         private int campaignId;
 
     }

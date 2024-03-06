@@ -19,9 +19,9 @@ import java.security.Principal;
 public class DonationController {
     private final DonationService donationService;
 
-    @GetMapping("")
-    public ResponseEntity<?> donation (Principal connectedUser, @RequestParam ("amount") Long amount,@RequestParam ("organizationId") int organizationId,@RequestParam ("campaignId") int campaignId) throws NoSuchAlgorithmException, InvalidKeyException {
-        return donationService.executeTransaction(connectedUser,amount,organizationId,campaignId);
+    @PostMapping("")
+    public ResponseEntity<?> donation (Principal connectedUser, @RequestParam ("amount") Long amount,@RequestParam ("organizationUserId") int organizationUserId,@RequestParam ("campaignId") int campaignId) throws NoSuchAlgorithmException, InvalidKeyException {
+        return donationService.executeTransaction(connectedUser,amount,organizationUserId,campaignId);
     }
 
     @PostMapping("/callBack-momo")

@@ -36,8 +36,8 @@ public class Transaction {
     @Column(name = "signature")
     private String signature;
 
-    @Column(name = "organization_id")
-    private Integer organizationId;
+    @Column(name = "organization_user_id")
+    private Integer organizationUserId;
 
     @Column(name = "campaign_id")
     private Integer campaignId;
