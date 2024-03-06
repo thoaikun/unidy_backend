@@ -198,6 +198,5 @@ public class DonationServiceImpl implements DonationService {
     static class MyDataObject {
         private int organizationUserId;
         private int campaignId;
-
     }
 }

@@ -110,6 +110,7 @@ public class CampaignServiceIplm implements CampaignService {
             CampaignNode campaign = new CampaignNode() ;
             campaign.setCampaignId(campaign_mysql.getCampaignId().toString());
             campaign.setContent(request.getDescription());
+            campaign.setTitle(request.getTitle());
             campaign.setStatus(request.getStatus());
             campaign.setNumOfRegister(request.getNumOfVolunteer());
             campaign.setCreateDate(sdf.format(new Date()));
@@ -122,8 +123,8 @@ public class CampaignServiceIplm implements CampaignService {
             campaign.setUserNode(campaignOrganization);
             campaign.setLinkImage(listImageLink.toString());
             campaign.setUpdateDate(null);
-            campaign.setDonation_budget(request.getDonationBudget());
-            campaign.setDonation_budget_received(0);
+            campaign.setDonationBudget(request.getDonationBudget());
+            campaign.setDonationBudgetReceived(0);
             neo4jCampaignRepository.save(campaign);
 
 

@@ -1,6 +1,7 @@
 package com.unidy.backend.controllers;
 
 
+import com.unidy.backend.domains.dto.requests.CreateTransactionRequest;
 import com.unidy.backend.domains.dto.requests.MomoWebHookRequest;
 import com.unidy.backend.domains.dto.responses.MomoResponse;
 import com.unidy.backend.services.servicesInterface.DonationService;
@@ -20,8 +21,13 @@ public class DonationController {
     private final DonationService donationService;
 
     @PostMapping("")
-    public ResponseEntity<?> donation (Principal connectedUser, @RequestParam ("amount") Long amount,@RequestParam ("organizationUserId") int organizationUserId,@RequestParam ("campaignId") int campaignId) throws NoSuchAlgorithmException, InvalidKeyException {
-        return donationService.executeTransaction(connectedUser,amount,organizationUserId,campaignId);
+    public ResponseEntity<?> donation (Principal connectedUser, @RequestBody CreateTransactionRequest createTransactionRequest) throws NoSuchAlgorithmException, InvalidKeyException {
+        return donationService.executeTransaction(
+            connectedUser,
+            createTransactionRequest.getAmounts(),
+            createTransactionRequest.getOrganizationUserId(),
+            createTransactionRequest.getCampaignId()
+        );
     }
 
     @PostMapping("/callBack-momo")
