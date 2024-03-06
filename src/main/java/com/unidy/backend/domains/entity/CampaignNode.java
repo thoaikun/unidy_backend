@@ -59,10 +59,10 @@ public class CampaignNode {
     private String linkImage;
 
     @Property("donation_budget")
-    private int donation_budget;
+    private int donationBudget;
 
     @Property("donation_budget_received")
-    private int donation_budget_received;
+    private int donationBudgetReceived;
 
     @Relationship(type = "HAS_CAMPAIGN", direction = Relationship.Direction.INCOMING)
     private UserNode userNode;
