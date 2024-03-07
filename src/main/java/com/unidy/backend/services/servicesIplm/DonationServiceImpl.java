@@ -113,7 +113,7 @@ public class DonationServiceImpl implements DonationService {
                         .transactionType(momoResponse.getOrderType())
                         .transactionAmount(momoResponse.getAmount())
                         .signature(momoResponse.getSignature())
-                        .organizationUserId(dataObject.getOrganizationId())
+                        .organizationUserId(dataObject.getOrganizationUserId())
                         .campaignId(dataObject.campaignId)
                         .build();
 
@@ -196,7 +196,7 @@ public class DonationServiceImpl implements DonationService {
 
     @Getter
     static class MyDataObject {
-        private int organizationId;
-        private int campaignId;
+        private Integer organizationUserId;
+        private Integer campaignId;
     }
 }
