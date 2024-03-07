@@ -203,7 +203,7 @@ public class DonationServiceImpl implements DonationService {
 
     @Getter
     static class MyDataObject {
-        private int organizationUserId;
-        private int campaignId;
+        private Integer organizationUserId;
+        private Integer campaignId;
     }
 }

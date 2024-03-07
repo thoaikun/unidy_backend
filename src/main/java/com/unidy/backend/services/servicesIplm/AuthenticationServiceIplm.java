@@ -167,10 +167,17 @@ public class AuthenticationServiceIplm implements AuthenticationService {
     List<Token> previousTokens = tokenRepository.findAllValidTokenByUser(user.getUserId());
 
     for (Token token : previousTokens) {
-      if (isTokenStillValid(token)) {
+      try {
+        isTokenStillValid(token);
         return Map.of("accessToken", token.getToken(), "refreshToken", token.getRefreshToken(), "isExpired", "false");
       }
+      catch (Exception e){
+          token.setExpired(true);
+          token.setRevoked(true);
+          tokenRepository.save(token);
+      }
     }
+
     return Map.of("accessToken", jwtService.generateToken(user), "refreshToken", jwtService.generateRefreshToken(user), "isExpired", "true");
   }
 
@@ -187,7 +194,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
   }
 
   private boolean isTokenStillValid(Token token) {
-    return !token.isExpired() && !token.isRevoked();
+    return jwtService.isTokenExpired(token.getToken());
   }
 
   private void revokeAllUserTokens(User user) {
