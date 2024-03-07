@@ -226,7 +226,7 @@ public class CampaignServiceIplm implements CampaignService {
 //                    campaignInfo.setOwnerProfileImage(userProfileImage.getLinkImage());
 //                }
 
-                CampaignPostResponse campaignPost = neo4jCampaignRepository.findCampaignNodeByCampaignId(String.valueOf(id));
+                CampaignPostResponse campaignPost = neo4jCampaignRepository.findCampaignPostByCampaignId(String.valueOf(id));
                 responses.add(campaignPost);
             }
 

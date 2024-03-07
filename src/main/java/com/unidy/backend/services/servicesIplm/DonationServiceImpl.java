@@ -5,15 +5,9 @@ import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.dto.requests.MomoRequest;
 import com.unidy.backend.domains.dto.requests.MomoWebHookRequest;
 import com.unidy.backend.domains.dto.responses.MomoResponse;
-import com.unidy.backend.domains.entity.Sponsor;
-import com.unidy.backend.domains.entity.SponsorTransaction;
-import com.unidy.backend.domains.entity.Transaction;
-import com.unidy.backend.domains.entity.User;
+import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.role.Role;
-import com.unidy.backend.repositories.SponsorRepository;
-import com.unidy.backend.repositories.SponsorTransactionRepository;
-import com.unidy.backend.repositories.TransactionRepository;
-import com.unidy.backend.repositories.UserRepository;
+import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.DonationService;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
@@ -43,6 +37,8 @@ public class DonationServiceImpl implements DonationService {
     private final UserRepository userRepository;
     private final SponsorRepository sponsorRepository;
     private final SponsorTransactionRepository sponsorTransactionRepository;
+    private final CampaignRepository campaignRepository;
+    private final Neo4j_CampaignRepository neo4jCampaignRepository;
     public ResponseEntity<?> executeTransaction (Principal connectedUser, Long totalAmount, int organizationUserId, int campaignId) throws NoSuchAlgorithmException, InvalidKeyException {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         String jsonData = "{\"campaignId\":" + campaignId + ",\"organizationUserId\":" + organizationUserId + "}";
@@ -143,6 +139,17 @@ public class DonationServiceImpl implements DonationService {
                         .sponsorId(sponsor.get().getSponsorId())
                         .build();
                 sponsorTransactionRepository.save(newTransaction);
+
+
+                Campaign campaign = campaignRepository.findCampaignByCampaignId(dataObject.getCampaignId());
+                campaign.setDonationBudgetReceived((int) (campaign.getDonationBudgetReceived() + momoResponse.getAmount()));
+                campaignRepository.save(campaign);
+
+
+                CampaignNode campaignNode = neo4jCampaignRepository.findCampaignNodeByCampaignId(String.valueOf(dataObject.getCampaignId()));
+                campaignNode.setDonationBudgetReceived((int) (campaignNode.getDonationBudgetReceived() + momoResponse.getAmount()));
+                neo4jCampaignRepository.save(campaignNode);
+
                 System.out.println("Log Transaction Successful");
             }
             else {
