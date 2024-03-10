@@ -35,10 +35,9 @@ public class DonationServiceImpl implements DonationService {
     private final Environment environment;
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
-    private final SponsorRepository sponsorRepository;
-    private final SponsorTransactionRepository sponsorTransactionRepository;
     private final CampaignRepository campaignRepository;
     private final Neo4j_CampaignRepository neo4jCampaignRepository;
+    private final OrganizationRepository organizationRepository;
     public ResponseEntity<?> executeTransaction (Principal connectedUser, Long totalAmount, int organizationUserId, int campaignId) throws NoSuchAlgorithmException, InvalidKeyException {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         String jsonData = "{\"campaignId\":" + campaignId + ",\"organizationUserId\":" + organizationUserId + "}";
@@ -60,6 +59,15 @@ public class DonationServiceImpl implements DonationService {
 
 
         try {
+            Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
+            if (campaign == null){
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("campaign id not found"));
+            }
+
+            Optional<Organization> organization = organizationRepository.findByUserId(organizationUserId);
+            if (organization.isEmpty()){
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("organization user id not found"));
+            }
             assert secretKey != null;
             String signature = generateMomoCreateTransactionSignature(accessKey,totalAmount,extraData,ipnURL,orderId,orderInfo,partnerCode,redirectURL,requestId,"captureWallet",secretKey);
 
@@ -101,8 +109,15 @@ public class DonationServiceImpl implements DonationService {
     public void handleTransaction(MomoWebHookRequest momoResponse) {
         try {
             Gson gson = new Gson();
+
+
             MyDataObject dataObject = gson.fromJson(decodeBase64(momoResponse.getExtraData().trim()), MyDataObject.class);
             if (momoResponse.getResultCode().equals(0)){
+                String orderId = momoResponse.getOrderId();
+                int indexOfDash = orderId.indexOf("-");
+
+                String userIdString = orderId.substring(indexOfDash + 1);
+                int userId = Integer.parseInt(userIdString);
                 Transaction transaction = Transaction.builder()
                         .transactionCode(momoResponse.getRequestId())
                         .transactionTime(new Date(momoResponse.getResponseTime()))
@@ -111,36 +126,10 @@ public class DonationServiceImpl implements DonationService {
                         .signature(momoResponse.getSignature())
                         .organizationUserId(dataObject.getOrganizationUserId())
                         .campaignId(dataObject.campaignId)
+                        .userId(userId)
                         .build();
 
                 transactionRepository.save(transaction);
-                String orderId = momoResponse.getOrderId();
-                int indexOfDash = orderId.indexOf("-");
-
-                String userIdString = orderId.substring(indexOfDash + 1);
-                int userId = Integer.parseInt(userIdString);
-
-                System.out.println("userId: " + userId);
-                User user = userRepository.findByUserId(userId);
-                if (!user.getRole().equals(Role.SPONSOR)){
-                    user.setRole(Role.SPONSOR);
-                    userRepository.save(user);
-                    Sponsor sponsor = Sponsor.builder()
-                            .sponsorName(user.getFullName())
-                            .userId(user.getUserId())
-                            .email(user.getEmail())
-                            .build();
-                    sponsorRepository.save(sponsor);
-                }
-
-                Optional<Sponsor> sponsor = sponsorRepository.findByUserId(user.getUserId());
-                SponsorTransaction newTransaction = SponsorTransaction.builder()
-                        .transactionId(transaction.getTransactionId())
-                        .sponsorId(sponsor.get().getSponsorId())
-                        .build();
-                sponsorTransactionRepository.save(newTransaction);
-
-
                 Campaign campaign = campaignRepository.findCampaignByCampaignId(dataObject.getCampaignId());
                 campaign.setDonationBudgetReceived((int) (campaign.getDonationBudgetReceived() + momoResponse.getAmount()));
                 campaignRepository.save(campaign);

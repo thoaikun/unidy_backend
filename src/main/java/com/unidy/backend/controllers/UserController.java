@@ -112,4 +112,11 @@ public class UserController {
         return userService.followOrganization(connectedUser,organizationId);
     }
 
+    //giao dịch của tôi
+
+
+    @GetMapping("/get-user-transaction")
+    public ResponseEntity<?> getUserTransaction(Principal connectedUser){
+        return userService.getUserTransaction(connectedUser);
+    }
 }

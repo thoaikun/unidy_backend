@@ -39,7 +39,6 @@ public class AuthenticationServiceIplm implements AuthenticationService {
   private final Neo4j_UserRepository neo4j_userRepository;
   private final FavoriteActivitiesRepository favoriteActivitiesRepository;
   private final OrganizationRepository organizationRepository;
-  private final SponsorRepository sponsorRepository;
   @Transactional
   public ResponseEntity<?> register(RegisterRequest request) {
     try {
@@ -99,32 +98,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
         userNode.setProfileImageLink(null);
         neo4j_userRepository.save(userNode);
         saveUserToken(savedUser, jwtToken, jwtToken);
-      } else {
-        var user = User.builder()
-                .role(Role.SPONSOR)
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .build();
-        repository.save(user);
-
-        int user_id = repository.findByEmail(user.getEmail()).get().getUserId();
-        Sponsor sponsor = Sponsor.builder()
-                .sponsorName(request.getFullName())
-                .email(request.getEmail())
-                .phone(request.getPhone())
-                .userId(user_id)
-                .status("0")
-                .build();
-        sponsorRepository.save(sponsor);
-        UserNode userNode = new UserNode() ;
-        userNode.setUserId(user_id);
-        userNode.setFullName(request.getFullName());
-        userNode.setIsBlock(false);
-        userNode.setProfileImageLink(null);
-        userNode.setRole(Role.SPONSOR.toString());
-        neo4j_userRepository.save(userNode);
       }
-
 
       return ResponseEntity.ok().header("Register").body("Register success");
     }catch (Exception e){

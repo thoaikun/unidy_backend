@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
+import com.unidy.backend.domains.Type.VolunteerStatus;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.entity.*;
@@ -146,7 +147,7 @@ public class CampaignServiceIplm implements CampaignService {
             userJoin.setVolunteerId(user.getUserId());
             userJoin.setCampaignId(campaignId);
             userJoin.setTimeJoin(new Date());
-            userJoin.setStatus("join");
+            userJoin.setStatus(String.valueOf(VolunteerStatus.NOT_APPROVE_YET));
 
             Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
             if (campaign.getNumberVolunteerRegistered() >= campaign.getNumberVolunteer()){

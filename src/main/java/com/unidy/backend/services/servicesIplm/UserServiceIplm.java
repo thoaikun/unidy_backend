@@ -7,16 +7,14 @@ import com.unidy.backend.domains.dto.UserDto;
 import com.unidy.backend.domains.dto.requests.ChoseFavoriteRequest;
 import com.unidy.backend.domains.dto.responses.InviteFriend;
 import com.unidy.backend.domains.dto.responses.RecommendFriendResponse;
+import com.unidy.backend.domains.dto.responses.TransactionResponse;
 import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import com.unidy.backend.domains.entity.FavoriteActivities;
 import com.unidy.backend.domains.entity.User;
 import com.unidy.backend.domains.entity.UserNode;
 import com.unidy.backend.domains.entity.UserProfileImage;
 import com.unidy.backend.mapper.DtoMapper;
-import com.unidy.backend.repositories.FavoriteActivitiesRepository;
-import com.unidy.backend.repositories.Neo4j_UserRepository;
-import com.unidy.backend.repositories.UserProfileImageRepository;
-import com.unidy.backend.repositories.UserRepository;
+import com.unidy.backend.repositories.*;
 import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
 import com.unidy.backend.services.servicesInterface.UserService;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +45,7 @@ public class UserServiceIplm implements UserService {
     private final Neo4j_UserRepository neo4j_userRepository;
     private final FavoriteActivitiesRepository favoriteActivitiesRepository;
     private final Environment environment;
+    private final TransactionRepository transactionRepository;
 
     public UserInformationRespond getUserInformation(Principal connectedUser){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
@@ -276,5 +275,17 @@ public class UserServiceIplm implements UserService {
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
         }
+    }
+
+    @Override
+    public ResponseEntity<?> getUserTransaction(Principal connectedUser) {
+//        try {
+//            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+//            List<TransactionResponse> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId());
+//            return ResponseEntity.badRequest().body(transactionResponses);
+//        } catch (Exception e){
+//            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+//        }
+        return null;
     }
 }

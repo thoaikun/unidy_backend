@@ -14,6 +14,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table(name = "transaction")
+
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,5 +41,8 @@ public class Transaction {
 
     @Column(name = "campaign_id")
     private Integer campaignId;
+
+    @Column(name = "user_id")
+    private Integer userId;
 }
 

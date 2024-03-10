@@ -31,7 +31,7 @@ public class CampaignController {
         return campaignService.registerCampaign(connectedUser, campaignId);
     }
 
-    @PreAuthorize("hasRole('VOLUNTEER')")
+    @PreAuthorize("hasAnyRole('VOLUNTEER','SPONSOR')")
     @GetMapping("/getRecommendCampaign")
     public ResponseEntity<?> registerCampaign(Principal connectedUser,@RequestParam int offset, @RequestParam int limit){
         return campaignService.getRecommend(connectedUser, offset, limit);
