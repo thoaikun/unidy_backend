@@ -65,6 +65,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
                 .address(request.getAddress())
                 .country(request.getCountry())
                 .userId(user_id)
+                .firebaseTopic(request.getFullName().toLowerCase().replace(" ", "_") + "_" + user_id + "_topic")
                 .build();
         organizationRepository.save(organization);
         UserNode userNode = new UserNode() ;

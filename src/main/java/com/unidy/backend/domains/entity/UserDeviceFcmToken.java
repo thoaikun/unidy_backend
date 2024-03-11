@@ -17,9 +17,9 @@ public class UserDeviceFcmToken {
     @Column(name = "id")
     public Integer id;
 
-    @Column(name = "user_id")
-    public Integer userId;
-
     @Column(name = "fcm_token")
     public String fcmToken;
+
+    @Column(name = "user_id")
+    public Integer userId;
 }
