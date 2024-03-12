@@ -39,7 +39,6 @@ public class AuthenticationServiceIplm implements AuthenticationService {
   private final Neo4j_UserRepository neo4j_userRepository;
   private final FavoriteActivitiesRepository favoriteActivitiesRepository;
   private final OrganizationRepository organizationRepository;
-  private final SponsorRepository sponsorRepository;
   @Transactional
   public ResponseEntity<?> register(RegisterRequest request) {
     try {
@@ -100,32 +99,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
         userNode.setProfileImageLink(null);
         neo4j_userRepository.save(userNode);
         saveUserToken(savedUser, jwtToken, jwtToken);
-      } else {
-        var user = User.builder()
-                .role(Role.SPONSOR)
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .build();
-        repository.save(user);
-
-        int user_id = repository.findByEmail(user.getEmail()).get().getUserId();
-        Sponsor sponsor = Sponsor.builder()
-                .sponsorName(request.getFullName())
-                .email(request.getEmail())
-                .phone(request.getPhone())
-                .userId(user_id)
-                .status("0")
-                .build();
-        sponsorRepository.save(sponsor);
-        UserNode userNode = new UserNode() ;
-        userNode.setUserId(user_id);
-        userNode.setFullName(request.getFullName());
-        userNode.setIsBlock(false);
-        userNode.setProfileImageLink(null);
-        userNode.setRole(Role.SPONSOR.toString());
-        neo4j_userRepository.save(userNode);
       }
-
 
       return ResponseEntity.ok().header("Register").body("Register success");
     }catch (Exception e){
@@ -168,10 +142,17 @@ public class AuthenticationServiceIplm implements AuthenticationService {
     List<Token> previousTokens = tokenRepository.findAllValidTokenByUser(user.getUserId());
 
     for (Token token : previousTokens) {
-      if (isTokenStillValid(token)) {
+      try {
+        isTokenStillValid(token);
         return Map.of("accessToken", token.getToken(), "refreshToken", token.getRefreshToken(), "isExpired", "false");
       }
+      catch (Exception e){
+          token.setExpired(true);
+          token.setRevoked(true);
+          tokenRepository.save(token);
+      }
     }
+
     return Map.of("accessToken", jwtService.generateToken(user), "refreshToken", jwtService.generateRefreshToken(user), "isExpired", "true");
   }
 
@@ -188,7 +169,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
   }
 
   private boolean isTokenStillValid(Token token) {
-    return !token.isExpired() && !token.isRevoked();
+    return jwtService.isTokenExpired(token.getToken());
   }
 
   private void revokeAllUserTokens(User user) {

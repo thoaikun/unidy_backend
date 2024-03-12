@@ -12,6 +12,7 @@ import com.unidy.backend.domains.dto.requests.ChoseFavoriteRequest;
 import com.unidy.backend.domains.dto.responses.FollowOrganizationResponse;
 import com.unidy.backend.domains.dto.responses.InviteFriend;
 import com.unidy.backend.domains.dto.responses.RecommendFriendResponse;
+import com.unidy.backend.domains.dto.responses.TransactionResponse;
 import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.firebase.FirebaseService;
@@ -45,6 +46,7 @@ public class UserServiceIplm implements UserService {
     private final FavoriteActivitiesRepository favoriteActivitiesRepository;
     private final FirebaseService firebaseService;
     private final Environment environment;
+    private final TransactionRepository transactionRepository;
 
     public UserInformationRespond getUserInformation(Principal connectedUser){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
@@ -326,5 +328,17 @@ public class UserServiceIplm implements UserService {
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
         }
+    }
+
+    @Override
+    public ResponseEntity<?> getUserTransaction(Principal connectedUser) {
+//        try {
+//            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+//            List<TransactionResponse> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId());
+//            return ResponseEntity.badRequest().body(transactionResponses);
+//        } catch (Exception e){
+//            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+//        }
+        return null;
     }
 }

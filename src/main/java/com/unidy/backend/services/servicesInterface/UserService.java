@@ -26,4 +26,5 @@ public interface UserService {
     ResponseEntity<?> getListFriend(Principal connectedUser, int limit, int cursor);
     ResponseEntity<?> choseFavoriteActivities(Principal connectedUser, ChoseFavoriteRequest choseFavoriteRequest);
     ResponseEntity<?> followOrganization(Principal connectedUser, int organizationId);
+    ResponseEntity<?> getUserTransaction(Principal connectedUser);
 }

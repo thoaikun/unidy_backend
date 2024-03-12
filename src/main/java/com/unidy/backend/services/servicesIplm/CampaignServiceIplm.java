@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
+import com.unidy.backend.domains.Type.VolunteerStatus;
 import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
 import com.unidy.backend.domains.dto.notification.extraData.NewCampaignData;
@@ -80,6 +81,7 @@ public class CampaignServiceIplm implements CampaignService {
                 }
             }
 
+
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Campaign campaign_mysql = Campaign.builder()
                     .title(request.getTitle())
@@ -110,6 +112,7 @@ public class CampaignServiceIplm implements CampaignService {
             CampaignNode campaign = new CampaignNode() ;
             campaign.setCampaignId(campaign_mysql.getCampaignId().toString());
             campaign.setContent(request.getDescription());
+            campaign.setTitle(request.getTitle());
             campaign.setStatus(request.getStatus());
             campaign.setNumOfRegister(request.getNumOfVolunteer());
             campaign.setCreateDate(sdf.format(new Date()));
@@ -122,8 +125,8 @@ public class CampaignServiceIplm implements CampaignService {
             campaign.setUserNode(campaignOrganization);
             campaign.setLinkImage(listImageLink.toString());
             campaign.setUpdateDate(null);
-            campaign.setDonation_budget(request.getDonationBudget());
-            campaign.setDonation_budget_received(0);
+            campaign.setDonationBudget(request.getDonationBudget());
+            campaign.setDonationBudgetReceived(0);
             neo4jCampaignRepository.save(campaign);
 
             Optional<Organization> organization = organizationRepository.findByUserId(user.getUserId());
@@ -157,7 +160,7 @@ public class CampaignServiceIplm implements CampaignService {
             userJoin.setVolunteerId(user.getUserId());
             userJoin.setCampaignId(campaignId);
             userJoin.setTimeJoin(new Date());
-            userJoin.setStatus("join");
+            userJoin.setStatus(String.valueOf(VolunteerStatus.NOT_APPROVE_YET));
 
             Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
             if (campaign.getNumberVolunteerRegistered() >= campaign.getNumberVolunteer()){
@@ -238,7 +241,7 @@ public class CampaignServiceIplm implements CampaignService {
 //                    campaignInfo.setOwnerProfileImage(userProfileImage.getLinkImage());
 //                }
 
-                CampaignPostResponse campaignPost = neo4jCampaignRepository.findCampaignNodeByCampaignId(String.valueOf(id));
+                CampaignPostResponse campaignPost = neo4jCampaignRepository.findCampaignPostByCampaignId(String.valueOf(id));
                 responses.add(campaignPost);
             }
 
