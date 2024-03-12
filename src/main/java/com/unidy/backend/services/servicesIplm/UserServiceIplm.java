@@ -7,6 +7,7 @@ import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.UserDto;
 import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
+import com.unidy.backend.domains.dto.notification.extraData.FriendAcceptData;
 import com.unidy.backend.domains.dto.notification.extraData.FriendRequestData;
 import com.unidy.backend.domains.dto.requests.ChoseFavoriteRequest;
 import com.unidy.backend.domains.dto.responses.FollowOrganizationResponse;
@@ -206,7 +207,7 @@ public class UserServiceIplm implements UserService {
                 neo4jUserRepository.createFriendship(user.getUserId(),friendId);
 
                 User requestUser = userRepository.findByUserId(friendId);
-                ExtraData extraData = new FriendRequestData(user.getUserId(), user.getFullName());
+                ExtraData extraData = new FriendAcceptData(user.getUserId(), user.getFullName());
                 ArrayList<String> deviceTokens = new ArrayList<>();
                 for (UserDeviceFcmToken deviceToken : requestUser.getUserDeviceFcmTokens()) {
                     deviceTokens.add(deviceToken.getFcmToken());
