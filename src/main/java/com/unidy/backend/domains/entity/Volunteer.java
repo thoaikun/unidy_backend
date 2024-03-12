@@ -1,16 +1,13 @@
 package com.unidy.backend.domains.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Date;
 
 @Entity
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "volunteer")
@@ -22,10 +19,4 @@ public class Volunteer {
 
     @Column(name = "user_id")
     private int userId;
-
-    @Column(name = "sponsor_íd")
-    private int sponsorId;
-
-    @Column(name = "organization_id")
-    private String organizationId;
 }

@@ -43,6 +43,7 @@ public class CampaignServiceIplm implements CampaignService {
     private final OrganizationRepository organizationRepository;
     private final UserProfileImageRepository userProfileImageRepository;
     private final CampaignTypeRepository campaignTypeRepository;
+    private final VolunteerRepository volunteerRepository;
     @Override
     @Transactional
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) throws JsonProcessingException {
@@ -143,13 +144,18 @@ public class CampaignServiceIplm implements CampaignService {
             if (volunteer != null){
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("you have joined yet"));
             }
+
+            Volunteer volunteerInfo = volunteerRepository.findByUserId(user.getUserId());
             VolunteerJoinCampaign userJoin = new VolunteerJoinCampaign();
-            userJoin.setVolunteerId(user.getUserId());
+            userJoin.setVolunteerId(volunteerInfo.getVolunteerId());
             userJoin.setCampaignId(campaignId);
             userJoin.setTimeJoin(new Date());
             userJoin.setStatus(String.valueOf(VolunteerStatus.NOT_APPROVE_YET));
 
             Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
+            if (campaign == null){
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Campaign not found"));
+            }
             if (campaign.getNumberVolunteerRegistered() >= campaign.getNumberVolunteer()){
                 return ResponseEntity.ok().body(new ErrorResponseDto("Full slot"));
             } else {

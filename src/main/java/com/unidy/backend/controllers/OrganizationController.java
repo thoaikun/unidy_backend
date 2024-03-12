@@ -23,20 +23,20 @@ public class OrganizationController {
     }
 
     @GetMapping("/list-volunteer-not-approve")
-    public ResponseEntity<?> getListVolunteer(Principal connectedUser){
+    public ResponseEntity<?> getListVolunteer(Principal connectedUser, @RequestParam("campaignId") int campaignId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return organizationService.getListVolunteerNotApproved(user.getUserId());
+        return organizationService.getListVolunteerNotApproved(user.getUserId(),campaignId);
     }
 
-    @PostMapping("/approve-volunteer")
-    public ResponseEntity<?> approveVolunteer(@RequestParam("volunteerId") int volunteerId){
-        return organizationService.approveVolunteer(volunteerId);
+    @PatchMapping("/approve-volunteer")
+    public ResponseEntity<?> approveVolunteer(Principal connectedUser,@RequestParam("volunteerId") int volunteerId,@RequestParam("campaignId") int campaignId){
+        return organizationService.approveVolunteer(connectedUser,volunteerId,campaignId);
     }
 
-    @PostMapping("/list-volunteer-approved")
-    public ResponseEntity<?> approveVolunteer(Principal connectedUser){
+    @GetMapping("/list-volunteer-approved")
+    public ResponseEntity<?> getListVolunteerApproved(Principal connectedUser, @RequestParam("campaignId") int campaignId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return organizationService.getListVolunteerApproved(user.getUserId());
+        return organizationService.getListVolunteerApproved(user.getUserId(),campaignId);
     }
 
     //tat ca cac giao dich

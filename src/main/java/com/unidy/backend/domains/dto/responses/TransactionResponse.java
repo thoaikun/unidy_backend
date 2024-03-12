@@ -14,8 +14,8 @@ public class TransactionResponse {
     private Date transactionTime;
     private Long transactionAmount;
     private String transactionCode;
-    private Integer sponsorId;
-    private String sponsorName;
+    private Integer userId;
+    private String fullName;
     private String email;
     private Integer campaignId;
     private String content;

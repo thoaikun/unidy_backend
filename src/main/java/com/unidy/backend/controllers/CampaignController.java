@@ -25,7 +25,7 @@ public class CampaignController {
         return campaignService.createCampaign(connectedUser,request);
     }
 
-    @PreAuthorize("hasRole('ORGANIZATION')")
+    @PreAuthorize("hasRole('VOLUNTEER')")
     @GetMapping("/register")
     public ResponseEntity<?> registerCampaign(Principal connectedUser, @RequestParam int campaignId){
         return campaignService.registerCampaign(connectedUser, campaignId);

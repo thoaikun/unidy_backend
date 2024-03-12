@@ -15,25 +15,72 @@ import java.util.List;
 @Transactional
 public interface TransactionRepository extends JpaRepository<Transaction, Integer> {
 
-////    @Query(value = """
-////                    SELECT new com.unidy.backend.domains.dto.responses.TransactionResponse(t.transactionId,t.transactionType,t.transactionTime,t.transactionAmount,t.transactionCode,s.sponsorId,s.sponsorName,s.email,t.campaignId,c.description,c.donationBudgetReceived,c.donationBudget) FROM Sponsor s INNER JOIN SponsorTransaction st ON s.sponsorId = st.sponsorId INNER JOIN Transaction t ON t.transactionId = st.transactionId INNER JOIN Campaign c ON c.campaignId = t.campaignId WHERE t.organizationUserId = :organizationUserId
-////                    """)
-//@Query(value = "")
-//
-//    List<TransactionResponse> findTransactionByOrganizationId(@Param("organizationUserId") int organizationUserId);
-////    @Query(value = """
-////                    SELECT new com.unidy.backend.domains.dto.responses.TransactionResponse(t.transactionId,t.transactionType,t.transactionTime,t.transactionAmount,t.transactionCode,s.sponsorId,s.sponsorName,s.email,t.campaignId,c.description,c.donationBudgetReceived,c.donationBudget) FROM Sponsor s INNER JOIN SponsorTransaction st ON s.sponsorId = st.sponsorId INNER JOIN Transaction t ON t.transactionId = st.transactionId INNER JOIN Campaign c ON c.campaignId = t.campaignId WHERE t.organizationUserId = :organizationUserId AND c.campaignId = :campaignId
-////                    """)
-//
-//    @Query(value = "")
-//
-//    List<TransactionResponse> findTransactionByCampaignId(@Param("organizationUserId") int organizationUserId, @Param("campaignId") int campaignId);
-//
-//
-////    @Query(value = """
-////                    SELECT new com.unidy.backend.domains.dto.responses.TransactionResponse(t.transactionId,t.transactionType,t.transactionTime,t.transactionAmount,t.transactionCode,s.sponsorId,s.sponsorName,s.email,t.campaignId,c.description,c.donationBudgetReceived,c.donationBudget) FROM Sponsor s INNER JOIN SponsorTransaction st ON s.sponsorId = st.sponsorId INNER JOIN Transaction t ON t.transactionId = st.transactionId INNER JOIN Campaign c ON c.campaignId = t.campaignId WHERE s.userId = :userId
-////                    """)
-//
-//    @Query(value = "")
-//    List<TransactionResponse> findTransactionByUserId(Integer userId);
+    @Query(value = """
+        SELECT new com.unidy.backend.domains.dto.responses.TransactionResponse(
+            t.transactionId,
+            t.transactionType,
+            t.transactionTime,
+            t.transactionAmount,
+            t.transactionCode,
+            u.userId,
+            u.fullName,
+            u.email,
+            t.campaignId,
+            c.description,
+            c.donationBudgetReceived,
+            c.donationBudget
+        )
+        FROM Transaction t
+        INNER JOIN User u ON t.userId = u.userId
+        INNER JOIN Campaign c ON c.campaignId = t.campaignId
+        WHERE t.organizationUserId = :organizationUserId
+    """)
+    List<TransactionResponse> findTransactionByOrganizationId(@Param("organizationUserId") int organizationUserId);
+
+    @Query(value = """
+        SELECT DISTINCT new com.unidy.backend.domains.dto.responses.TransactionResponse(
+            t.transactionId,
+            t.transactionType,
+            t.transactionTime,
+            t.transactionAmount,
+            t.transactionCode,
+            u.userId,
+            u.fullName,
+            u.email,
+            t.campaignId,
+            c.description,
+            c.donationBudgetReceived,
+            c.donationBudget
+        )
+        FROM Transaction t
+        INNER JOIN User u ON t.userId = u.userId
+        INNER JOIN Campaign c ON c.campaignId = t.campaignId
+        WHERE t.organizationUserId = :organizationUserId and c.campaignId = :campaignId
+    """)
+
+    List<TransactionResponse> findTransactionByCampaignId(@Param("organizationUserId") int organizationUserId, @Param("campaignId") int campaignId);
+
+
+    @Query(value = """
+        SELECT DISTINCT new com.unidy.backend.domains.dto.responses.TransactionResponse(
+            t.transactionId,
+            t.transactionType,
+            t.transactionTime,
+            t.transactionAmount,
+            t.transactionCode,
+            u.userId,
+            u.fullName,
+            u.email,
+            t.campaignId,
+            c.description,
+            c.donationBudgetReceived,
+            c.donationBudget
+        )
+        FROM Transaction t
+        INNER JOIN User u ON t.userId = u.userId
+        INNER JOIN Campaign c ON c.campaignId = t.campaignId
+        WHERE u.userId = :userId
+    """)
+
+    List<TransactionResponse> findTransactionByUserId(Integer userId);
 }
