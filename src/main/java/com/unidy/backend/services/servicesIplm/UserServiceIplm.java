@@ -178,8 +178,8 @@ public class UserServiceIplm implements UserService {
 
             if (!deviceTokens.isEmpty()) {
                 NotificationDto notification = NotificationDto.builder()
-                        .title("Kết bạn thành công")
-                        .body("%s đã chấp nhận lời mời kết bạn".formatted(user.getFullName()))
+                        .title("Lời mời kết bạn")
+                        .body("%s đã gửi lời mời kết bạn".formatted(user.getFullName()))
                         .deviceTokens(deviceTokens)
                         .extraData(extraData)
                         .build();
