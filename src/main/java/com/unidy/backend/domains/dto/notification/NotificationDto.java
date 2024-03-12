@@ -2,6 +2,8 @@ package com.unidy.backend.domains.dto.notification;
 
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
+import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
+import com.unidy.backend.domains.dto.notification.extraData.ExtraDataVisitor;
 import lombok.*;
 
 import javax.annotation.Nullable;
@@ -19,7 +21,7 @@ public class NotificationDto {
     @Nullable
     private String topic;
     @Nullable
-    private ArrayList<ExtraData> extraData;
+    private ExtraData extraData;
     @Nullable
     private ArrayList<String> deviceTokens;
     @Nullable
@@ -38,9 +40,7 @@ public class NotificationDto {
             messageBuilder.setToken(this.deviceToken);
         }
         if (this.extraData != null) {
-            for (ExtraData data : this.extraData) {
-                messageBuilder.putData(data.getKey(), data.getValue());
-            }
+            this.extraData.accept(new ExtraDataVisitor(), messageBuilder);
         }
 
         return messageBuilder.build();
@@ -56,9 +56,7 @@ public class NotificationDto {
             multicastMessageBuilder.addAllTokens(this.deviceTokens);
         }
         if (this.extraData != null) {
-            for (ExtraData data : this.extraData) {
-                multicastMessageBuilder.putData(data.getKey(), data.getValue());
-            }
+            this.extraData.accept(new ExtraDataVisitor(), multicastMessageBuilder);
         }
 
         return multicastMessageBuilder.build();

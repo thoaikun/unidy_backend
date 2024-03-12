@@ -39,4 +39,7 @@ public class Organization {
 
     @Column(name = "user_id")
     private Integer userId;
+
+    @Column(name = "firebase_topic")
+    private String firebaseTopic;
 }

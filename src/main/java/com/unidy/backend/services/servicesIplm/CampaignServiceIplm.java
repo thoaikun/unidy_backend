@@ -5,10 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
+import com.unidy.backend.domains.dto.notification.NotificationDto;
+import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
+import com.unidy.backend.domains.dto.notification.extraData.NewCampaignData;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.relationship.CampaignType;
+import com.unidy.backend.firebase.FirebaseService;
 import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.CampaignService;
 import jakarta.transaction.Transactional;
@@ -37,44 +41,44 @@ public class CampaignServiceIplm implements CampaignService {
     private final Environment environment;
     private final OrganizationRepository organizationRepository;
     private final UserProfileImageRepository userProfileImageRepository;
+    private final FirebaseService firebaseService;
     private final CampaignTypeRepository campaignTypeRepository;
     @Override
     @Transactional
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) throws JsonProcessingException {
         try {
-        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            //neo4j
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                //neo4j
 
-        JSONArray listImageLink =  new JSONArray();
-        if (null != request.getListImageFile()){
-            for (MultipartFile image : request.getListImageFile()){
-                String postImageId = UUID.randomUUID().toString();
-                String fileContentType = image.getContentType();
-                try {
-                    if (fileContentType != null &&
-                            (fileContentType.equals("image/png") ||
-                                    fileContentType.equals("image/jpeg") ||
-                                    fileContentType.equals("image/jpg"))) {
-                        fileContentType = fileContentType.replace("image/",".");
-                        s3Service.putImage(
-                                "unidy",
-                                fileContentType,
-                                "campaign-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),
-                                image.getBytes()
-                        );
+            JSONArray listImageLink =  new JSONArray();
+            if (null != request.getListImageFile()){
+                for (MultipartFile image : request.getListImageFile()){
+                    String postImageId = UUID.randomUUID().toString();
+                    String fileContentType = image.getContentType();
+                    try {
+                        if (fileContentType != null &&
+                                (fileContentType.equals("image/png") ||
+                                        fileContentType.equals("image/jpeg") ||
+                                        fileContentType.equals("image/jpg"))) {
+                            fileContentType = fileContentType.replace("image/",".");
+                            s3Service.putImage(
+                                    "unidy",
+                                    fileContentType,
+                                    "campaign-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),
+                                    image.getBytes()
+                            );
 
-                        String imageUrl = "/" + user.getUserId() + "/" + postImageId + fileContentType;
-                        listImageLink.put(imageUrl);
-                    } else {
-                        return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
+                            String imageUrl = "/" + user.getUserId() + "/" + postImageId + fileContentType;
+                            listImageLink.put(imageUrl);
+                        } else {
+                            return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
+                        }
+                    } catch (Exception e) {
+                        return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
                     }
-                } catch (Exception e) {
-                    return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
                 }
             }
-        }
-
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Campaign campaign_mysql = Campaign.builder()
@@ -122,6 +126,18 @@ public class CampaignServiceIplm implements CampaignService {
             campaign.setDonation_budget_received(0);
             neo4jCampaignRepository.save(campaign);
 
+            Optional<Organization> organization = organizationRepository.findByUserId(user.getUserId());
+            if (organization.isPresent()) {
+                ExtraData extraData = new NewCampaignData(campaignId, organization.get().getOrganizationId(), request.getTitle());
+
+                NotificationDto notification = NotificationDto.builder()
+                        .title(organization.get().getOrganizationName() + " tổ chức chiến dịch mới")
+                        .body(request.getDescription())
+                        .topic(organization.get().getFirebaseTopic())
+                        .extraData(extraData)
+                        .build();
+                firebaseService.pushNotificationToTopic(notification);
+            }
 
             return ResponseEntity.ok().body(new SuccessReponse("Create campaign success")) ;
         } catch (Exception e){
