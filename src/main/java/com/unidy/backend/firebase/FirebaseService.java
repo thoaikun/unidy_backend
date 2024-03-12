@@ -23,6 +23,8 @@ public class FirebaseService {
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
             UserDeviceFcmToken userDeviceFcmToken = userDeviceFcmTokenRepository.findByFcmToken(fcmToken);
             if (userDeviceFcmToken != null) {
+                userDeviceFcmToken.setUserId(user.getUserId());
+                userDeviceFcmTokenRepository.save(userDeviceFcmToken);
                 return;
             }
             userDeviceFcmToken = UserDeviceFcmToken.builder()
@@ -51,28 +53,18 @@ public class FirebaseService {
             String response = firebaseMessaging.send(message);
         }
         catch (FirebaseMessagingException error) {
-            throw new RuntimeException(error);
+            System.out.println(error.getMessage());
         }
     }
 
-    public void pushNotificationToTopic(NotificationDto notificationDto) {
-        try {
-            Message message = notificationDto.toFirebaseMessage();
-            String response =firebaseMessaging.send(message);
-        }
-        catch (FirebaseMessagingException error) {
-            throw new RuntimeException(error);
-        }
+    public void pushNotificationToTopic(NotificationDto notificationDto) throws FirebaseMessagingException {
+        Message message = notificationDto.toFirebaseMessage();
+        String response =firebaseMessaging.send(message);
     }
 
-    public void pushNotificationToMultipleDevices(NotificationDto notificationDto) {
-        try {
-            MulticastMessage multicastMessage = notificationDto.toFirebaseMulticastMessage();
-            BatchResponse response = firebaseMessaging.sendMulticast(multicastMessage);
-        }
-        catch (FirebaseMessagingException error) {
-            throw new RuntimeException(error);
-        }
+    public void pushNotificationToMultipleDevices(NotificationDto notificationDto) throws FirebaseMessagingException {
+         MulticastMessage multicastMessage = notificationDto.toFirebaseMulticastMessage();
+         BatchResponse response = firebaseMessaging.sendMulticast(multicastMessage);
     }
 
     public void subscribeToTopic(String deviceToken, String topic) {

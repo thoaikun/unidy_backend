@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import lombok.*;
+import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -91,4 +92,8 @@ public class User implements UserDetails {
   public boolean isEnabled() {
     return true;
   }
+
+  @OneToMany(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id")
+  private List<UserDeviceFcmToken> userDeviceFcmTokens;
 }
