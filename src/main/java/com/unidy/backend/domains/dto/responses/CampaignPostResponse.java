@@ -9,26 +9,25 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.neo4j.core.schema.Property;
 import software.amazon.awssdk.services.servicecatalog.model.OrganizationNode;
+
+import java.util.List;
+
 @Data
 @Builder
 @Getter
 @Setter
 public class CampaignPostResponse {
-//    private String campaignId;
-//    private String hashTag;
-//    private String content;
-//    private String status;
-//    private String startDate;
-//    private String endDate;
-//    private String timeTakePlace;
-//    private String location;
-//    private int numOfRegister;
-//    private String createDate;
-//    private String updateDate;
-//    private Boolean isBlock;
-//    private String linkImage;
-    private CampaignNode campaign;
-    private UserNode organizationNode;
-    private Boolean isLiked;
-    private int likeCount ;
+    @Data
+    @Builder
+    public static class CampaignPostResponseData {
+        private CampaignNode campaign;
+        private UserNode organizationNode;
+        private Boolean isLiked;
+        private int likeCount ;
+    }
+
+    private List<CampaignPostResponseData> campaigns;
+    private String nextCursor;
+    private int nextOffset;
 }
+

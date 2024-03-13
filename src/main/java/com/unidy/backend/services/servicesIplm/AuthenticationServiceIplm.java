@@ -39,6 +39,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
   private final Neo4j_UserRepository neo4j_userRepository;
   private final FavoriteActivitiesRepository favoriteActivitiesRepository;
   private final OrganizationRepository organizationRepository;
+  private final VolunteerRepository volunteerRepository;
   @Transactional
   public ResponseEntity<?> register(RegisterRequest request) {
     try {
@@ -99,6 +100,11 @@ public class AuthenticationServiceIplm implements AuthenticationService {
         userNode.setProfileImageLink(null);
         neo4j_userRepository.save(userNode);
         saveUserToken(savedUser, jwtToken, jwtToken);
+
+        Volunteer volunteer = Volunteer.builder()
+                .userId(user.getUserId())
+                .build();
+        volunteerRepository.save(volunteer);
       }
 
       return ResponseEntity.ok().header("Register").body("Register success");

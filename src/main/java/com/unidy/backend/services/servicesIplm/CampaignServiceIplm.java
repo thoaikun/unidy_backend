@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.springframework.core.env.Environment;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +46,7 @@ public class CampaignServiceIplm implements CampaignService {
     private final UserProfileImageRepository userProfileImageRepository;
     private final FirebaseService firebaseService;
     private final CampaignTypeRepository campaignTypeRepository;
+    private final VolunteerRepository volunteerRepository;
     @Override
     @Transactional
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) throws JsonProcessingException {
@@ -156,13 +159,18 @@ public class CampaignServiceIplm implements CampaignService {
             if (volunteer != null){
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("you have joined yet"));
             }
+
+            Volunteer volunteerInfo = volunteerRepository.findByUserId(user.getUserId());
             VolunteerJoinCampaign userJoin = new VolunteerJoinCampaign();
-            userJoin.setVolunteerId(user.getUserId());
+            userJoin.setVolunteerId(volunteerInfo.getVolunteerId());
             userJoin.setCampaignId(campaignId);
             userJoin.setTimeJoin(new Date());
             userJoin.setStatus(String.valueOf(VolunteerStatus.NOT_APPROVE_YET));
 
             Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
+            if (campaign == null){
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Campaign not found"));
+            }
             if (campaign.getNumberVolunteerRegistered() >= campaign.getNumberVolunteer()){
                 return ResponseEntity.ok().body(new ErrorResponseDto("Full slot"));
             } else {
@@ -179,76 +187,37 @@ public class CampaignServiceIplm implements CampaignService {
 
     }
 
+    @Async("threadPoolTaskExecutor")
+    public CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> getRecommendationFromKNearest(Principal connectedUser, int offset, int limit) throws Exception {
+        String api_recommendation_flask = environment.getProperty("API_RECOMMENDATION_FLASK");
 
-    @Transactional
-    public ResponseEntity<?> getRecommend(Principal connectedUser, int offset, int limit) {
-        try {
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        FavoriteActivities favoriteActivities = favoriteActivitiesRepository.findByUserId(user.getUserId());
 
-            String api_recommendation_flask = environment.getProperty("API_RECOMMENDATION_FLASK");
+        RestTemplate restTemplate = new RestTemplate();
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-            FavoriteActivities favoriteActivities = favoriteActivitiesRepository.findByUserId(user.getUserId());
+        List<Double> attribute = Arrays.asList(favoriteActivities.getCommunityType(),favoriteActivities.getEducation(),
+                favoriteActivities.getResearch(),favoriteActivities.getHelpOther(),favoriteActivities.getEnvironment(),favoriteActivities.getHealthy(),favoriteActivities.getEmergencyPreparedness());
+        List<List<Double>> requestData = List.of(attribute);
 
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            List<Double> attribute = Arrays.asList(favoriteActivities.getCommunityType(),favoriteActivities.getEducation(),
-                    favoriteActivities.getResearch(),favoriteActivities.getHelpOther(),favoriteActivities.getEnvironment(),favoriteActivities.getHealthy(),favoriteActivities.getEmergencyPreparedness());
-            List<List<Double>> requestData = List.of(attribute);
-
-            HttpEntity<List<List<Double>>> requestEntity = new HttpEntity<>(requestData, headers);
-//            String flaskAPIRecommend = "http://0.0.0.0:8000/recommend-campaign";
-            assert api_recommendation_flask != null;
-            ResponseEntity<String> response = restTemplate.postForEntity(api_recommendation_flask, requestEntity, String.class);
-            String responseData = response.getBody();
-            if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
-                return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't call api from recommend service"));
-            }
-            System.out.println(responseData);
-            List<CampaignPostResponse> responses = new ArrayList<>();
-            int[] arrayId = Arrays.copyOfRange(stringToArray(responseData),offset,offset+limit);
-            for (int id : arrayId) {
-//                Optional<Campaign> campaign = campaignRepository.findById(id);
-//                Campaign info = campaign.get();
-//                Optional<Organization> organization = organizationRepository.findByUserId(info.getOwner());
-//                UserProfileImage userProfileImage = userProfileImageRepository.findByUserId(info.getOwner());
-//                CampaignResponse campaignInfo = CampaignResponse.builder()
-//                        .campaignId(info.getCampaignId())
-//                        .title(info.getTitle())
-//                        .description(info.getDescription())
-//                        .categories(info.getCategories())
-//                        .numberVolunteer(info.getNumberVolunteer())
-//                        .numberVolunteerRegistered(info.getNumberVolunteerRegistered())
-//                        .donationBudget(info.getDonationBudget())
-//                        .donationBudgetReceived(info.getDonationBudgetReceived())
-//                        .startDate(info.getStartDate())
-//                        .endDate(info.getEndDate())
-//                        .timeTakePlace(info.getTimeTakePlace())
-//                        .location(info.getLocation())
-//                        .status(info.getStatus())
-//                        .createDate(info.getCreateDate())
-//                        .updateDate(info.getUpdateDate())
-//                        .ownerId(organization.get().getOrganizationId())
-//                        .ownerName(organization.get().getOrganizationName())
-//                        .ownerProfileImage(null)
-//                        .hashTag(info.getHashTag())
-//                        .linkImage(info.getLink_image())
-//                        .build();
-//                if (userProfileImage != null){
-//                    campaignInfo.setOwnerProfileImage(userProfileImage.getLinkImage());
-//                }
-
-                CampaignPostResponse campaignPost = neo4jCampaignRepository.findCampaignPostByCampaignId(String.valueOf(id));
-                responses.add(campaignPost);
-            }
-
-            return ResponseEntity.ok().body(responses);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.toString());
+        HttpEntity<List<List<Double>>> requestEntity = new HttpEntity<>(requestData, headers);
+        assert api_recommendation_flask != null;
+        ResponseEntity<String> response = restTemplate.postForEntity(api_recommendation_flask, requestEntity, String.class);
+        String responseData = response.getBody();
+        if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
+            throw new Exception("Recommendation service error");
         }
+        List<CampaignPostResponse.CampaignPostResponseData> campaigns = new ArrayList<>();
+        int[] arrayId = Arrays.copyOfRange(stringToArray(responseData),offset,offset+limit);
+        for (int id : arrayId) {
+            CampaignPostResponse.CampaignPostResponseData campaignPost = neo4jCampaignRepository.findCampaignPostByCampaignId(String.valueOf(id));
+            campaigns.add(campaignPost);
+        }
+
+        return CompletableFuture.completedFuture(campaigns);
     }
 
     private int[] stringToArray(String arrayString) {
@@ -261,19 +230,18 @@ public class CampaignServiceIplm implements CampaignService {
         return resultArray;
     }
 
-    public ResponseEntity<?> getCampaignPost(Principal connectedUser, String cursor, int limit){
+    public CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> getRecommendationFromNeo4J(Principal connectedUser, String cursor, int limit) throws Exception {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            List<CampaignPostResponse> listCampaign = neo4jCampaignRepository.findCampaign(user.getUserId(),cursor,limit);
-            return ResponseEntity.ok().body(listCampaign);
+            return CompletableFuture.completedFuture(neo4jCampaignRepository.findCampaign(user.getUserId(),cursor,limit));
         } catch (Exception e){
-            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
+            throw new Exception("Recommendation service error");
         }
     }
 
     public ResponseEntity<?> getCampaignByOrganizationID(int organizationId,String cursor,int limit){
         try {
-            List<CampaignPostResponse> listCampaign = neo4jCampaignRepository.findCampaignByOrganizationID(organizationId,cursor,limit);
+            List<CampaignPostResponse.CampaignPostResponseData> listCampaign = neo4jCampaignRepository.findCampaignByOrganizationID(organizationId,cursor,limit);
             return ResponseEntity.ok().body(listCampaign);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));

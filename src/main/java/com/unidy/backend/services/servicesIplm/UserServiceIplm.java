@@ -24,6 +24,7 @@ import com.unidy.backend.services.servicesInterface.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -330,16 +331,14 @@ public class UserServiceIplm implements UserService {
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
         }
     }
-
     @Override
     public ResponseEntity<?> getUserTransaction(Principal connectedUser) {
-//        try {
-//            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-//            List<TransactionResponse> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId());
-//            return ResponseEntity.badRequest().body(transactionResponses);
-//        } catch (Exception e){
-//            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
-//        }
-        return null;
+        try {
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            List<TransactionResponse> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId());
+            return ResponseEntity.badRequest().body(transactionResponses);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
     }
 }
