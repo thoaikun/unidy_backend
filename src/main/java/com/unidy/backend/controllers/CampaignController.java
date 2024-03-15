@@ -2,15 +2,17 @@ package com.unidy.backend.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
-import com.unidy.backend.domains.dto.requests.PostRequest;
+import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.services.servicesInterface.CampaignService;
-import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,15 +33,26 @@ public class CampaignController {
         return campaignService.registerCampaign(connectedUser, campaignId);
     }
 
-    @PreAuthorize("hasAnyRole('VOLUNTEER','SPONSOR')")
+    @PreAuthorize("hasAnyRole('VOLUNTEER')")
     @GetMapping("/getRecommendCampaign")
-    public ResponseEntity<?> registerCampaign(Principal connectedUser,@RequestParam int offset, @RequestParam int limit){
-        return campaignService.getRecommend(connectedUser, offset, limit);
-    }
-
-    @GetMapping("/getCampaignPost")
-    public ResponseEntity<?> getCampaignPost(Principal connectedUser,@RequestParam String cursor,@RequestParam int limit){
-        return campaignService.getCampaignPost(connectedUser, cursor, limit);
+    public ResponseEntity<?> registerCampaign(Principal connectedUser,@RequestParam int offset, @RequestParam int limit, @RequestParam String cursor){
+        try {
+            CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> recommendationFromKNearest = campaignService.getRecommendationFromKNearest(connectedUser, offset, limit);
+            CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> recommendationFromNeo4J = campaignService.getRecommendationFromNeo4J(connectedUser, cursor, limit);
+            CompletableFuture.allOf(recommendationFromKNearest, recommendationFromNeo4J).join();
+            List<CampaignPostResponse.CampaignPostResponseData> result = new ArrayList<>();
+            result.addAll(recommendationFromKNearest.get());
+            result.addAll(recommendationFromNeo4J.get());
+            CampaignPostResponse response = CampaignPostResponse.builder()
+                    .campaigns(result)
+                    .nextCursor(recommendationFromNeo4J.get().isEmpty() ? null : recommendationFromNeo4J.get().get(recommendationFromNeo4J.get().size() - 1).getCampaign().getCreateDate())
+                    .nextOffset(offset < 100 ? offset + limit : 100)
+                    .build();
+            return ResponseEntity.ok().body(response);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(e.toString());
+        }
     }
 
     @GetMapping("/get-organization-campaign")

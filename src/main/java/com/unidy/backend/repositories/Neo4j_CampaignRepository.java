@@ -22,7 +22,7 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
             "RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked\n" +
             "ORDER BY campaign.create_date DESC\n" +
             "LIMIT $limit;")
-    List<CampaignPostResponse> findCampaign(Integer userId, String cursor, int limit);
+    List<CampaignPostResponse.CampaignPostResponseData> findCampaign(Integer userId, String cursor, int limit);
 
     @Query("MATCH (organizationNode:user {role:\"ORGANIZATION\"})-[r:HAS_CAMPAIGN]->(campaign:campaign {campaign_id: $campaignId})\n" +
             "OPTIONAL MATCH (user)-[isLiked:LIKE]->(campaign)\n" +
@@ -30,7 +30,7 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
             "WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked\n" +
             "RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked\n" +
             "ORDER BY campaign.create_date DESC;")
-    CampaignPostResponse findCampaignPostByCampaignId(String campaignId);
+    CampaignPostResponse.CampaignPostResponseData findCampaignPostByCampaignId(String campaignId);
 
 
     @Query("MATCH (organizationNode:user {role:\"ORGANIZATION\", user_id : $organizationId})-[r:HAS_CAMPAIGN]->(campaign:campaign) \n" +
@@ -41,7 +41,7 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
             "RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked\n" +
             "ORDER BY campaign.create_date DESC\n" +
             "limit $limit;\n")
-    List<CampaignPostResponse> findCampaignByOrganizationID(int organizationId, String cursor, int limit);
+    List<CampaignPostResponse.CampaignPostResponseData> findCampaignByOrganizationID(int organizationId, String cursor, int limit);
 
     CampaignNode findCampaignNodeByCampaignId(String campaignId);
 }
