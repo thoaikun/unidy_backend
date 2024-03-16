@@ -39,10 +39,15 @@ public class CampaignController {
         try {
             CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> recommendationFromKNearest = campaignService.getRecommendationFromKNearest(connectedUser, offset, limit);
             CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> recommendationFromNeo4J = campaignService.getRecommendationFromNeo4J(connectedUser, cursor, limit);
-            CompletableFuture.allOf(recommendationFromKNearest, recommendationFromNeo4J).join();
-            List<CampaignPostResponse.CampaignPostResponseData> result = new ArrayList<>();
-            result.addAll(recommendationFromKNearest.get());
-            result.addAll(recommendationFromNeo4J.get());
+
+            List<CampaignPostResponse.CampaignPostResponseData> result = CompletableFuture.allOf(recommendationFromKNearest, recommendationFromNeo4J)
+                    .thenApplyAsync(v -> {
+                        List<CampaignPostResponse.CampaignPostResponseData> temp = new ArrayList<>();
+                        temp.addAll(recommendationFromKNearest.join());
+                        temp.addAll(recommendationFromNeo4J.join());
+                        return temp;
+                    })
+                    .join();
             CampaignPostResponse response = CampaignPostResponse.builder()
                     .campaigns(result)
                     .nextCursor(recommendationFromNeo4J.get().isEmpty() ? null : recommendationFromNeo4J.get().get(recommendationFromNeo4J.get().size() - 1).getCampaign().getCreateDate())

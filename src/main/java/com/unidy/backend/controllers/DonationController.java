@@ -22,7 +22,12 @@ public class DonationController {
 
     @PostMapping("")
     public ResponseEntity<?> donation (Principal connectedUser, @RequestBody CreateTransactionRequest createTransactionRequest) throws NoSuchAlgorithmException, InvalidKeyException {
-        return donationService.executeTransaction(connectedUser, createTransactionRequest.getAmounts(), createTransactionRequest.getOrganizationUserId(), createTransactionRequest.getCampaignId());
+        return donationService.executeTransaction(
+            connectedUser,
+            createTransactionRequest.getAmounts(),
+            createTransactionRequest.getOrganizationUserId(),
+            createTransactionRequest.getCampaignId()
+        );
     }
 
     @PostMapping("/callBack-momo")
