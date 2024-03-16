@@ -6,11 +6,11 @@ import org.springframework.http.ResponseEntity;
 import java.security.Principal;
 
 public interface OrganizationService {
-    ResponseEntity<?> getProfileOrganization(int organizationId);
+    ResponseEntity<?> getProfileOrganization(int organizationI);
     ResponseEntity<?> getListVolunteer();
     ResponseEntity<?> approveVolunteer(Principal connectedUser, int volunteerId, int campaignId);
-    ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId);
-    ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId);
+    ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int pageNumber, int pageSize);
+    ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId,int pageNumber, int pageSize);
     ResponseEntity<?> getListTransaction(int organizationUserId);
     ResponseEntity<?> getListCampaignTransaction(Integer userId, int campaignId);
 }

@@ -24,9 +24,9 @@ public class OrganizationController {
 
     @PreAuthorize("hasRole('ORGANIZATION')")
     @GetMapping("/list-volunteer-not-approve")
-    public ResponseEntity<?> getListVolunteer(Principal connectedUser, @RequestParam("campaignId") int campaignId){
+    public ResponseEntity<?> getListVolunteer(Principal connectedUser, @RequestParam("campaignId") int campaignId,@RequestParam("pageNumber") int pageNumber,@RequestParam("pageSize") int pageSize){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return organizationService.getListVolunteerNotApproved(user.getUserId(),campaignId);
+        return organizationService.getListVolunteerNotApproved(user.getUserId(),campaignId,pageNumber, pageSize);
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
@@ -37,9 +37,9 @@ public class OrganizationController {
 
     @PreAuthorize("hasRole('ORGANIZATION')")
     @GetMapping("/list-volunteer-approved")
-    public ResponseEntity<?> getListVolunteerApproved(Principal connectedUser, @RequestParam("campaignId") int campaignId){
+        public ResponseEntity<?> getListVolunteerApproved(Principal connectedUser, @RequestParam("campaignId") int campaignId, @RequestParam("pageNumber") int pageNumber,@RequestParam("pageSize") int pageSize){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return organizationService.getListVolunteerApproved(user.getUserId(),campaignId);
+        return organizationService.getListVolunteerApproved(user.getUserId(),campaignId,pageNumber,pageSize);
     }
 
     //tat ca cac giao dich

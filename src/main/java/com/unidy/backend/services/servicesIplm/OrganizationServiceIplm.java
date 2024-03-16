@@ -11,6 +11,8 @@ import com.unidy.backend.repositories.TransactionRepository;
 import com.unidy.backend.repositories.VolunteerJoinCampaignRepository;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -40,9 +42,10 @@ public class OrganizationServiceIplm implements OrganizationService {
         return null;
     }
 
-    public ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId){
+    public ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
         try {
-            List<ListVolunteerResponse> listVolunteerNotApproved = organizationRepository.getListVolunteerNotApproved(organizationId,campaignId);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            List<ListVolunteerResponse> listVolunteerNotApproved = organizationRepository.getListVolunteerNotApproved(organizationId,campaignId,pageable);
             return ResponseEntity.ok().body(listVolunteerNotApproved);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -65,9 +68,10 @@ public class OrganizationServiceIplm implements OrganizationService {
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
         }
     }
-    public ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId){
+    public ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
         try {
-            List<ListVolunteerResponse> listVolunteerApproved = organizationRepository.getListVolunteerApproved(organizationId,campaignId);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            List<ListVolunteerResponse> listVolunteerApproved = organizationRepository.getListVolunteerApproved(organizationId,campaignId,pageable);
             return ResponseEntity.ok().body(listVolunteerApproved);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
