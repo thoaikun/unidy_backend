@@ -2,6 +2,8 @@ package com.unidy.backend.services.servicesIplm;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
@@ -199,44 +201,28 @@ public class CampaignServiceIplm implements CampaignService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        List<Double> attribute = Arrays.asList(favoriteActivities.getCommunityType(),favoriteActivities.getEducation(),
-                favoriteActivities.getResearch(),favoriteActivities.getHelpOther(),favoriteActivities.getEnvironment(),favoriteActivities.getHealthy(),favoriteActivities.getEmergencyPreparedness());
+        List<Double> attribute = Arrays.asList(favoriteActivities.getCommunityType(), favoriteActivities.getEducation(),
+                favoriteActivities.getResearch(), favoriteActivities.getHelpOther(), favoriteActivities.getEnvironment(), favoriteActivities.getHealthy(), favoriteActivities.getEmergencyPreparedness());
         List<List<Double>> requestData = List.of(attribute);
 
         HttpEntity<List<List<Double>>> requestEntity = new HttpEntity<>(requestData, headers);
         assert api_recommendation_flask != null;
         ResponseEntity<String> response = restTemplate.postForEntity(api_recommendation_flask, requestEntity, String.class);
         String responseData = response.getBody();
-        if (response.getStatusCode() == HttpStatusCode.valueOf(500)){
-            throw new Exception("Recommendation service error");
+        if (response.getStatusCode() == HttpStatusCode.valueOf(500)) {
+            throw new Exception("Can't call api from recommend service");
         }
-        List<CampaignPostResponse.CampaignPostResponseData> campaigns = new ArrayList<>();
-        int[] arrayId = Arrays.copyOfRange(stringToArray(responseData),offset,offset+limit);
-        for (int id : arrayId) {
-            CampaignPostResponse.CampaignPostResponseData campaignPost = neo4jCampaignRepository.findCampaignPostByCampaignId(String.valueOf(id));
-            campaigns.add(campaignPost);
-        }
-
-        return CompletableFuture.completedFuture(campaigns);
+        String[] campaignIds = new Gson().fromJson(responseData, String[].class);
+        String[] splitIds = Arrays.copyOfRange(campaignIds, offset, offset + limit);
+        List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponseData = neo4jCampaignRepository.findCampaignPostByCampaignIds(splitIds);
+        return CompletableFuture.supplyAsync(() -> campaignPostResponseData);
     }
 
-    private int[] stringToArray(String arrayString) {
-        arrayString = arrayString.replace("[", "").replace("]", "");
-        String[] elements = arrayString.split(", ");
-        int[] resultArray = new int[elements.length];
-        for (int i = 0; i < elements.length; i++) {
-            resultArray[i] = Integer.parseInt(elements[i]);
-        }
-        return resultArray;
-    }
-
+    @Async("threadPoolTaskExecutor")
     public CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> getRecommendationFromNeo4J(Principal connectedUser, String cursor, int limit) throws Exception {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        try {
-            return CompletableFuture.completedFuture(neo4jCampaignRepository.findCampaign(user.getUserId(),cursor,limit));
-        } catch (Exception e){
-            throw new Exception("Recommendation service error");
-        }
+        List<CampaignPostResponse.CampaignPostResponseData> listCampaign = neo4jCampaignRepository.findCampaign(user.getUserId(), cursor, limit);
+        return CompletableFuture.supplyAsync(() -> listCampaign);
     }
 
     public ResponseEntity<?> getCampaignByOrganizationID(int organizationId,String cursor,int limit){

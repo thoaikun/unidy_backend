@@ -9,6 +9,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class ListVolunteerResponse {
     private Integer userId;
+    private Integer volunteerId;
     private String fullName;
     private String address;
     private String email;

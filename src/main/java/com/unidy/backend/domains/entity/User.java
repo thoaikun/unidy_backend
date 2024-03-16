@@ -93,7 +93,7 @@ public class User implements UserDetails {
     return true;
   }
 
-  @OneToMany(fetch = FetchType.LAZY)
+  @OneToMany(fetch = FetchType.EAGER)
   @JoinColumn(name = "user_id")
   private List<UserDeviceFcmToken> userDeviceFcmTokens;
 }
