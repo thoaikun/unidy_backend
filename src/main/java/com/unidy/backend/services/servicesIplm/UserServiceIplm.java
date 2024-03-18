@@ -16,15 +16,17 @@ import com.unidy.backend.domains.dto.responses.RecommendFriendResponse;
 import com.unidy.backend.domains.dto.responses.TransactionResponse;
 import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import com.unidy.backend.domains.entity.*;
+import com.unidy.backend.domains.entity.neo4j.UserNode;
 import com.unidy.backend.firebase.FirebaseService;
 import com.unidy.backend.mapper.DtoMapper;
 import com.unidy.backend.repositories.*;
 import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
 import com.unidy.backend.services.servicesInterface.UserService;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ import java.net.URL;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -340,5 +343,10 @@ public class UserServiceIplm implements UserService {
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
+    }
+
+    @Async("threadPoolTaskExecutor")
+    public CompletableFuture<List<UserNode>> searchUser(String searchTerm, int limit, int skip){
+        return CompletableFuture.completedFuture(neo4jUserRepository.searchUser(searchTerm, limit, skip));
     }
 }

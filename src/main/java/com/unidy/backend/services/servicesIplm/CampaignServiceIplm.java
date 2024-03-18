@@ -3,7 +3,6 @@ package com.unidy.backend.services.servicesIplm;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
@@ -14,6 +13,8 @@ import com.unidy.backend.domains.dto.notification.extraData.NewCampaignData;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.entity.*;
+import com.unidy.backend.domains.entity.neo4j.CampaignNode;
+import com.unidy.backend.domains.entity.neo4j.UserNode;
 import com.unidy.backend.domains.entity.relationship.CampaignType;
 import com.unidy.backend.firebase.FirebaseService;
 import com.unidy.backend.repositories.*;
@@ -153,6 +154,7 @@ public class CampaignServiceIplm implements CampaignService {
         }
 
     }
+
     @Transactional
     public ResponseEntity<?> registerCampaign(Principal userConnected, int campaignId){
         try{
@@ -232,5 +234,11 @@ public class CampaignServiceIplm implements CampaignService {
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
         }
+    }
+
+    @Async("threadPoolTaskExecutor")
+    public CompletableFuture<List<CampaignNode>> searchCampaign(String searchTerm, int limit, int skip) {
+        List<CampaignNode> campaigns = neo4jCampaignRepository.searchCampaign(searchTerm, limit, skip);
+        return CompletableFuture.supplyAsync(() -> campaigns);
     }
 }

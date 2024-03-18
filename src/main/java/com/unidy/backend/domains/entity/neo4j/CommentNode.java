@@ -1,4 +1,4 @@
-package com.unidy.backend.domains.entity;
+package com.unidy.backend.domains.entity.neo4j;
 
 
 import lombok.*;
@@ -14,7 +14,7 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 @AllArgsConstructor
 @Node("comment")
 
-public class CommentNode {
+public class CommentNode implements Neo4JNode {
     @Id
     @Property("comment_id")
     private Integer comment_id ;

@@ -1,7 +1,7 @@
 package com.unidy.backend.repositories;
 
 import com.unidy.backend.domains.dto.responses.PostResponse;
-import com.unidy.backend.domains.entity.PostNode;
+import com.unidy.backend.domains.entity.neo4j.PostNode;
 import jakarta.transaction.Transactional;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
@@ -35,4 +35,20 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
 
     @Query("MATCH (p : user {user_id:$userId})-[r:LIKE]->(post: post {post_id: $postId}) DELETE r ;")
     void cancelLikePost(@Param("userId") int userId, @Param("postId") String postId);
+
+
+    @Query("""
+            CALL db.index.fulltext.queryNodes("searchPostIndex", $searchTerm) YIELD node, score
+            WITH node, score
+            MATCH (userNodes:user)-[r:HAS_POST]->(post:post)
+            WHERE post = node
+            OPTIONAL MATCH (user)-[isLiked:LIKE]->(post)
+            OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)
+            WITH post, userNodes, r, count(r_like) AS likeCount, r_like, isLiked, score
+            RETURN post, userNodes, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked
+            ORDER BY score DESC, post.create_date DESC, post.id ASC
+            SKIP $skip
+            LIMIT $limit;
+    """)
+    List<PostNode> searchPost(String searchTerm, int limit, int skip);
 }

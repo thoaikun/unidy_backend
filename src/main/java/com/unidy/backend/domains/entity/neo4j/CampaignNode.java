@@ -1,4 +1,4 @@
-package com.unidy.backend.domains.entity;
+package com.unidy.backend.domains.entity.neo4j;
 
 import com.unidy.backend.domains.entity.relationship.DonateRelationship;
 import lombok.*;
@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Node("campaign")
-public class CampaignNode {
+public class CampaignNode implements Neo4JNode {
     @Id
     @Property("campaign_id")
     private String campaignId;

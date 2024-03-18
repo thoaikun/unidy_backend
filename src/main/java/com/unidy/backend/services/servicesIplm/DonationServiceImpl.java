@@ -6,7 +6,7 @@ import com.unidy.backend.domains.dto.requests.MomoRequest;
 import com.unidy.backend.domains.dto.requests.MomoWebHookRequest;
 import com.unidy.backend.domains.dto.responses.MomoResponse;
 import com.unidy.backend.domains.entity.*;
-import com.unidy.backend.domains.role.Role;
+import com.unidy.backend.domains.entity.neo4j.CampaignNode;
 import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.DonationService;
 import jakarta.transaction.Transactional;
