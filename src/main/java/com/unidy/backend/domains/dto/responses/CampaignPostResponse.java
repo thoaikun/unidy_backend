@@ -1,8 +1,10 @@
 package com.unidy.backend.domains.dto.responses;
 
+import com.miragesql.miragesql.annotation.In;
 import com.unidy.backend.domains.entity.CampaignNode;
 import com.unidy.backend.domains.entity.Organization;
 import com.unidy.backend.domains.entity.UserNode;
+import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -22,12 +24,16 @@ public class CampaignPostResponse {
     public static class CampaignPostResponseData {
         private CampaignNode campaign;
         private UserNode organizationNode;
-        private Boolean isLiked;
         private int likeCount ;
+        private Boolean isLiked;
+        @Builder.Default
+        private Boolean isJoined = false;
     }
 
     private List<CampaignPostResponseData> campaigns;
+    @Nullable
     private String nextCursor;
-    private int nextOffset;
+    @Nullable
+    private Integer nextOffset;
 }
 

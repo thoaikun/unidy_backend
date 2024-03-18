@@ -74,6 +74,5 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
             @Param("campaignId") int campaignId,
             Pageable pageable
     );
-
 }
 

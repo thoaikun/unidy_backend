@@ -1,6 +1,7 @@
 package com.unidy.backend.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.services.servicesInterface.CampaignService;
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import software.amazon.awssdk.services.devicefarm.model.Run;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -28,14 +30,14 @@ public class CampaignController {
     }
 
     @PreAuthorize("hasRole('VOLUNTEER')")
-    @GetMapping("/register")
+    @PatchMapping("/register")
     public ResponseEntity<?> registerCampaign(Principal connectedUser, @RequestParam int campaignId){
         return campaignService.registerCampaign(connectedUser, campaignId);
     }
 
     @PreAuthorize("hasAnyRole('VOLUNTEER')")
-    @GetMapping("/getRecommendCampaign")
-    public ResponseEntity<?> registerCampaign(Principal connectedUser,@RequestParam int offset, @RequestParam int limit, @RequestParam String cursor){
+    @GetMapping("/recommendation")
+    public ResponseEntity<?> getRecommendationCampaign(Principal connectedUser,@RequestParam int offset, @RequestParam int limit, @RequestParam String cursor){
         try {
             CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> recommendationFromKNearest = campaignService.getRecommendationFromKNearest(connectedUser, offset, limit);
             CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> recommendationFromNeo4J = campaignService.getRecommendationFromNeo4J(connectedUser, cursor, limit);
@@ -56,12 +58,26 @@ public class CampaignController {
             return ResponseEntity.ok().body(response);
         }
         catch (Exception e){
-            return ResponseEntity.badRequest().body(e.toString());
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Có lỗi xảy ra khi lấy danh sách chiến dịch gợi ý"));
         }
     }
 
-    @GetMapping("/get-organization-campaign")
-    public ResponseEntity<?> getCampaignByOrganizationId(@RequestParam int organizationId,@RequestParam String cursor,@RequestParam int limit){
-        return campaignService.getCampaignByOrganizationID(organizationId, cursor, limit);
+    @GetMapping("/organization/{organizationId}")
+    public ResponseEntity<?> getCampaignByOrganizationId(@PathVariable int organizationId, @RequestParam String cursor, @RequestParam int limit){
+        try {
+            List<CampaignPostResponse.CampaignPostResponseData> organizationCampaigns = campaignService.getCampaignByOrganizationID(organizationId, cursor, limit);
+            CampaignPostResponse response = CampaignPostResponse.builder()
+                    .campaigns(organizationCampaigns)
+                    .nextCursor(organizationCampaigns.isEmpty() ? null : organizationCampaigns.get(organizationCampaigns.size() - 1).getCampaign().getCreateDate())
+                    .nextOffset(null)
+                    .build();
+            return ResponseEntity.ok().body(response);
+        }
+        catch (RuntimeException e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.getMessage()));
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Có lỗi xảy ra khi lấy danh sách chiến dịch của tổ chức"));
+        }
     }
 }
