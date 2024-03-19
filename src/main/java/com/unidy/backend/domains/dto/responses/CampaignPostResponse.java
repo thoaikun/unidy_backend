@@ -1,6 +1,7 @@
 package com.unidy.backend.domains.dto.responses;
 
 import com.unidy.backend.domains.entity.neo4j.CampaignNode;
+import com.unidy.backend.domains.entity.neo4j.Neo4JNode;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +17,7 @@ import java.util.List;
 public class CampaignPostResponse {
     @Data
     @Builder
-    public static class CampaignPostResponseData {
+    public static class CampaignPostResponseData implements Neo4JNode {
         private CampaignNode campaign;
         private UserNode organizationNode;
         private Boolean isLiked;

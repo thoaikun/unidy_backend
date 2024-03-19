@@ -57,5 +57,5 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
             SKIP $skip
             LIMIT $limit;
     """)
-    List<CampaignNode> searchCampaign(String searchTerm, int limit, int skip);
+    List<CampaignPostResponse.CampaignPostResponseData> searchCampaign(String searchTerm, int limit, int skip);
 }
