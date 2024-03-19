@@ -13,22 +13,32 @@ import java.util.List;
 @Repository
 @Transactional
 public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
+
     List<PostNode> findPostNodeByPostId(String postId);
+
+    @Query("MATCH (user:user)-[r:HAS_POST]->(post:post {post_id: $postId})\n" +
+            "OPTIONAL MATCH (userLike)-[isLiked:LIKE]->(post)\n" +
+            "OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)\n" +
+            "WITH post,user, r, count(userLike) AS likeCount,r_like, isLiked\n" +
+            "RETURN post,user as userNodes, r, likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked;")
+    List<PostResponse> findPostNodeByPostIdCustom(String postId);
+
     @Query("MATCH (user:user {user_id: $userId})-[r:HAS_POST]->(post:post)\n" +
             "WHERE post.create_date < $cursor\n" +
-            "OPTIONAL MATCH (userLike)-[r_like:LIKE]->(post)\n" +
-            "WITH post, r, count(userLike) AS likeCount\n" +
-            "RETURN post, r, likeCount\n" +
+            "OPTIONAL MATCH (userLike)-[isLiked:LIKE]->(post)\n" +
+            "OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)\n" +
+            "WITH post,user, r, count(userLike) AS likeCount,r_like, isLiked\n" +
+            "RETURN post,user as userNodes, r, likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked\n" +
             "ORDER BY post.create_date DESC\n" +
             "LIMIT $limit;")
-    List<PostNode> findPostNodeByUserId(@Param("userId") int userId, @Param("cursor") String cursor, @Param("limit") int limit);
+    List<PostResponse> findPostNodeByUserId(@Param("userId") int userId, @Param("cursor") String cursor, @Param("limit") int limit);
 
     @Query("MATCH (user:user {user_id: $userId})-[:FRIEND]->(userNodes:user)-[r:HAS_POST]->(post:post)\n" +
             "WHERE post.create_date < $cursor\n" +
             "OPTIONAL MATCH (user)-[isLiked:LIKE]->(post)\n" +
             "OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)\n" +
-            "WITH post, userNodes, r, count(r_like) AS likeCount, r_like, isLiked\n" +
-            "RETURN post, userNodes, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked\n" +
+            "WITH post, user, r, count(r_like) AS likeCount, r_like, isLiked\n" +
+            "RETURN post, user as userNodes, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked\n" +
             "ORDER BY post.create_date DESC\n" +
             "LIMIT $limit;")
     List<PostResponse> findPost(@Param("userId") int userId, @Param("cursor") String cursor, @Param("limit") int limit);

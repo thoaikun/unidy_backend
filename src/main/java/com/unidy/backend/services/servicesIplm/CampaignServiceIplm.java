@@ -16,6 +16,7 @@ import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.CampaignNode;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
 import com.unidy.backend.domains.entity.relationship.CampaignType;
+import com.unidy.backend.domains.role.Role;
 import com.unidy.backend.firebase.FirebaseService;
 import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.CampaignService;
@@ -46,6 +47,7 @@ public class CampaignServiceIplm implements CampaignService {
     private final CampaignRepository campaignRepository;
     private final Environment environment;
     private final OrganizationRepository organizationRepository;
+    private final UserRepository userRepository;
     private final UserProfileImageRepository userProfileImageRepository;
     private final FirebaseService firebaseService;
     private final CampaignTypeRepository campaignTypeRepository;
@@ -215,8 +217,10 @@ public class CampaignServiceIplm implements CampaignService {
             throw new Exception("Can't call api from recommend service");
         }
         String[] campaignIds = new Gson().fromJson(responseData, String[].class);
-        String[] splitIds = Arrays.copyOfRange(campaignIds, offset, offset + limit);
+        int length = Math.min(offset + limit, campaignIds.length - 1);
+        String[] splitIds = Arrays.copyOfRange(campaignIds, offset, length);
         List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponseData = neo4jCampaignRepository.findCampaignPostByCampaignIds(splitIds);
+        userJoinedCampaignMapping(campaignPostResponseData);
         return CompletableFuture.supplyAsync(() -> campaignPostResponseData);
     }
 
@@ -224,15 +228,36 @@ public class CampaignServiceIplm implements CampaignService {
     public CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> getRecommendationFromNeo4J(Principal connectedUser, String cursor, int limit) throws Exception {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         List<CampaignPostResponse.CampaignPostResponseData> listCampaign = neo4jCampaignRepository.findCampaign(user.getUserId(), cursor, limit);
+        userJoinedCampaignMapping(listCampaign);
         return CompletableFuture.supplyAsync(() -> listCampaign);
     }
 
-    public ResponseEntity<?> getCampaignByOrganizationID(int organizationId,String cursor,int limit){
-        try {
-            List<CampaignPostResponse.CampaignPostResponseData> listCampaign = neo4jCampaignRepository.findCampaignByOrganizationID(organizationId,cursor,limit);
-            return ResponseEntity.ok().body(listCampaign);
-        } catch (Exception e){
-            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
+    public List<CampaignPostResponse.CampaignPostResponseData> getCampaignByOrganizationID(int organizationId, String cursor, int limit){
+        User user = userRepository.findByUserId(organizationId);
+        if (user == null || !user.getRole().equals(Role.ORGANIZATION)){
+            throw new RuntimeException("id tổ chức không hợp lệ");
+        }
+
+        List<CampaignPostResponse.CampaignPostResponseData> listCampaign = neo4jCampaignRepository.findCampaignByOrganizationID(organizationId,cursor,limit);
+        userJoinedCampaignMapping(listCampaign);
+        return listCampaign;
+    }
+
+    private void userJoinedCampaignMapping(List<CampaignPostResponse.CampaignPostResponseData> campaigns) {
+        List<Integer> campaignIds = new ArrayList<>();
+        for (CampaignPostResponse.CampaignPostResponseData campaign : campaigns) {
+            campaignIds.add(Integer.parseInt(campaign.getCampaign().getCampaignId()));
+        }
+        List<VolunteerJoinCampaign> userJoinedCampaigns = joinCampaign.findVolunteerJoinCampaignByCampaignIdIn(campaignIds);
+        Map<Integer, Boolean> userJoinedCampaignMap = new HashMap<>();
+        for (VolunteerJoinCampaign userJoinedCampaign : userJoinedCampaigns) {
+            userJoinedCampaignMap.put(userJoinedCampaign.getCampaignId(), true);
+        }
+
+        for (CampaignPostResponse.CampaignPostResponseData campaign : campaigns) {
+            if (userJoinedCampaignMap.containsKey(Integer.parseInt(campaign.getCampaign().getCampaignId()))) {
+                campaign.setIsJoined(true);
+            }
         }
     }
 

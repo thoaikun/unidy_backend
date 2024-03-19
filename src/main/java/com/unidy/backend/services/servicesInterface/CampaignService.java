@@ -20,7 +20,8 @@ public interface CampaignService {
 
     @Async("threadPoolTaskExecutor")
     CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> getRecommendationFromNeo4J(Principal connectedUser, String cursor, int limit) throws Exception;
-    ResponseEntity<?> getCampaignByOrganizationID(int organizationId,String cursor,int limit);
+
+    List<CampaignPostResponse.CampaignPostResponseData> getCampaignByOrganizationID(int organizationId,String cursor,int limit);
 
     @Async("threadPoolTaskExecutor")
     CompletableFuture<List<CampaignNode>> searchCampaign(String searchTerm, int limit, int skip);
