@@ -74,6 +74,31 @@ public class UserServiceIplm implements UserService {
         return information ;
     }
 
+    @Override
+    public UserInformationRespond getUserInformationByUserId(int userId) {
+        User user = userRepository.findByUserId(userId);
+        UserInformationRespond information = new UserInformationRespond() ;
+        information.setUserId(user.getUserId());
+        information.setFullName(user.getFullName());
+        information.setAddress(user.getAddress());
+        information.setSex(user.getSex());
+        information.setPhone(user.getPhone());
+        information.setDayOfBirth(user.getDayOfBirth());
+        information.setJob(user.getJob());
+        information.setRole(user.getRole());
+        information.setWorkLocation(user.getWorkLocation());
+
+        UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
+        if (image != null){
+            URL urlImage = s3Service.getObjectUrl(
+                    "unidy",
+                    "profile-images/%s/%s".formatted(user.getUserId(), image.getLinkImage())
+            );
+            information.setImage(urlImage.toString());
+        }
+        return information ;
+    }
+
     public ResponseEntity<?> updateUserInformation(UserDto userDto,Principal connectedUser){
         try {
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();

@@ -35,6 +35,16 @@ public class UserController {
         }
     }
 
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<?> getUserInformationByUserId(@PathVariable int userId){
+        try{
+            return ResponseEntity.ok().body(userService.getUserInformationByUserId(userId));
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body("Lỗi hệ thống");
+        }
+    }
+
     @PatchMapping("/profile")
     public ResponseEntity<?> updateUserInformation(@RequestBody  @Valid UserDto userDto, Principal connectedUser){
         try{
@@ -116,9 +126,5 @@ public class UserController {
     public ResponseEntity<?> getUserTransaction(Principal connectedUser){
         return userService.getUserTransaction(connectedUser);
     }
-    
-//    @GetMapping("/get-other-profile")
-//    public ResponseEntity<?> getOtherProfile(Principal connectedUser, @RequestParam int userId){
-//        return userService.getOtherProfile(connectedUser,userId);
-//    }
+
 }

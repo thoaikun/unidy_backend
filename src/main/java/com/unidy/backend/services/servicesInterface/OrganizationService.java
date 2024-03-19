@@ -1,5 +1,6 @@
 package com.unidy.backend.services.servicesInterface;
 
+import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.services.servicesIplm.OrganizationServiceIplm;
 import org.springframework.http.ResponseEntity;
 
@@ -13,4 +14,6 @@ public interface OrganizationService {
     ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId,int pageNumber, int pageSize);
     ResponseEntity<?> getListTransaction(int organizationUserId);
     ResponseEntity<?> getListCampaignTransaction(Integer userId, int campaignId);
+
+    ResponseEntity<?> sendNotifyToMember(Principal connectedUser, NotificationDto notificationDto);
 }

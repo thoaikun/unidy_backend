@@ -13,6 +13,7 @@ import java.security.Principal;
 
 public interface UserService {
     UserInformationRespond getUserInformation(Principal connectedUser);
+    UserInformationRespond getUserInformationByUserId(int userId);
     ResponseEntity<?> updateUserInformation(UserDto userDto,Principal connectedUser);
     ResponseEntity<?>  changePassword(ChangePasswordRequest request, Principal connectedUser);
     ResponseEntity<?>  newPassword(ChangePasswordRequest request, Principal connectedUser);
