@@ -1,9 +1,13 @@
 package com.unidy.backend.services.servicesInterface;
 
 import com.unidy.backend.domains.dto.requests.PostRequest;
+import com.unidy.backend.domains.entity.neo4j.PostNode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface PostService {
     public ResponseEntity<?> getPostById(String postId);
@@ -20,4 +24,7 @@ public interface PostService {
     ResponseEntity<?> likePost(Principal connectedUser, String postId);
 
     ResponseEntity<?> cancelLikePost(Principal connectedUser, String postId);
+
+    @Async("threadPoolTaskExecutor")
+    CompletableFuture<List<PostNode>> searchPost(String searchTerm, int limit, int skip);
 }

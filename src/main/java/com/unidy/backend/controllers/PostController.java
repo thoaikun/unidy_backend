@@ -1,10 +1,8 @@
 package com.unidy.backend.controllers;
 
 import com.unidy.backend.domains.dto.requests.PostRequest;
-import com.unidy.backend.domains.entity.PostNode;
 import com.unidy.backend.services.servicesInterface.PostService;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.annotations.IdGeneratorType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

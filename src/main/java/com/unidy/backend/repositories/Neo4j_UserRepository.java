@@ -3,7 +3,7 @@ package com.unidy.backend.repositories;
 import com.unidy.backend.domains.dto.responses.CheckResult;
 import com.unidy.backend.domains.dto.responses.InviteFriend;
 import com.unidy.backend.domains.dto.responses.RecommendFriendResponse;
-import com.unidy.backend.domains.entity.UserNode;
+import com.unidy.backend.domains.entity.neo4j.UserNode;
 import jakarta.transaction.Transactional;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
@@ -74,4 +74,14 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
              "MATCH (user2:user {user_id: $organizationId})\n" +
              "MERGE (user1)-[:FOLLOW_ORGANIZATION {request_at: $date}]->(user2)\n")
      void sendFollowRequest(Integer userId, int organizationId, String date);
+
+     @Query("""
+            CALL db.index.fulltext.queryNodes("searchUserIndex", $searchTerm) YIELD node, score
+            WITH node, score
+            RETURN node
+            ORDER BY score DESC, node.user_id ASC
+            SKIP $skip
+            LIMIT $limit;
+     """)
+     List<UserNode> searchUser(String searchTerm, int limit, int skip);
 }
