@@ -1,7 +1,6 @@
 package com.unidy.backend.domains.dto.responses;
 
-import com.miragesql.miragesql.annotation.In;
-import com.unidy.backend.domains.entity.UserNode;
+import com.unidy.backend.domains.entity.neo4j.UserNode;
 import lombok.Getter;
 import lombok.Setter;
 

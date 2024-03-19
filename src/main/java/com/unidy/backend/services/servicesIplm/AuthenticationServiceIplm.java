@@ -6,6 +6,7 @@ import com.unidy.backend.config.JwtService;
 import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
 import com.unidy.backend.domains.dto.responses.AuthenticationResponse;
 import com.unidy.backend.domains.entity.*;
+import com.unidy.backend.domains.entity.neo4j.UserNode;
 import com.unidy.backend.domains.role.Role;
 import com.unidy.backend.repositories.*;
 import com.unidy.backend.domains.TokenType;

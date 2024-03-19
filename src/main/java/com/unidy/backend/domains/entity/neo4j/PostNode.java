@@ -1,4 +1,4 @@
-package com.unidy.backend.domains.entity;
+package com.unidy.backend.domains.entity.neo4j;
 import lombok.*;
 import org.springframework.data.neo4j.core.schema.*;
 
@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Node("post")
-public class PostNode {
+public class PostNode implements Neo4JNode {
     @Id
     @Property("post_id")
     private String postId;

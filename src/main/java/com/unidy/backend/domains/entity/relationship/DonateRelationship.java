@@ -1,6 +1,6 @@
 package com.unidy.backend.domains.entity.relationship;
 
-import com.unidy.backend.domains.entity.CampaignNode;
+import com.unidy.backend.domains.entity.neo4j.CampaignNode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,14 +1,10 @@
 package com.unidy.backend.domains.dto.responses;
 
-import com.unidy.backend.domains.entity.PostNode;
-import com.unidy.backend.domains.entity.UserNode;
+import com.unidy.backend.domains.entity.neo4j.UserNode;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Date;
-import java.util.List;
 
 @Data
 @Builder

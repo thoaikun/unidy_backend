@@ -6,10 +6,14 @@ import com.unidy.backend.domains.dto.requests.ChoseFavoriteRequest;
 import com.unidy.backend.domains.dto.requests.UserInformationRequest;
 import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import com.unidy.backend.domains.entity.User;
+import com.unidy.backend.domains.entity.neo4j.UserNode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface UserService {
     UserInformationRespond getUserInformation(Principal connectedUser);
@@ -28,4 +32,7 @@ public interface UserService {
     ResponseEntity<?> choseFavoriteActivities(Principal connectedUser, ChoseFavoriteRequest choseFavoriteRequest);
     ResponseEntity<?> followOrganization(Principal connectedUser, int organizationId);
     ResponseEntity<?> getUserTransaction(Principal connectedUser);
+
+    @Async("threadPoolTaskExecutor")
+    CompletableFuture<List<UserNode>> searchUser(String searchTerm, int limit, int skip);
 }

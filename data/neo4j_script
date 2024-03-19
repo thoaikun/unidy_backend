@@ -1,0 +1,4 @@
+CREATE FULLTEXT INDEX searchCampaignIndex FOR (n:campaign) ON EACH [n.title, n.content, n.location, n.hashTag, n.status];
+CREATE FULLTEXT INDEX searchPostIndex FOR (n:post) ON EACH [n.content];
+CREATE FULLTEXT INDEX searchUserIndex For (n:user) ON EACH [n.name];
+
