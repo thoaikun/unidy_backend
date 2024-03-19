@@ -1,16 +1,11 @@
 package com.unidy.backend.domains.dto.responses;
-
-import com.miragesql.miragesql.annotation.In;
-import com.unidy.backend.domains.entity.CampaignNode;
-import com.unidy.backend.domains.entity.Organization;
-import com.unidy.backend.domains.entity.UserNode;
+import com.unidy.backend.domains.entity.neo4j.CampaignNode;
+import com.unidy.backend.domains.entity.neo4j.UserNode;
 import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.neo4j.core.schema.Property;
-import software.amazon.awssdk.services.servicecatalog.model.OrganizationNode;
 
 import java.util.List;
 

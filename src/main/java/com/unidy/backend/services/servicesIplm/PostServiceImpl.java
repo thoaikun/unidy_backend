@@ -6,6 +6,8 @@ import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.requests.PostRequest;
 import com.unidy.backend.domains.dto.responses.PostResponse;
 import com.unidy.backend.domains.entity.*;
+import com.unidy.backend.domains.entity.neo4j.PostNode;
+import com.unidy.backend.domains.entity.neo4j.UserNode;
 import com.unidy.backend.repositories.MySQL_PostRepository;
 import com.unidy.backend.repositories.Neo4j_PostRepository;
 import com.unidy.backend.repositories.Neo4j_UserRepository;
@@ -26,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
 @Service
@@ -247,4 +250,8 @@ public class PostServiceImpl implements PostService {
         }
     }
 
+    public CompletableFuture<List<PostNode>> searchPost(String searchTerm, int limit, int skip){
+       List<PostNode> posts = neo4j_postRepository.searchPost(searchTerm, limit, skip);
+         return CompletableFuture.supplyAsync(() -> posts);
+    }
 }

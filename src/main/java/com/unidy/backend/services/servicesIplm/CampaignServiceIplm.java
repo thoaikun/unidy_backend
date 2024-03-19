@@ -13,6 +13,8 @@ import com.unidy.backend.domains.dto.notification.extraData.NewCampaignData;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.entity.*;
+import com.unidy.backend.domains.entity.neo4j.CampaignNode;
+import com.unidy.backend.domains.entity.neo4j.UserNode;
 import com.unidy.backend.domains.entity.relationship.CampaignType;
 import com.unidy.backend.domains.role.Role;
 import com.unidy.backend.firebase.FirebaseService;
@@ -154,6 +156,7 @@ public class CampaignServiceIplm implements CampaignService {
         }
 
     }
+
     @Transactional
     public ResponseEntity<?> registerCampaign(Principal userConnected, int campaignId){
         try{
@@ -256,5 +259,11 @@ public class CampaignServiceIplm implements CampaignService {
                 campaign.setIsJoined(true);
             }
         }
+    }
+
+    @Async("threadPoolTaskExecutor")
+    public CompletableFuture<List<CampaignNode>> searchCampaign(String searchTerm, int limit, int skip) {
+        List<CampaignNode> campaigns = neo4jCampaignRepository.searchCampaign(searchTerm, limit, skip);
+        return CompletableFuture.supplyAsync(() -> campaigns);
     }
 }
