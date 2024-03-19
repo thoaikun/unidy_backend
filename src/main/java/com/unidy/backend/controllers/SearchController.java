@@ -1,6 +1,7 @@
 package com.unidy.backend.controllers;
 
 import com.unidy.backend.domains.ErrorResponseDto;
+import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.dto.responses.NodeFulltextSearchResponse;
 import com.unidy.backend.domains.entity.neo4j.CampaignNode;
 import com.unidy.backend.domains.entity.neo4j.Neo4JNode;
@@ -35,7 +36,7 @@ public class SearchController {
         @RequestParam(defaultValue = "0", required = false) int skip
     ){
         try {
-            CompletableFuture<List<CampaignNode>> searchCampaign = campaignService.searchCampaign(searchTerm, limit, skip);
+            CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign = campaignService.searchCampaign(searchTerm, limit, skip);
             CompletableFuture<List<PostNode>> searchPost = postService.searchPost(searchTerm, limit, skip);
             CompletableFuture<List<UserNode>> searchUser = userService.searchUser(searchTerm, limit, skip);
             List<Neo4JNode> results = CompletableFuture.allOf(searchCampaign, searchPost, searchUser)
@@ -65,7 +66,7 @@ public class SearchController {
         @RequestParam(defaultValue = "0", required = false) int skip
     ) {
         try {
-            List<CampaignNode> campaigns = campaignService.searchCampaign(searchTerm, limit, skip).join();
+            List<CampaignPostResponse.CampaignPostResponseData> campaigns = campaignService.searchCampaign(searchTerm, limit, skip).join();
             List<Neo4JNode> results = new ArrayList<>(campaigns);
             NodeFulltextSearchResponse response = NodeFulltextSearchResponse.builder()
                     .totals(results.size())

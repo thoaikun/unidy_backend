@@ -262,8 +262,8 @@ public class CampaignServiceIplm implements CampaignService {
     }
 
     @Async("threadPoolTaskExecutor")
-    public CompletableFuture<List<CampaignNode>> searchCampaign(String searchTerm, int limit, int skip) {
-        List<CampaignNode> campaigns = neo4jCampaignRepository.searchCampaign(searchTerm, limit, skip);
+    public CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign(String searchTerm, int limit, int skip) {
+        List<CampaignPostResponse.CampaignPostResponseData> campaigns = neo4jCampaignRepository.searchCampaign(searchTerm, limit, skip);
         return CompletableFuture.supplyAsync(() -> campaigns);
     }
 }

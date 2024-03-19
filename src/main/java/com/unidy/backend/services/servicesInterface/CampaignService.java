@@ -24,5 +24,5 @@ public interface CampaignService {
     List<CampaignPostResponse.CampaignPostResponseData> getCampaignByOrganizationID(int organizationId,String cursor,int limit);
 
     @Async("threadPoolTaskExecutor")
-    CompletableFuture<List<CampaignNode>> searchCampaign(String searchTerm, int limit, int skip);
+    CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign(String searchTerm, int limit, int skip);
 }
