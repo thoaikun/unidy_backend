@@ -2,6 +2,7 @@ package com.unidy.backend.services.servicesIplm;
 
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.Type.VolunteerStatus;
+import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.responses.ListVolunteerResponse;
 import com.unidy.backend.domains.dto.responses.TransactionResponse;
 import com.unidy.backend.domains.entity.*;
@@ -93,5 +94,10 @@ public class OrganizationServiceIplm implements OrganizationService {
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
+    }
+
+    @Override
+    public ResponseEntity<?> sendNotifyToMember(Principal connectedUser, NotificationDto notificationDto) {
+        return null;
     }
 }
