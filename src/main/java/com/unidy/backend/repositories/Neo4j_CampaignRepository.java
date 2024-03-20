@@ -15,15 +15,15 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
 
     @Query("""
         MATCH (user:user {user_id: $userId})-[:FOLLOW_ORGANIZATION]->(organizationNode:user {role:"ORGANIZATION"})-[r:HAS_CAMPAIGN]->(campaign:campaign)
-        WHERE campaign.create_date < $cursor
         OPTIONAL MATCH (user)-[isLiked:LIKE]->(campaign)
         OPTIONAL MATCH (organizationNode)-[r_like:LIKE]->(campaign)
         WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked
         RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, FALSE AS isJoined
-        ORDER BY campaign.create_date DESC
+        ORDER BY campaign.create_date DESC, campaign.id ASC
+        SKIP $skip
         LIMIT $limit;
     """)
-    List<CampaignPostResponse.CampaignPostResponseData> findCampaign(Integer userId, String cursor, int limit);
+    List<CampaignPostResponse.CampaignPostResponseData> findCampaign(Integer userId, int skip, int limit);
 
     @Query("""
         MATCH (organizationNode:user {role:"ORGANIZATION"})-[r:HAS_CAMPAIGN]->(campaign:campaign) WHERE campaign.campaign_id IN $campaignIds
@@ -38,15 +38,15 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
 
     @Query("""
         MATCH (organizationNode:user {role:"ORGANIZATION", user_id : $organizationId})-[r:HAS_CAMPAIGN]->(campaign:campaign)
-        WHERE campaign.create_date < $cursor
         OPTIONAL MATCH (user)-[isLiked:LIKE]->(campaign)
         OPTIONAL MATCH (organizationNode)-[r_like:LIKE]->(campaign)
         WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked
         RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, FALSE AS isJoined
-        ORDER BY campaign.create_date DESC
+        ORDER BY campaign.create_date DESC, campaign.id ASC
+        SKIP $skip
         limit $limit;
     """)
-    List<CampaignPostResponse.CampaignPostResponseData> findCampaignByOrganizationID(int organizationId, String cursor, int limit);
+    List<CampaignPostResponse.CampaignPostResponseData> findCampaignByOrganizationID(int organizationId, int skip, int limit);
 
     CampaignNode findCampaignNodeByCampaignId(String campaignId);
 

@@ -11,9 +11,9 @@ import java.util.concurrent.CompletableFuture;
 
 public interface PostService {
     public ResponseEntity<?> getPostById(String postId);
-    public ResponseEntity<?> getPostByUserId(Principal connectUser, String cursor, int limit );
+    public ResponseEntity<?> getPostByUserId(Principal connectUser, int skip, int limit);
 
-    ResponseEntity<?> getPost(Principal connectUser, String cursor, int limit);
+    ResponseEntity<?> getPost(Principal connectUser, int skip, int limit);
 
     ResponseEntity<?> createPost(Principal connectedUser, PostRequest request);
 

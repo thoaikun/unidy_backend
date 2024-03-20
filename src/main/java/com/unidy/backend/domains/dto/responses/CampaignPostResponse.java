@@ -27,8 +27,7 @@ public class CampaignPostResponse {
     }
 
     private List<CampaignPostResponseData> campaigns;
-    @Nullable
-    private String nextCursor;
+    private Integer total;
     @Nullable
     private Integer nextOffset;
 }

@@ -37,10 +37,10 @@ public class CampaignController {
 
     @PreAuthorize("hasAnyRole('VOLUNTEER')")
     @GetMapping("/recommendation")
-    public ResponseEntity<?> getRecommendationCampaign(Principal connectedUser,@RequestParam int offset, @RequestParam int limit, @RequestParam String cursor){
+    public ResponseEntity<?> getRecommendationCampaign(Principal connectedUser,@RequestParam int offset, @RequestParam int limit) {
         try {
             CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> recommendationFromKNearest = campaignService.getRecommendationFromKNearest(connectedUser, offset, limit);
-            CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> recommendationFromNeo4J = campaignService.getRecommendationFromNeo4J(connectedUser, cursor, limit);
+            CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> recommendationFromNeo4J = campaignService.getRecommendationFromNeo4J(connectedUser, offset, limit);
 
             List<CampaignPostResponse.CampaignPostResponseData> result = CompletableFuture.allOf(recommendationFromKNearest, recommendationFromNeo4J)
                     .thenApplyAsync(v -> {
@@ -52,8 +52,8 @@ public class CampaignController {
                     .join();
             CampaignPostResponse response = CampaignPostResponse.builder()
                     .campaigns(result)
-                    .nextCursor(recommendationFromNeo4J.get().isEmpty() ? null : recommendationFromNeo4J.get().get(recommendationFromNeo4J.get().size() - 1).getCampaign().getCreateDate())
-                    .nextOffset(offset < 100 ? offset + limit : 100)
+                    .total(result.size())
+                    .nextOffset(offset + limit)
                     .build();
             return ResponseEntity.ok().body(response);
         }
@@ -63,13 +63,13 @@ public class CampaignController {
     }
 
     @GetMapping("/organization/{organizationId}")
-    public ResponseEntity<?> getCampaignByOrganizationId(@PathVariable int organizationId, @RequestParam String cursor, @RequestParam int limit){
+    public ResponseEntity<?> getCampaignByOrganizationId(@PathVariable int organizationId, @RequestParam int skip, @RequestParam int limit){
         try {
-            List<CampaignPostResponse.CampaignPostResponseData> organizationCampaigns = campaignService.getCampaignByOrganizationID(organizationId, cursor, limit);
+            List<CampaignPostResponse.CampaignPostResponseData> organizationCampaigns = campaignService.getCampaignByOrganizationID(organizationId, skip, limit);
             CampaignPostResponse response = CampaignPostResponse.builder()
                     .campaigns(organizationCampaigns)
-                    .nextCursor(organizationCampaigns.isEmpty() ? null : organizationCampaigns.get(organizationCampaigns.size() - 1).getCampaign().getCreateDate())
-                    .nextOffset(null)
+                    .total(organizationCampaigns.size())
+                    .nextOffset(skip + limit)
                     .build();
             return ResponseEntity.ok().body(response);
         }

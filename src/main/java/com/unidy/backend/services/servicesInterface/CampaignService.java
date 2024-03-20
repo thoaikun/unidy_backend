@@ -19,9 +19,9 @@ public interface CampaignService {
     CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> getRecommendationFromKNearest(Principal connectedUser, int offset, int limit) throws Exception;
 
     @Async("threadPoolTaskExecutor")
-    CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> getRecommendationFromNeo4J(Principal connectedUser, String cursor, int limit) throws Exception;
+    CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> getRecommendationFromNeo4J(Principal connectedUser, int skip, int limit) throws Exception;
 
-    List<CampaignPostResponse.CampaignPostResponseData> getCampaignByOrganizationID(int organizationId,String cursor,int limit);
+    List<CampaignPostResponse.CampaignPostResponseData> getCampaignByOrganizationID(int organizationId, int skip, int limit);
 
     @Async("threadPoolTaskExecutor")
     CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign(String searchTerm, int limit, int skip);

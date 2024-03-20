@@ -48,20 +48,20 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    public ResponseEntity<?> getPostByUserId(Principal connectedUser, String cursor, int limit ){
+    public ResponseEntity<?> getPostByUserId(Principal connectedUser, int skip, int limit ){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            List<PostResponse> listPost= neo4j_postRepository.findPostNodeByUserId(user.getUserId(),cursor,limit);
+            List<PostResponse> listPost= neo4j_postRepository.findPostNodeByUserId(user.getUserId(), skip, limit);
             return ResponseEntity.ok().body(listPost);
         } catch(Exception e){
             return ResponseEntity.badRequest().body((new ErrorResponseDto(e.toString())));
         }
     }
 
-    public ResponseEntity<?> getPost(Principal connectedUser, String cursor, int limit){
+    public ResponseEntity<?> getPost(Principal connectedUser, int skip, int limit){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            List<PostResponse> listPost= neo4j_postRepository.findPost(user.getUserId(), cursor, limit);
+            List<PostResponse> listPost= neo4j_postRepository.findPost(user.getUserId(), skip, limit);
             return ResponseEntity.ok().body(listPost);
         } catch(Exception e){
             return ResponseEntity.badRequest().body((new ErrorResponseDto(e.toString())));
