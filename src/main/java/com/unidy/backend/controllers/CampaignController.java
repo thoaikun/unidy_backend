@@ -37,10 +37,10 @@ public class CampaignController {
 
     @PreAuthorize("hasAnyRole('VOLUNTEER')")
     @GetMapping("/recommendation")
-    public ResponseEntity<?> getRecommendationCampaign(Principal connectedUser,@RequestParam int offset, @RequestParam int limit) {
+    public ResponseEntity<?> getRecommendationCampaign(Principal connectedUser,@RequestParam int skip, @RequestParam int limit) {
         try {
-            CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> recommendationFromKNearest = campaignService.getRecommendationFromKNearest(connectedUser, offset, limit);
-            CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> recommendationFromNeo4J = campaignService.getRecommendationFromNeo4J(connectedUser, offset, limit);
+            CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> recommendationFromKNearest = campaignService.getRecommendationFromKNearest(connectedUser, skip, limit);
+            CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> recommendationFromNeo4J = campaignService.getRecommendationFromNeo4J(connectedUser, skip, limit);
 
             List<CampaignPostResponse.CampaignPostResponseData> result = CompletableFuture.allOf(recommendationFromKNearest, recommendationFromNeo4J)
                     .thenApplyAsync(v -> {
@@ -53,7 +53,7 @@ public class CampaignController {
             CampaignPostResponse response = CampaignPostResponse.builder()
                     .campaigns(result)
                     .total(result.size())
-                    .nextOffset(offset + limit)
+                    .nextOffset(skip + limit)
                     .build();
             return ResponseEntity.ok().body(response);
         }
