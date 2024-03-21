@@ -36,11 +36,11 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
     List<PostResponse> findPostNodeByUserId(int userId, int skip, int limit);
 
     @Query("""
-           MATCH (user:user {user_id: $userId})-[:FRIEND]->(userNodes:user)-[r:HAS_POST]->(post:post)
+           MATCH (user:user {user_id: $userId})-[:FRIEND]->(friend:user)-[r:HAS_POST]->(post:post)
            OPTIONAL MATCH (user)-[isLiked:LIKE]->(post)
            OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)
-           WITH post, user, r, count(r_like) AS likeCount, r_like, isLiked
-           RETURN post, user as userNodes, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked
+           WITH post, friend, r, count(r_like) AS likeCount, r_like, isLiked
+           RETURN post, friend as userNodes, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked
            ORDER BY post.create_date DESC, post.id ASC
            SKIP $skip
            LIMIT $limit;
