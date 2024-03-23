@@ -122,9 +122,13 @@ public class UserController {
         return userService.followOrganization(connectedUser,organizationId);
     }
 
-    @GetMapping("/get-user-transaction")
-    public ResponseEntity<?> getUserTransaction(Principal connectedUser){
-        return userService.getUserTransaction(connectedUser);
+    @GetMapping("/transactions")
+    public ResponseEntity<?> getUserTransaction(Principal connectedUser, @RequestParam int limit, @RequestParam int offset){
+        return userService.getUserTransaction(connectedUser, limit, offset);
     }
 
+    @GetMapping("/campaigns")
+    public ResponseEntity<?> getUserCampaigns(Principal connectedUser, @RequestParam int limit, @RequestParam int offset){
+        return userService.getUserJoinedCampaigns(connectedUser, limit, offset);
+    }
 }

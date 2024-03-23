@@ -25,9 +25,14 @@ import com.unidy.backend.services.servicesInterface.UserService;
 import lombok.RequiredArgsConstructor;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,9 +54,10 @@ public class UserServiceIplm implements UserService {
     private final UserProfileImageRepository userProfileImageRepository;
     private final Neo4j_UserRepository neo4jUserRepository;
     private final FavoriteActivitiesRepository favoriteActivitiesRepository;
+    private final TransactionRepository transactionRepository;
+    private final VolunteerJoinCampaignRepository volunteerJoinCampaignRepository;
     private final FirebaseService firebaseService;
     private final Environment environment;
-    private final TransactionRepository transactionRepository;
 
     public UserInformationRespond getUserInformation(Principal connectedUser){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
@@ -360,12 +366,26 @@ public class UserServiceIplm implements UserService {
         }
     }
     @Override
-    public ResponseEntity<?> getUserTransaction(Principal connectedUser) {
+    public ResponseEntity<?> getUserTransaction(Principal connectedUser, int limit, int offset) {
         try {
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-            List<TransactionResponse> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId());
-            return ResponseEntity.badRequest().body(transactionResponses);
+            Pageable pageable = PageRequest.of(offset, limit, Sort.by("transactionId").descending());
+            List<Transaction> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId(), pageable);
+            return ResponseEntity.ok().body(transactionResponses);
         } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getUserJoinedCampaigns(Principal connectedUser, int limit, int offset) {
+        try {
+            Pageable pageable = PageRequest.of(offset, limit);
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            List<VolunteerJoinCampaign> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByUserId(user.getUserId(), pageable);
+            return ResponseEntity.ok().body(volunteerJoinCampaigns);
+        }
+        catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
