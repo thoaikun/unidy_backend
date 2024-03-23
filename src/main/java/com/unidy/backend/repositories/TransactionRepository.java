@@ -19,27 +19,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
     List<Transaction> findTransactionsByOrganizationUserIdAndCampaignId(int organizationUserId, int campaignId, Pageable pageable);
 
 
-    @Query(value = """
-        SELECT DISTINCT new com.unidy.backend.domains.dto.responses.TransactionResponse(
-            t.transactionId,
-            t.transactionType,
-            t.transactionTime,
-            t.transactionAmount,
-            t.transactionCode,
-            u.userId,
-            u.fullName,
-            u.email,
-            t.campaignId,
-            c.description,
-            c.donationBudgetReceived,
-            c.donationBudget
-        )
-        FROM Transaction t
-        INNER JOIN User u ON t.userId = u.userId
-        INNER JOIN Campaign c ON c.campaignId = t.campaignId
-        WHERE u.userId = :userId
-    """)
-    List<TransactionResponse> findTransactionByUserId(@Param("userId") int userId, Pageable pageable);
+    List<Transaction> findTransactionByUserId(@Param("userId") int userId, Pageable pageable);
 
 
 }

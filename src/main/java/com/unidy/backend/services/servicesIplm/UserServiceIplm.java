@@ -370,7 +370,7 @@ public class UserServiceIplm implements UserService {
         try {
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
             Pageable pageable = PageRequest.of(offset, limit, Sort.by("transactionId").descending());
-            List<TransactionResponse> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId(), pageable);
+            List<Transaction> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId(), pageable);
             return ResponseEntity.ok().body(transactionResponses);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
