@@ -18,44 +18,45 @@ import java.security.Principal;
 public class OrganizationController {
     private final OrganizationService organizationService;
 
-    @GetMapping("/get-profile")
-    public ResponseEntity<?> getProfile(@RequestParam int organizationId) {
+    @GetMapping("/profile/{organizationId}")
+    public ResponseEntity<?> getProfile(@PathVariable int organizationId) {
         return organizationService.getProfileOrganization(organizationId);
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
-    @GetMapping("/list-volunteer-not-approve")
-    public ResponseEntity<?> getListVolunteer(Principal connectedUser, @RequestParam("campaignId") int campaignId, @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
+    @GetMapping("/campaign/{campaignId}/not-approved-volunteers")
+    public ResponseEntity<?> getListVolunteer(Principal connectedUser, @PathVariable("campaignId") int campaignId, @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return organizationService.getListVolunteerNotApproved(user.getUserId(), campaignId, pageNumber, pageSize);
+        return organizationService.getListVolunteerNotApproved(user.getUserId(), campaignId, offset, limit);
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
-    @PatchMapping("/approve-volunteer")
-    public ResponseEntity<?> approveVolunteer(Principal connectedUser, @RequestParam("volunteerId") int volunteerId, @RequestParam("campaignId") int campaignId) {
-        return organizationService.approveVolunteer(connectedUser, volunteerId, campaignId);
+    @PatchMapping("/campaign/{campaignId}/approve-volunteer")
+    public ResponseEntity<?> approveVolunteer(Principal connectedUser, @RequestParam("userId") int userId, @PathVariable("campaignId") int campaignId) {
+        return organizationService.approveVolunteer(connectedUser, userId, campaignId);
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
-    @GetMapping("/list-volunteer-approved")
-    public ResponseEntity<?> getListVolunteerApproved(Principal connectedUser, @RequestParam("campaignId") int campaignId, @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
+    @GetMapping("/campaign/{campaignId}/approved-volunteers")
+    public ResponseEntity<?> getListVolunteerApproved(Principal connectedUser, @PathVariable("campaignId") int campaignId, @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return organizationService.getListVolunteerApproved(user.getUserId(), campaignId, pageNumber, pageSize);
+        return organizationService.getListVolunteerApproved(user.getUserId(), campaignId, offset, limit);
     }
 
     //tat ca cac giao dich
     @PreAuthorize("hasRole('ORGANIZATION')")
-    @GetMapping("/list-transaction")
-    public ResponseEntity<?> getListTransaction(Principal connectedUser) {
+    @GetMapping("/transactions")
+    public ResponseEntity<?> getListTransaction(Principal connectedUser, @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return organizationService.getListTransaction(user.getUserId());
+        return organizationService.getListTransaction(user.getUserId(), offset, limit);
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
-    @GetMapping("/list-campaign-transaction")
-    public ResponseEntity<?> getListCampaignTransaction(Principal connectedUser, @RequestParam("campaignId") int campaignId) {
+    @GetMapping("/campaign/{campaignId}/transactions")
+    public ResponseEntity<?> getListCampaignTransaction(Principal connectedUser, @PathVariable("campaignId") int campaignId,
+                                                        @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return organizationService.getListCampaignTransaction(user.getUserId(), campaignId);
+        return organizationService.getListCampaignTransaction(user.getUserId(), campaignId, offset, limit);
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")

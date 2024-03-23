@@ -4,7 +4,6 @@ import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.Type.VolunteerStatus;
 import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.responses.ListVolunteerResponse;
-import com.unidy.backend.domains.dto.responses.TransactionResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.repositories.CampaignRepository;
 import com.unidy.backend.repositories.OrganizationRepository;
@@ -14,6 +13,7 @@ import com.unidy.backend.services.servicesInterface.OrganizationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -43,9 +43,9 @@ public class OrganizationServiceIplm implements OrganizationService {
         return null;
     }
 
-    public ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
+    public ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId, int offset, int limit){
         try {
-            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Pageable pageable = PageRequest.of(offset, limit);
             List<ListVolunteerResponse> listVolunteerNotApproved = organizationRepository.getListVolunteerNotApproved(organizationId,campaignId,pageable);
             return ResponseEntity.ok().body(listVolunteerNotApproved);
         } catch (Exception e){
@@ -56,7 +56,7 @@ public class OrganizationServiceIplm implements OrganizationService {
     public ResponseEntity<?> approveVolunteer(Principal connectedUser, int volunteerId, int campaignId){
         var organization = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            VolunteerJoinCampaign volunteerJoinCampaign = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByVolunteerIdAndCampaignId(volunteerId,campaignId);
+            VolunteerJoinCampaign volunteerJoinCampaign = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByUserIdAndCampaignId(volunteerId,campaignId);
             Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
             if (organization.getUserId().equals(campaign.getOwner()) && campaign.getNumberVolunteerRegistered() < campaign.getNumberVolunteer() ){
                 volunteerJoinCampaign.setStatus(String.valueOf(VolunteerStatus.APPROVED));
@@ -69,27 +69,29 @@ public class OrganizationServiceIplm implements OrganizationService {
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
         }
     }
-    public ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
+    public ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int offset, int limit){
         try {
-            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Pageable pageable = PageRequest.of(offset, limit);
             List<ListVolunteerResponse> listVolunteerApproved = organizationRepository.getListVolunteerApproved(organizationId,campaignId,pageable);
             return ResponseEntity.ok().body(listVolunteerApproved);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
-    public ResponseEntity<?> getListTransaction(int organizationUserId){
+    public ResponseEntity<?> getListTransaction(int organizationUserId, int offset, int limit){
         try {
-            List<TransactionResponse> transaction = transactionRepository.findTransactionByOrganizationId(organizationUserId);
+            Pageable pageable = PageRequest.of(offset, limit, Sort.by("transactionTime").descending());
+            List<Transaction> transaction = transactionRepository.findTransactionsByOrganizationUserId(organizationUserId, pageable);
             return ResponseEntity.ok().body(transaction);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
     @Override
-    public ResponseEntity<?> getListCampaignTransaction(Integer organizationUserId, int campaignId) {
+    public ResponseEntity<?> getListCampaignTransaction(Integer organizationUserId, int campaignId, int offset, int limit) {
         try {
-            List<TransactionResponse> transaction = transactionRepository.findTransactionByCampaignId(organizationUserId,campaignId);
+            Pageable pageable = PageRequest.of(offset, limit, Sort.by("transactionTime").descending());
+            List<Transaction> transaction = transactionRepository.findTransactionsByOrganizationUserIdAndCampaignId(organizationUserId,campaignId, pageable);
             return ResponseEntity.ok().body(transaction);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
