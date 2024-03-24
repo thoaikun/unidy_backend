@@ -129,6 +129,6 @@ public class UserController {
 
     @GetMapping("/campaigns")
     public ResponseEntity<?> getUserCampaigns(Principal connectedUser, @RequestParam int pageSize, @RequestParam int pageNumber){
-        return userService.getUserJoinedCampaigns(connectedUser, pageNumber, pageSize);
+        return userService.getUserJoinedCampaigns(connectedUser, pageSize, pageNumber);
     }
 }
