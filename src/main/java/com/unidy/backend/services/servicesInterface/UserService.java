@@ -25,16 +25,14 @@ public interface UserService {
     ResponseEntity<?> addFriend(Principal connectedUser, int friendId);
     ResponseEntity<?> acceptFriendInvite(Principal connectedUser, int friendId);
     ResponseEntity<?> unfriend(Principal connectedUser, int friendId);
-    ResponseEntity<?> getListInvite(Principal connectedUser, String cursor, int limit);
+    ResponseEntity<?> getListInvite(Principal connectedUser, int skip, int limit);
     ResponseEntity<?> deleteInvite(Principal connectedUser, int friendId);
     ResponseEntity<?> getRecommendFriend(Principal connectedUser, int skip, int limit, int rangeEnd);
-    ResponseEntity<?> getListFriend(Principal connectedUser, int limit, int cursor);
+    ResponseEntity<?> getListFriend(Principal connectedUser, int limit, int skip);
     ResponseEntity<?> choseFavoriteActivities(Principal connectedUser, ChoseFavoriteRequest choseFavoriteRequest);
     ResponseEntity<?> followOrganization(Principal connectedUser, int organizationId);
-    ResponseEntity<?> getUserTransaction(Principal connectedUser, int limit, int offset);
-
-    ResponseEntity<?> getUserJoinedCampaigns(Principal connectedUser, int limit, int offset);
-
+    ResponseEntity<?> getUserTransaction(Principal connectedUser, int pageSize, int pageNumber);
+    ResponseEntity<?> getUserJoinedCampaigns(Principal connectedUser, int pageSize, int pageNumber);
     @Async("threadPoolTaskExecutor")
     CompletableFuture<List<UserNode>> searchUser(String searchTerm, int limit, int skip);
 }

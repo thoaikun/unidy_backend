@@ -25,9 +25,9 @@ public class OrganizationController {
 
     @PreAuthorize("hasRole('ORGANIZATION')")
     @GetMapping("/campaign/{campaignId}/not-approved-volunteers")
-    public ResponseEntity<?> getListVolunteer(Principal connectedUser, @PathVariable("campaignId") int campaignId, @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
+    public ResponseEntity<?> getListVolunteer(Principal connectedUser, @PathVariable("campaignId") int campaignId, @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return organizationService.getListVolunteerNotApproved(user.getUserId(), campaignId, offset, limit);
+        return organizationService.getListVolunteerNotApproved(user.getUserId(), campaignId, pageNumber, pageSize);
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
@@ -38,25 +38,25 @@ public class OrganizationController {
 
     @PreAuthorize("hasRole('ORGANIZATION')")
     @GetMapping("/campaign/{campaignId}/approved-volunteers")
-    public ResponseEntity<?> getListVolunteerApproved(Principal connectedUser, @PathVariable("campaignId") int campaignId, @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
+    public ResponseEntity<?> getListVolunteerApproved(Principal connectedUser, @PathVariable("campaignId") int campaignId, @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return organizationService.getListVolunteerApproved(user.getUserId(), campaignId, offset, limit);
+        return organizationService.getListVolunteerApproved(user.getUserId(), campaignId, pageNumber, pageSize);
     }
 
     //tat ca cac giao dich
     @PreAuthorize("hasRole('ORGANIZATION')")
     @GetMapping("/transactions")
-    public ResponseEntity<?> getListTransaction(Principal connectedUser, @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
+    public ResponseEntity<?> getListTransaction(Principal connectedUser, @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return organizationService.getListTransaction(user.getUserId(), offset, limit);
+        return organizationService.getListTransaction(user.getUserId(), pageNumber, pageSize);
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
     @GetMapping("/campaign/{campaignId}/transactions")
     public ResponseEntity<?> getListCampaignTransaction(Principal connectedUser, @PathVariable("campaignId") int campaignId,
-                                                        @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
+                                                        @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return organizationService.getListCampaignTransaction(user.getUserId(), campaignId, offset, limit);
+        return organizationService.getListCampaignTransaction(user.getUserId(), campaignId, pageNumber, pageSize);
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")

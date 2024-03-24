@@ -277,10 +277,10 @@ public class UserServiceIplm implements UserService {
         }
     }
 
-    public ResponseEntity<?> getListInvite(Principal connectedUser, String cursor, int limit){
+    public ResponseEntity<?> getListInvite(Principal connectedUser, int skip, int limit){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            List<InviteFriend> listInvite = neo4jUserRepository.getListInvite(user.getUserId(),cursor,limit);
+            List<InviteFriend> listInvite = neo4jUserRepository.getListInvite(user.getUserId(),skip,limit);
             return ResponseEntity.ok().body(listInvite);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
@@ -307,10 +307,10 @@ public class UserServiceIplm implements UserService {
         }
     }
 
-    public ResponseEntity<?> getListFriend(Principal connectedUser, int limit, int cursor){
+    public ResponseEntity<?> getListFriend(Principal connectedUser, int limit, int skip){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            List<UserNode> recommendFriend = neo4jUserRepository.getListFriend(user.getUserId(), limit, cursor);
+            List<UserNode> recommendFriend = neo4jUserRepository.getListFriend(user.getUserId(), limit, skip);
             return ResponseEntity.ok().body(recommendFriend);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -366,11 +366,11 @@ public class UserServiceIplm implements UserService {
         }
     }
     @Override
-    public ResponseEntity<?> getUserTransaction(Principal connectedUser, int limit, int offset) {
+    public ResponseEntity<?> getUserTransaction(Principal connectedUser, int pageSize, int pageNumber) {
         try {
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-            Pageable pageable = PageRequest.of(offset, limit, Sort.by("transactionId").descending());
-            List<Transaction> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId(), pageable);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("transactionId").descending());
+            Page<Transaction> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId(), pageable);
             return ResponseEntity.ok().body(transactionResponses);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -378,11 +378,11 @@ public class UserServiceIplm implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> getUserJoinedCampaigns(Principal connectedUser, int limit, int offset) {
+    public ResponseEntity<?> getUserJoinedCampaigns(Principal connectedUser, int pageSize, int pageNumber) {
         try {
-            Pageable pageable = PageRequest.of(offset, limit);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-            List<VolunteerJoinCampaign> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByUserId(user.getUserId(), pageable);
+            Page<VolunteerJoinCampaign> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByUserId(user.getUserId(), pageable);
             return ResponseEntity.ok().body(volunteerJoinCampaigns);
         }
         catch (Exception e){
