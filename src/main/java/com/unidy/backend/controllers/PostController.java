@@ -55,4 +55,23 @@ public class PostController {
         return postService.cancelLikePost(connectedUser,postId);
     }
 
+    @PostMapping("/comment")
+    public  ResponseEntity<?> commentPost(Principal connectedUser, @RequestParam String postId, @RequestParam String contentComment){
+        return postService.comment(connectedUser,postId,contentComment);
+    }
+
+    @PostMapping("/reply-comment")
+    public  ResponseEntity<?> commentPost(Principal connectedUser, @RequestParam int commentId, @RequestParam String contentReply){
+        return postService.replyComment(connectedUser,commentId,contentReply);
+    }
+
+    @GetMapping("/comment")
+        public  ResponseEntity<?> getComment(Principal connectedUser, @RequestParam String postId, @RequestParam int skip, @RequestParam int limit){
+        return postService.getComment(connectedUser,postId,skip,limit);
+    }
+
+    @GetMapping("/reply-comment")
+    public  ResponseEntity<?> getReplyComment(Principal connectedUser, @RequestParam int commentId, @RequestParam int skip, @RequestParam int limit ){
+        return postService.getReplyComment(connectedUser,commentId,skip,limit);
+    }
 }

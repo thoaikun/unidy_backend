@@ -4,13 +4,13 @@ import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.requests.PostRequest;
+import com.unidy.backend.domains.dto.responses.CommentResponse;
 import com.unidy.backend.domains.dto.responses.PostResponse;
 import com.unidy.backend.domains.entity.*;
+import com.unidy.backend.domains.entity.neo4j.CommentNode;
 import com.unidy.backend.domains.entity.neo4j.PostNode;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
-import com.unidy.backend.repositories.MySQL_PostRepository;
-import com.unidy.backend.repositories.Neo4j_PostRepository;
-import com.unidy.backend.repositories.Neo4j_UserRepository;
+import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.PostService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
@@ -18,6 +18,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.text.SimpleDateFormat;
@@ -38,6 +40,9 @@ public class PostServiceImpl implements PostService {
     private final S3Service s3Service;
     private final MySQL_PostRepository mySQL_postRepository;
     private final Environment environment;
+    private final Neo4j_UserRepository neo4j_userRepository;
+    private final Neo4j_CommentRepository neo4jCommentRepository;
+    private final CommentRepository commentRepository;
 
     public ResponseEntity<?> getPostById(String postID){
         try {
@@ -253,5 +258,83 @@ public class PostServiceImpl implements PostService {
     public CompletableFuture<List<PostNode>> searchPost(String searchTerm, int limit, int skip){
        List<PostNode> posts = neo4j_postRepository.searchPost(searchTerm, limit, skip);
          return CompletableFuture.supplyAsync(() -> posts);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<?> comment(Principal connectedUser, String postId, String contentComment) {
+        try {
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            Comment mysql_comment = Comment.builder()
+                    .content(contentComment)
+                    .createTime(new Date())
+                    .idBlock(false)
+                    .replyByComment(null)
+                    .build();
+            commentRepository.save(mysql_comment);
+
+            List<PostNode> post = neo4j_postRepository.findPostNodeByPostId(postId);
+            PostNode commentPost = post.get(0);
+            UserNode userComment = neo4j_userRepository.findUserNodeByUserId(user.getUserId());
+            CommentNode comment = CommentNode.builder()
+                    .commentId(mysql_comment.getCommentId())
+                    .body(contentComment)
+                    .build();
+            comment.setUserComment(userComment);
+            comment.setPostNode(commentPost);
+            neo4jCommentRepository.save(comment);
+            return ResponseEntity.ok().body("Comment success");
+        } catch (Exception e){
+            return ResponseEntity.ok().body("Comment fail");
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<?> replyComment(Principal connectedUser, int commentId, String contentReply) {
+        try {
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            Comment mysql_comment = Comment.builder()
+                    .content(contentReply)
+                    .createTime(new Date())
+                    .idBlock(false)
+                    .replyByComment(null)
+                    .build();
+            commentRepository.save(mysql_comment);
+
+            CommentNode comment = neo4jCommentRepository.findCommentNodeByCommentId(commentId);
+            UserNode userComment = neo4j_userRepository.findUserNodeByUserId(user.getUserId());
+            CommentNode reply = CommentNode.builder()
+                    .commentId(mysql_comment.getCommentId())
+                    .body(contentReply)
+                    .build();
+            reply.setUserComment(userComment);
+            comment.setReplyComment(reply);
+            neo4jCommentRepository.save(reply);
+            neo4jCommentRepository.save(comment);
+            return ResponseEntity.ok().body("Comment success");
+        } catch (Exception e){
+            return ResponseEntity.ok().body("Comment fail");
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getComment(Principal connectedUser, String postId, int skip, int limit) {
+        try {
+            List<CommentResponse> listComment = neo4jCommentRepository.getAllCommentByPostId(postId,skip,limit);
+            return ResponseEntity.ok().body(listComment);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.toString());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getReplyComment(Principal connectedUser, int commentId, int skip, int limit) {
+        try {
+            List<CommentResponse> listReplyComment = neo4jCommentRepository.getAllReplyCommentByPostId(commentId,skip,limit);
+            return ResponseEntity.ok().body(listReplyComment);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.toString());
+        }
     }
 }
