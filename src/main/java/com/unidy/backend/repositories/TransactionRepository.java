@@ -15,11 +15,9 @@ import java.util.List;
 @Repository
 @Transactional
 public interface TransactionRepository extends JpaRepository<Transaction, Integer> {
-    Page<Transaction> findTransactionsByOrganizationUserId(int organizationUserId, Pageable pageable);
+    List<Transaction> findTransactionsByOrganizationUserId(int organizationUserId, Pageable pageable);
 
-    Page<Transaction> findTransactionsByOrganizationUserIdAndCampaignId(int organizationUserId, int campaignId, Pageable pageable);
+    List<Transaction> findTransactionsByOrganizationUserIdAndCampaignId(int organizationUserId, int campaignId, Pageable pageable);
 
-    Page<Transaction> findTransactionByUserId(@Param("userId") int userId, Pageable pageable);
-
-
+    List<Transaction> findTransactionByUserId(@Param("userId") int userId, Pageable pageable);
 }

@@ -37,7 +37,7 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
                 AND c.campaignId = :campaignId
         ORDER BY vjc.timeJoin
         """)
-    Page<ListVolunteerResponse> getListVolunteerNotApproved( @Param("organizationId") int organizationId,
+    List<ListVolunteerResponse> getListVolunteerNotApproved( @Param("organizationId") int organizationId,
                                                              @Param("campaignId") int campaignId
                                                             ,Pageable pageable);
 
@@ -63,7 +63,7 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
         AND c.campaignId = :campaignId
     ORDER BY vjc.timeJoin
     """)
-    Page<ListVolunteerResponse> getListVolunteerApproved(
+    List<ListVolunteerResponse> getListVolunteerApproved(
             @Param("organizationId") int organizationId,
             @Param("campaignId") int campaignId,
             Pageable pageable
