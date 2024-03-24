@@ -370,7 +370,7 @@ public class UserServiceIplm implements UserService {
         try {
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
             Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("transactionId").descending());
-            Page<Transaction> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId(), pageable);
+            List<Transaction> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId(), pageable);
             return ResponseEntity.ok().body(transactionResponses);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -382,7 +382,7 @@ public class UserServiceIplm implements UserService {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-            Page<VolunteerJoinCampaign> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByUserId(user.getUserId(), pageable);
+            List<VolunteerJoinCampaign> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByUserId(user.getUserId(), pageable);
             return ResponseEntity.ok().body(volunteerJoinCampaigns);
         }
         catch (Exception e){

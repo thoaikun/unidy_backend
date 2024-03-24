@@ -50,7 +50,7 @@ public class OrganizationServiceIplm implements OrganizationService {
     public ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            Page<ListVolunteerResponse> listVolunteerNotApproved = organizationRepository.getListVolunteerNotApproved(organizationId,campaignId,pageable);
+            List<ListVolunteerResponse> listVolunteerNotApproved = organizationRepository.getListVolunteerNotApproved(organizationId,campaignId,pageable);
             return ResponseEntity.ok().body(listVolunteerNotApproved);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -76,7 +76,7 @@ public class OrganizationServiceIplm implements OrganizationService {
     public ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            Page<ListVolunteerResponse> listVolunteerApproved = organizationRepository.getListVolunteerApproved(organizationId,campaignId,pageable);
+            List<ListVolunteerResponse> listVolunteerApproved = organizationRepository.getListVolunteerApproved(organizationId,campaignId,pageable);
             return ResponseEntity.ok().body(listVolunteerApproved);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -85,7 +85,7 @@ public class OrganizationServiceIplm implements OrganizationService {
     public ResponseEntity<?> getListTransaction(int organizationUserId, int pageNumber, int pageSize){
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("transactionTime").descending());
-            Page<Transaction> transaction = transactionRepository.findTransactionsByOrganizationUserId(organizationUserId, pageable);
+            List<Transaction> transaction = transactionRepository.findTransactionsByOrganizationUserId(organizationUserId, pageable);
             return ResponseEntity.ok().body(transaction);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -95,7 +95,7 @@ public class OrganizationServiceIplm implements OrganizationService {
     public ResponseEntity<?> getListCampaignTransaction(Integer organizationUserId, int campaignId, int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("transactionTime").descending());
-            Page<Transaction> transaction = transactionRepository.findTransactionsByOrganizationUserIdAndCampaignId(organizationUserId,campaignId, pageable);
+            List<Transaction> transaction = transactionRepository.findTransactionsByOrganizationUserIdAndCampaignId(organizationUserId,campaignId, pageable);
             return ResponseEntity.ok().body(transaction);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
