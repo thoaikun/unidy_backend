@@ -25,9 +25,14 @@ import com.unidy.backend.services.servicesInterface.UserService;
 import lombok.RequiredArgsConstructor;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,9 +54,10 @@ public class UserServiceIplm implements UserService {
     private final UserProfileImageRepository userProfileImageRepository;
     private final Neo4j_UserRepository neo4jUserRepository;
     private final FavoriteActivitiesRepository favoriteActivitiesRepository;
+    private final TransactionRepository transactionRepository;
+    private final VolunteerJoinCampaignRepository volunteerJoinCampaignRepository;
     private final FirebaseService firebaseService;
     private final Environment environment;
-    private final TransactionRepository transactionRepository;
 
     public UserInformationRespond getUserInformation(Principal connectedUser){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
@@ -271,10 +277,10 @@ public class UserServiceIplm implements UserService {
         }
     }
 
-    public ResponseEntity<?> getListInvite(Principal connectedUser, String cursor, int limit){
+    public ResponseEntity<?> getListInvite(Principal connectedUser, int skip, int limit){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            List<InviteFriend> listInvite = neo4jUserRepository.getListInvite(user.getUserId(),cursor,limit);
+            List<InviteFriend> listInvite = neo4jUserRepository.getListInvite(user.getUserId(),skip,limit);
             return ResponseEntity.ok().body(listInvite);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
@@ -301,10 +307,10 @@ public class UserServiceIplm implements UserService {
         }
     }
 
-    public ResponseEntity<?> getListFriend(Principal connectedUser, int limit, int cursor){
+    public ResponseEntity<?> getListFriend(Principal connectedUser, int limit, int skip){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            List<UserNode> recommendFriend = neo4jUserRepository.getListFriend(user.getUserId(), limit, cursor);
+            List<UserNode> recommendFriend = neo4jUserRepository.getListFriend(user.getUserId(), limit, skip);
             return ResponseEntity.ok().body(recommendFriend);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -360,12 +366,26 @@ public class UserServiceIplm implements UserService {
         }
     }
     @Override
-    public ResponseEntity<?> getUserTransaction(Principal connectedUser) {
+    public ResponseEntity<?> getUserTransaction(Principal connectedUser, int pageSize, int pageNumber) {
         try {
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-            List<TransactionResponse> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId());
-            return ResponseEntity.badRequest().body(transactionResponses);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("transactionId").descending());
+            List<Transaction> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId(), pageable);
+            return ResponseEntity.ok().body(transactionResponses);
         } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getUserJoinedCampaigns(Principal connectedUser, int pageSize, int pageNumber) {
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            List<VolunteerJoinCampaign> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByUserId(user.getUserId(), pageable);
+            return ResponseEntity.ok().body(volunteerJoinCampaigns);
+        }
+        catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }

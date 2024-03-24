@@ -42,7 +42,7 @@ public class CampaignServiceIplm implements CampaignService {
     private final S3Service s3Service;
     private final Neo4j_CampaignRepository neo4jCampaignRepository;
     private final Neo4j_UserRepository neo4jUserRepository;
-    private final VolunteerJoinCampaignRepository joinCampaign;
+    private final VolunteerJoinCampaignRepository volunteerJoinCampaignRepository;
     private final FavoriteActivitiesRepository favoriteActivitiesRepository;
     private final CampaignRepository campaignRepository;
     private final Environment environment;
@@ -51,7 +51,6 @@ public class CampaignServiceIplm implements CampaignService {
     private final UserProfileImageRepository userProfileImageRepository;
     private final FirebaseService firebaseService;
     private final CampaignTypeRepository campaignTypeRepository;
-    private final VolunteerRepository volunteerRepository;
     @Override
     @Transactional
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) throws JsonProcessingException {
@@ -161,14 +160,13 @@ public class CampaignServiceIplm implements CampaignService {
     public ResponseEntity<?> registerCampaign(Principal userConnected, int campaignId){
         try{
             var user = (User) ((UsernamePasswordAuthenticationToken) userConnected).getPrincipal();
-            VolunteerJoinCampaign volunteer = joinCampaign.findVolunteerJoinCampaignByVolunteerIdAndCampaignId(user.getUserId(),campaignId);
-            if (volunteer != null){
+            VolunteerJoinCampaign data = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByUserIdAndCampaignId(user.getUserId(),campaignId);
+            if (data != null){
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("you have joined yet"));
             }
 
-            Volunteer volunteerInfo = volunteerRepository.findByUserId(user.getUserId());
             VolunteerJoinCampaign userJoin = new VolunteerJoinCampaign();
-            userJoin.setVolunteerId(volunteerInfo.getVolunteerId());
+            userJoin.setUserId(user.getUserId());
             userJoin.setCampaignId(campaignId);
             userJoin.setTimeJoin(new Date());
             userJoin.setStatus(String.valueOf(VolunteerStatus.NOT_APPROVE_YET));
@@ -184,7 +182,7 @@ public class CampaignServiceIplm implements CampaignService {
                 campaignRepository.save(campaign);
             }
 
-            joinCampaign.save(userJoin);
+            volunteerJoinCampaignRepository.save(userJoin);
 
             return  ResponseEntity.ok().body(new SuccessReponse("Join success"));
         } catch (Exception e){
@@ -220,7 +218,7 @@ public class CampaignServiceIplm implements CampaignService {
         int length = Math.min(offset + limit, campaignIds.length - 1);
         String[] splitIds = Arrays.copyOfRange(campaignIds, offset, length);
         List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponseData = neo4jCampaignRepository.findCampaignPostByCampaignIds(splitIds);
-        userJoinedCampaignMapping(campaignPostResponseData);
+        userJoinedCampaignMapping(campaignPostResponseData, user.getUserId());
         return CompletableFuture.supplyAsync(() -> campaignPostResponseData);
     }
 
@@ -228,7 +226,7 @@ public class CampaignServiceIplm implements CampaignService {
     public CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> getRecommendationFromNeo4J(Principal connectedUser, int skip, int limit) throws Exception {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         List<CampaignPostResponse.CampaignPostResponseData> listCampaign = neo4jCampaignRepository.findCampaign(user.getUserId(), skip, limit);
-        userJoinedCampaignMapping(listCampaign);
+        userJoinedCampaignMapping(listCampaign, user.getUserId());
         return CompletableFuture.supplyAsync(() -> listCampaign);
     }
 
@@ -239,16 +237,16 @@ public class CampaignServiceIplm implements CampaignService {
         }
 
         List<CampaignPostResponse.CampaignPostResponseData> listCampaign = neo4jCampaignRepository.findCampaignByOrganizationID(organizationId, skip, limit);
-        userJoinedCampaignMapping(listCampaign);
+        userJoinedCampaignMapping(listCampaign, user.getUserId());
         return listCampaign;
     }
 
-    private void userJoinedCampaignMapping(List<CampaignPostResponse.CampaignPostResponseData> campaigns) {
+    private void userJoinedCampaignMapping(List<CampaignPostResponse.CampaignPostResponseData> campaigns, int userId) {
         List<Integer> campaignIds = new ArrayList<>();
         for (CampaignPostResponse.CampaignPostResponseData campaign : campaigns) {
             campaignIds.add(Integer.parseInt(campaign.getCampaign().getCampaignId()));
         }
-        List<VolunteerJoinCampaign> userJoinedCampaigns = joinCampaign.findVolunteerJoinCampaignByCampaignIdIn(campaignIds);
+        List<VolunteerJoinCampaign> userJoinedCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByCampaignIdInAndUserId(campaignIds, userId);
         Map<Integer, Boolean> userJoinedCampaignMap = new HashMap<>();
         for (VolunteerJoinCampaign userJoinedCampaign : userJoinedCampaigns) {
             userJoinedCampaignMap.put(userJoinedCampaign.getCampaignId(), true);

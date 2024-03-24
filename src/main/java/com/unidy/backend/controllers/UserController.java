@@ -93,8 +93,8 @@ public class UserController {
     }
 
     @GetMapping("/list-invite")
-    public ResponseEntity<?> getListInvite(Principal connectedUser, @RequestParam String cursor, @RequestParam int limit){
-        return userService.getListInvite(connectedUser, cursor, limit);
+    public ResponseEntity<?> getListInvite(Principal connectedUser, @RequestParam int skip, @RequestParam int limit){
+        return userService.getListInvite(connectedUser, skip, limit);
     }
 
     @PatchMapping("/delete-invite")
@@ -108,8 +108,8 @@ public class UserController {
     }
 
     @GetMapping("/get-list-friend")
-    public ResponseEntity<?> getListFriend(Principal connectedUser,@RequestParam int limit, @RequestParam int cursor){
-        return userService.getListFriend(connectedUser,limit,cursor);
+    public ResponseEntity<?> getListFriend(Principal connectedUser,@RequestParam int limit, @RequestParam int skip){
+        return userService.getListFriend(connectedUser,limit,skip);
     }
 
     @PostMapping("/choose-favorite-activities")
@@ -122,9 +122,13 @@ public class UserController {
         return userService.followOrganization(connectedUser,organizationId);
     }
 
-    @GetMapping("/get-user-transaction")
-    public ResponseEntity<?> getUserTransaction(Principal connectedUser){
-        return userService.getUserTransaction(connectedUser);
+    @GetMapping("/transactions")
+    public ResponseEntity<?> getUserTransaction(Principal connectedUser, @RequestParam int pageSize, @RequestParam int pageNumber){
+        return userService.getUserTransaction(connectedUser, pageSize, pageNumber);
     }
 
+    @GetMapping("/campaigns")
+    public ResponseEntity<?> getUserCampaigns(Principal connectedUser, @RequestParam int pageSize, @RequestParam int pageNumber){
+        return userService.getUserJoinedCampaigns(connectedUser, pageSize, pageNumber);
+    }
 }

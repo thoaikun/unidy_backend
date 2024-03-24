@@ -12,8 +12,7 @@ public interface OrganizationService {
     ResponseEntity<?> approveVolunteer(Principal connectedUser, int volunteerId, int campaignId);
     ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int pageNumber, int pageSize);
     ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId,int pageNumber, int pageSize);
-    ResponseEntity<?> getListTransaction(int organizationUserId);
-    ResponseEntity<?> getListCampaignTransaction(Integer userId, int campaignId);
-
+    ResponseEntity<?> getListTransaction(int organizationUserId, int pageNumber, int pageSize);
+    ResponseEntity<?> getListCampaignTransaction(Integer userId, int campaignId, int pageNumber, int pageSize);
     ResponseEntity<?> sendNotifyToMember(Principal connectedUser, NotificationDto notificationDto);
 }

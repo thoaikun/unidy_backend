@@ -16,8 +16,8 @@ import java.util.Date;
 @Table(name = "volunteer_join_campaign")
 public class VolunteerJoinCampaign {
     @Id
-    @Column(name = "volunteer_id")
-    private int volunteerId;
+    @Column(name = "user_id")
+    private int userId;
 
     @Column(name = "campaign_id")
     private int campaignId;
@@ -27,4 +27,8 @@ public class VolunteerJoinCampaign {
 
     @Column(name = "status")
     private String status;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "campaign_id", insertable = false, updatable = false)
+    private Campaign campaign;
 }

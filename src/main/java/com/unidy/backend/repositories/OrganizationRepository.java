@@ -2,6 +2,7 @@ package com.unidy.backend.repositories;
 
 import com.unidy.backend.domains.dto.responses.ListVolunteerResponse;
 import com.unidy.backend.domains.entity.Organization;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,7 +20,6 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
         SELECT
         new com.unidy.backend.domains.dto.responses.ListVolunteerResponse(
             u.userId,
-            v.volunteerId,
             u.fullName,
             u.address,
             u.email,
@@ -28,12 +28,9 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
             c.campaignId,
             c.description
         )
-        FROM
-            Volunteer v
-        INNER JOIN User u
-            ON v.userId = u.userId
+        FROM User u
         INNER JOIN VolunteerJoinCampaign vjc
-            ON v.volunteerId = vjc.volunteerId
+            ON u.userId = vjc.userId
         INNER JOIN Campaign c
             on vjc.campaignId = c.campaignId
         WHERE vjc.status = 'NOT_APPROVE_YET' and c.owner = :organizationId
@@ -48,7 +45,6 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
     SELECT
         new com.unidy.backend.domains.dto.responses.ListVolunteerResponse(
             u.userId,
-            v.volunteerId,
             u.fullName,
             u.address,
             u.email,
@@ -58,11 +54,9 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
             c.description
         )
     FROM
-        Volunteer v
-    INNER JOIN User u
-        ON v.userId = u.userId
+        User u
     INNER JOIN VolunteerJoinCampaign vjc
-        ON v.volunteerId = vjc.volunteerId
+        ON u.userId = vjc.userId
     INNER JOIN Campaign c
         ON vjc.campaignId = c.campaignId
     WHERE vjc.status = 'APPROVED' AND c.owner = :organizationId

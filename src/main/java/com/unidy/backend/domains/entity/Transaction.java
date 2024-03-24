@@ -44,5 +44,9 @@ public class Transaction {
 
     @Column(name = "user_id")
     private Integer userId;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "campaign_id", insertable = false, updatable = false)
+    private Campaign campaign;
 }
 
