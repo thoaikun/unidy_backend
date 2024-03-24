@@ -10,10 +10,9 @@ public interface OrganizationService {
     ResponseEntity<?> getProfileOrganization(int organizationI);
     ResponseEntity<?> getListVolunteer();
     ResponseEntity<?> approveVolunteer(Principal connectedUser, int volunteerId, int campaignId);
-    ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int offset, int limit);
-    ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId,int offset, int limit);
-    ResponseEntity<?> getListTransaction(int organizationUserId, int offset, int limit);
-    ResponseEntity<?> getListCampaignTransaction(Integer userId, int campaignId, int offset, int limit);
-
+    ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int pageNumber, int pageSize);
+    ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId,int pageNumber, int pageSize);
+    ResponseEntity<?> getListTransaction(int organizationUserId, int pageNumber, int pageSize);
+    ResponseEntity<?> getListCampaignTransaction(Integer userId, int campaignId, int pageNumber, int pageSize);
     ResponseEntity<?> sendNotifyToMember(Principal connectedUser, NotificationDto notificationDto);
 }

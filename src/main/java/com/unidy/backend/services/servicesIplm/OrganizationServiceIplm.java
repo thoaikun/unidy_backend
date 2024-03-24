@@ -11,6 +11,7 @@ import com.unidy.backend.repositories.TransactionRepository;
 import com.unidy.backend.repositories.VolunteerJoinCampaignRepository;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -43,10 +44,10 @@ public class OrganizationServiceIplm implements OrganizationService {
         return null;
     }
 
-    public ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId, int offset, int limit){
+    public ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
         try {
-            Pageable pageable = PageRequest.of(offset, limit);
-            List<ListVolunteerResponse> listVolunteerNotApproved = organizationRepository.getListVolunteerNotApproved(organizationId,campaignId,pageable);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<ListVolunteerResponse> listVolunteerNotApproved = organizationRepository.getListVolunteerNotApproved(organizationId,campaignId,pageable);
             return ResponseEntity.ok().body(listVolunteerNotApproved);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -69,29 +70,29 @@ public class OrganizationServiceIplm implements OrganizationService {
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
         }
     }
-    public ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int offset, int limit){
+    public ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
         try {
-            Pageable pageable = PageRequest.of(offset, limit);
-            List<ListVolunteerResponse> listVolunteerApproved = organizationRepository.getListVolunteerApproved(organizationId,campaignId,pageable);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<ListVolunteerResponse> listVolunteerApproved = organizationRepository.getListVolunteerApproved(organizationId,campaignId,pageable);
             return ResponseEntity.ok().body(listVolunteerApproved);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
-    public ResponseEntity<?> getListTransaction(int organizationUserId, int offset, int limit){
+    public ResponseEntity<?> getListTransaction(int organizationUserId, int pageNumber, int pageSize){
         try {
-            Pageable pageable = PageRequest.of(offset, limit, Sort.by("transactionTime").descending());
-            List<Transaction> transaction = transactionRepository.findTransactionsByOrganizationUserId(organizationUserId, pageable);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("transactionTime").descending());
+            Page<Transaction> transaction = transactionRepository.findTransactionsByOrganizationUserId(organizationUserId, pageable);
             return ResponseEntity.ok().body(transaction);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
     @Override
-    public ResponseEntity<?> getListCampaignTransaction(Integer organizationUserId, int campaignId, int offset, int limit) {
+    public ResponseEntity<?> getListCampaignTransaction(Integer organizationUserId, int campaignId, int pageNumber, int pageSize) {
         try {
-            Pageable pageable = PageRequest.of(offset, limit, Sort.by("transactionTime").descending());
-            List<Transaction> transaction = transactionRepository.findTransactionsByOrganizationUserIdAndCampaignId(organizationUserId,campaignId, pageable);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("transactionTime").descending());
+            Page<Transaction> transaction = transactionRepository.findTransactionsByOrganizationUserIdAndCampaignId(organizationUserId,campaignId, pageable);
             return ResponseEntity.ok().body(transaction);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));

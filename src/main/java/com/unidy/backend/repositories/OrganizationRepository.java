@@ -2,6 +2,7 @@ package com.unidy.backend.repositories;
 
 import com.unidy.backend.domains.dto.responses.ListVolunteerResponse;
 import com.unidy.backend.domains.entity.Organization;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -36,7 +37,7 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
                 AND c.campaignId = :campaignId
         ORDER BY vjc.timeJoin
         """)
-    List<ListVolunteerResponse> getListVolunteerNotApproved( @Param("organizationId") int organizationId,
+    Page<ListVolunteerResponse> getListVolunteerNotApproved( @Param("organizationId") int organizationId,
                                                              @Param("campaignId") int campaignId
                                                             ,Pageable pageable);
 
@@ -62,7 +63,7 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
         AND c.campaignId = :campaignId
     ORDER BY vjc.timeJoin
     """)
-    List<ListVolunteerResponse> getListVolunteerApproved(
+    Page<ListVolunteerResponse> getListVolunteerApproved(
             @Param("organizationId") int organizationId,
             @Param("campaignId") int campaignId,
             Pageable pageable
