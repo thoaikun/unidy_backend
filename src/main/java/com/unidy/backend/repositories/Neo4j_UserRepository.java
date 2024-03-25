@@ -84,4 +84,10 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
             LIMIT $limit;
      """)
      List<UserNode> searchUser(String searchTerm, int limit, int skip);
+
+     @Query("""
+             OPTIONAL MATCH (user1: user {user_id: $userId})-[r:FOLLOW_ORGANIZATION]->(user2: user {user_id: $organizationId, role: 'ORGANIZATION'})
+             RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result
+             """)
+     CheckResult checkFollow(int userId, int organizationId);
 }

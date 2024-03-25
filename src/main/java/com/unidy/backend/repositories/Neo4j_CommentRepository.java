@@ -17,9 +17,10 @@ public interface Neo4j_CommentRepository extends Neo4jRepository<CommentNode,Int
 
     @Query("""
                 MATCH (userPost: user) - [has_post: HAS_POST] -> (post:post {post_id : $postId})
-                OPTIONAL MATCH (post) - [has_comment: HAS_COMMENT] -> (comment :comment) <-[wrote_comment:WROTE_COMMENT] -(user : user)
-                OPTIONAL MATCH (comment) <- [reply :REPLY_COMMENT] - (commentReply: comment )
-                RETURN user, comment, CASE WHEN reply IS NOT NULL THEN true ELSE false END AS haveReply        
+                OPTIONAL MATCH (post)-[:HAS_COMMENT]->(comment:comment)<-[:WROTE_COMMENT]-(user:user)
+                OPTIONAL MATCH (comment)<-[:REPLY_COMMENT]-(commentReply:comment)
+                WITH user, comment, collect(DISTINCT commentReply) AS replies
+                RETURN user, comment, size(replies) > 0 AS haveReply
                 ORDER BY comment.comment_id
                 SKIP $skip
                 LIMIT $limit;
@@ -27,15 +28,15 @@ public interface Neo4j_CommentRepository extends Neo4jRepository<CommentNode,Int
     List<CommentResponse> getAllCommentByPostId(@Param("postId") String postId, @Param("skip") int skip, @Param("limit") int limit);
 
     @Query("""
-            MATCH (comment:comment {comment_id: $commentId})
-            OPTIONAL MATCH (replyComment:comment)-[reply:REPLY_COMMENT]->(comment)
-            OPTIONAL MATCH (replyComment_2:comment)-[reply_2:REPLY_COMMENT]->(replyComment)
-            OPTIONAL MATCH (replyComment)-[:WROTE_COMMENT]-(userReply:user)
-            WITH comment, replyComment, reply_2 AS replies, userReply
-            RETURN replyComment as comment, CASE WHEN replies IS NOT NULL THEN true ELSE false END AS haveReply, userReply as user
-            ORDER BY comment.comment_id
-            SKIP $skip
-            LIMIT $limit;
+                MATCH (comment:comment {comment_id: 1})
+                OPTIONAL MATCH (replyComment:comment)-[reply:REPLY_COMMENT]->(comment)
+                OPTIONAL MATCH (replyComment_2:comment)-[reply_2:REPLY_COMMENT]->(replyComment)
+                OPTIONAL MATCH (replyComment)-[:WROTE_COMMENT]-(userReply:user)
+                WITH comment, replyComment, collect(DISTINCT replyComment_2) AS replies, userReply
+                RETURN replyComment as comment, size(replies) > 0 AS haveReply, userReply as user
+                ORDER BY comment.comment_id
+                SKIP $skip
+                LIMIT $limit;
             """)
     List<CommentResponse> getAllReplyCommentByPostId(int commentId, int skip, int limit);
 }
