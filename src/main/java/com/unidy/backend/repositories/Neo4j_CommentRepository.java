@@ -19,7 +19,8 @@ public interface Neo4j_CommentRepository extends Neo4jRepository<CommentNode,Int
                 MATCH (userPost: user) - [has_post: HAS_POST] -> (post:post {post_id : $postId})
                 OPTIONAL MATCH (post) - [has_comment: HAS_COMMENT] -> (comment :comment) <-[wrote_comment:WROTE_COMMENT] -(user : user)
                 OPTIONAL MATCH (comment) <- [reply :REPLY_COMMENT] - (commentReply: comment )
-                RETURN user, comment, CASE WHEN reply IS NOT NULL THEN true ELSE false END AS haveReply        ORDER BY comment.comment_id
+                RETURN user, comment, CASE WHEN reply IS NOT NULL THEN true ELSE false END AS haveReply        
+                ORDER BY comment.comment_id
                 SKIP $skip
                 LIMIT $limit;
             """)

@@ -80,4 +80,14 @@ public class CampaignController {
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Có lỗi xảy ra khi lấy danh sách chiến dịch của tổ chức"));
         }
     }
+
+    @PatchMapping("/like")
+    public  ResponseEntity<?> likeCampaign(Principal connectedUser, @RequestParam String campaignId){
+        return campaignService.likeCampaign(connectedUser,campaignId);
+    }
+
+    @PatchMapping("/cancel-like")
+    public  ResponseEntity<?> cancelLikeCampaign(Principal connectedUser, @RequestParam String campaignId){
+        return campaignService.cancelLikeCampaign(connectedUser,campaignId);
+    }
 }

@@ -25,4 +25,8 @@ public interface CampaignService {
 
     @Async("threadPoolTaskExecutor")
     CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign(String searchTerm, int limit, int skip);
+
+    ResponseEntity<?> likeCampaign(Principal connectedUser, String campaignId);
+
+    ResponseEntity<?> cancelLikeCampaign(Principal connectedUser, String campaignId);
 }
