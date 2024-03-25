@@ -64,4 +64,10 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
             LIMIT $limit;
     """)
     List<CampaignPostResponse.CampaignPostResponseData> searchCampaign(String searchTerm, int limit, int skip);
+
+    @Query("""
+            MATCH (user : user {user_id: $userId})  - [like:LIKE] -> (campaign : campaign {campaign_id : $campaignId})
+            DELETE like
+            """)
+    void cancelLikeCampaign(Integer userId, String campaignId);
 }

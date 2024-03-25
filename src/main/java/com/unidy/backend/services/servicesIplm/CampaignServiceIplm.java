@@ -14,6 +14,7 @@ import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.CampaignNode;
+import com.unidy.backend.domains.entity.neo4j.PostNode;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
 import com.unidy.backend.domains.entity.relationship.CampaignType;
 import com.unidy.backend.domains.role.Role;
@@ -264,4 +265,52 @@ public class CampaignServiceIplm implements CampaignService {
         List<CampaignPostResponse.CampaignPostResponseData> campaigns = neo4jCampaignRepository.searchCampaign(searchTerm, limit, skip);
         return CompletableFuture.supplyAsync(() -> campaigns);
     }
+
+    @Override
+    public ResponseEntity<?> likeCampaign(Principal connectedUser, String campaignId) {
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            CampaignNode campaign = neo4jCampaignRepository.findCampaignNodeByCampaignId(campaignId);
+            if (campaign == null){
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find campaign"));
+            }
+            UserNode userNode = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
+            if (userNode == null) {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
+            }
+            List<UserNode> userLikes = campaign.getUserLikes();
+            userLikes.add(userNode);
+            campaign.setUserLikes(userLikes);
+            neo4jCampaignRepository.save(campaign);
+            return ResponseEntity.ok().body(new SuccessReponse("Like campaign success"));
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> cancelLikeCampaign(Principal connectedUser, String campaignId) {
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            UserNode userNode = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
+
+            try {
+                CampaignNode campaign =  neo4jCampaignRepository.findCampaignNodeByCampaignId(campaignId);
+                if (campaign != null) {
+                    neo4jCampaignRepository.cancelLikeCampaign(user.getUserId(),campaignId);
+                    return ResponseEntity.ok().body(new SuccessReponse("Cancel like campaign success"));
+                }
+                else {
+                    return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find this campaign"));
+                }
+            }
+            catch(Exception e){
+                return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+            }
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
+        }
+    }
+
+
 }

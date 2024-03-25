@@ -239,10 +239,6 @@ public class PostServiceImpl implements PostService {
             Optional<List<PostNode>> optionalPost = Optional.ofNullable( neo4j_postRepository.findPostNodeByPostId(postId));
             if (optionalPost.isPresent()) {
                 PostNode post = optionalPost.get().get(0);
-//                List<UserNode> usersLike = post.getUserLikes();
-//                usersLike.remove(userNode);
-//                post.setUserLikes(usersLike);
-//                neo4j_postRepository.save(post);
                 neo4j_postRepository.cancelLikePost(user.getUserId(),postId);
                 return ResponseEntity.ok().body(new SuccessReponse("Cancel like post success"));
             }

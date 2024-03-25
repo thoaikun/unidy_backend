@@ -95,10 +95,9 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
      """)
      List<UserNode> searchUser(String searchTerm, int limit, int skip);
 
-
      @Query("""
-             MATCH (userFollow: user)-[:FOLLOW_ORGANIZATION]->(organization: user {user_id : $userId})\s
-             return userFollow
+             OPTIONAL MATCH (user1: user {user_id: $userId})-[r:FOLLOW_ORGANIZATION]->(user2: user {user_id: $organizationId, role: 'ORGANIZATION'})
+             RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result
              """)
-     List<UserNode> findUserFollowOrganization(Integer userId);
+     CheckResult checkFollow(int userId, int organizationId);
 }
