@@ -258,11 +258,15 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public ResponseEntity<?> comment(Principal connectedUser, String postId, String contentComment) {
+    public ResponseEntity<?> comment(Principal connectedUser, String postId, String content) {
         try {
+            if (postId == null) {
+                return ResponseEntity.badRequest().body("Post id must not be null");
+            }
+
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
             Comment mysql_comment = Comment.builder()
-                    .content(contentComment)
+                    .content(content)
                     .createTime(new Date())
                     .idBlock(false)
                     .replyByComment(null)
@@ -274,24 +278,28 @@ public class PostServiceImpl implements PostService {
             UserNode userComment = neo4j_userRepository.findUserNodeByUserId(user.getUserId());
             CommentNode comment = CommentNode.builder()
                     .commentId(mysql_comment.getCommentId())
-                    .body(contentComment)
+                    .body(content)
                     .build();
             comment.setUserComment(userComment);
             comment.setPostNode(commentPost);
             neo4jCommentRepository.save(comment);
             return ResponseEntity.ok().body("Comment success");
         } catch (Exception e){
-            return ResponseEntity.ok().body("Comment fail");
+            return ResponseEntity.badRequest().body("Comment fail");
         }
     }
 
     @Override
     @Transactional
-    public ResponseEntity<?> replyComment(Principal connectedUser, int commentId, String contentReply) {
+    public ResponseEntity<?> replyComment(Principal connectedUser, Integer commentId, String content) {
         try {
+            if (commentId == null) {
+                return ResponseEntity.badRequest().body("Comment id must not be null");
+            }
+
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
             Comment mysql_comment = Comment.builder()
-                    .content(contentReply)
+                    .content(content)
                     .createTime(new Date())
                     .idBlock(false)
                     .replyByComment(null)
@@ -302,7 +310,7 @@ public class PostServiceImpl implements PostService {
             UserNode userComment = neo4j_userRepository.findUserNodeByUserId(user.getUserId());
             CommentNode reply = CommentNode.builder()
                     .commentId(mysql_comment.getCommentId())
-                    .body(contentReply)
+                    .body(content)
                     .build();
             reply.setUserComment(userComment);
             comment.setReplyComment(reply);
@@ -325,9 +333,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public ResponseEntity<?> getReplyComment(Principal connectedUser, int commentId, int skip, int limit) {
+    public ResponseEntity<?> getReplyComment(Principal connectedUser, Integer commentId, int skip, int limit) {
         try {
-            List<CommentResponse> listReplyComment = neo4jCommentRepository.getAllReplyCommentByPostId(commentId,skip,limit);
+            List<CommentResponse> listReplyComment = neo4jCommentRepository.getAllReplyCommentByPostId(commentId, skip, limit);
             return ResponseEntity.ok().body(listReplyComment);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.toString());

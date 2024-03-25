@@ -1,5 +1,6 @@
 package com.unidy.backend.controllers;
 
+import com.unidy.backend.domains.dto.requests.CommentRequest;
 import com.unidy.backend.domains.dto.requests.PostRequest;
 import com.unidy.backend.services.servicesInterface.PostService;
 import lombok.RequiredArgsConstructor;
@@ -55,23 +56,23 @@ public class PostController {
         return postService.cancelLikePost(connectedUser,postId);
     }
 
-    @PostMapping("/comment")
-    public  ResponseEntity<?> commentPost(Principal connectedUser, @RequestParam String postId, @RequestParam String contentComment){
-        return postService.comment(connectedUser,postId,contentComment);
+    @PostMapping("{postId}/comments")
+    public  ResponseEntity<?> commentPost(Principal connectedUser, @PathVariable String postId, @RequestBody CommentRequest commentRequest){
+        return postService.comment(connectedUser, postId, commentRequest.getContent());
     }
 
-    @PostMapping("/reply-comment")
-    public  ResponseEntity<?> commentPost(Principal connectedUser, @RequestParam int commentId, @RequestParam String contentReply){
-        return postService.replyComment(connectedUser,commentId,contentReply);
+    @PostMapping("{postId}/comments/{commentId}/replies")
+    public  ResponseEntity<?> commentPost(Principal connectedUser, @PathVariable String postId, @PathVariable int commentId, @RequestBody CommentRequest commentRequest){
+        return postService.replyComment(connectedUser,commentId, commentRequest.getContent());
     }
 
-    @GetMapping("/comment")
-        public  ResponseEntity<?> getComment(Principal connectedUser, @RequestParam String postId, @RequestParam int skip, @RequestParam int limit){
+    @GetMapping("{postId}/comments")
+        public  ResponseEntity<?> getComment(Principal connectedUser, @PathVariable String postId, @RequestParam int skip, @RequestParam int limit){
         return postService.getComment(connectedUser,postId,skip,limit);
     }
 
-    @GetMapping("/reply-comment")
-    public  ResponseEntity<?> getReplyComment(Principal connectedUser, @RequestParam int commentId, @RequestParam int skip, @RequestParam int limit ){
+    @GetMapping("{postId}/comments/{commentId}/replies")
+    public  ResponseEntity<?> getReplyComment(Principal connectedUser, @PathVariable String postId, @PathVariable Integer commentId, @RequestParam int skip, @RequestParam int limit ){
         return postService.getReplyComment(connectedUser,commentId,skip,limit);
     }
 }

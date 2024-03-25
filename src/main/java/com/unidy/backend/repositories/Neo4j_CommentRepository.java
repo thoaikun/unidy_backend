@@ -28,7 +28,7 @@ public interface Neo4j_CommentRepository extends Neo4jRepository<CommentNode,Int
     List<CommentResponse> getAllCommentByPostId(@Param("postId") String postId, @Param("skip") int skip, @Param("limit") int limit);
 
     @Query("""
-                MATCH (comment:comment {comment_id: 1})
+                MATCH (comment:comment {comment_id: $commentId})
                 OPTIONAL MATCH (replyComment:comment)-[reply:REPLY_COMMENT]->(comment)
                 OPTIONAL MATCH (replyComment_2:comment)-[reply_2:REPLY_COMMENT]->(replyComment)
                 OPTIONAL MATCH (replyComment)-[:WROTE_COMMENT]-(userReply:user)
@@ -38,5 +38,5 @@ public interface Neo4j_CommentRepository extends Neo4jRepository<CommentNode,Int
                 SKIP $skip
                 LIMIT $limit;
             """)
-    List<CommentResponse> getAllReplyCommentByPostId(int commentId, int skip, int limit);
+    List<CommentResponse> getAllReplyCommentByPostId(Integer commentId, int skip, int limit);
 }
