@@ -111,25 +111,7 @@ public class UserServiceIplm implements UserService {
                 return ResponseEntity.ok().body(information);
             }
             else {
-                OrganizationInformation organizationInformation = new OrganizationInformation();
-                organizationInformation.setUserId(user.getUserId());
-                Organization organization = organizationRepository.findByUserId(user.getUserId()).get();
-                CheckResult checkFollow = neo4jUserRepository.checkFollow(userConnected.getUserId(),user.getUserId());
-                organizationInformation.setOrganizationName(organization.getOrganizationName());
-                organizationInformation.setFollowed(checkFollow.isResult());
-                organizationInformation.setEmail(organization.getEmail());
-                organizationInformation.setAddress(organization.getAddress());
-                organizationInformation.setCountry(organization.getCountry());
-                organizationInformation.setPhone(organization.getPhone());
-                UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
-                if (image != null){
-                    URL urlImage = s3Service.getObjectUrl(
-                            "unidy",
-                            "profile-images/%s/%s".formatted(user.getUserId(), image.getLinkImage())
-                    );
-                    organizationInformation.setImage(urlImage.toString());
-                }
-                return ResponseEntity.ok().body(organizationInformation);
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("User is not volunteer"));
             }
 
         } catch (Exception e) {
