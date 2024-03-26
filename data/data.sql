@@ -189,7 +189,7 @@ CREATE TABLE volunteer_post
 
 CREATE TABLE comment
 (
-    comment_id       INTEGER PRIMARY KEY,
+    comment_id       INTEGER PRIMARY KEY auto_increment,
     content          VARCHAR(255) NOT NULL,
     create_time      DATE,
     is_block         BOOLEAN,
@@ -199,7 +199,7 @@ CREATE TABLE comment
 
 CREATE TABLE comment_log
 (
-    comment_log_id INTEGER,
+    comment_log_id INTEGER AUTO_INCREMENT,
     comment_id     INTEGER,
     type_log       VARCHAR(15),
     log_content    VARCHAR(255),

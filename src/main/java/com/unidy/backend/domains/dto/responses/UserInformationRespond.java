@@ -2,15 +2,11 @@ package com.unidy.backend.domains.dto.responses;
 
 
 import com.unidy.backend.domains.role.Role;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Date;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInformationRespond {

@@ -36,9 +36,9 @@ public class UserController {
     }
 
     @GetMapping("/profile/{userId}")
-    public ResponseEntity<?> getUserInformationByUserId(@PathVariable int userId){
+    public ResponseEntity<?> getUserInformationByUserId(Principal connectedUser, @PathVariable int userId){
         try{
-            return ResponseEntity.ok().body(userService.getUserInformationByUserId(userId));
+            return userService.getUserInformationByUserId(connectedUser,userId);
         }
         catch (Exception e){
             return ResponseEntity.badRequest().body("Lỗi hệ thống");

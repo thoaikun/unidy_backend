@@ -36,14 +36,15 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
     List<PostResponse> findPostNodeByUserId(int userId, int skip, int limit);
 
     @Query("""
-           MATCH (user:user {user_id: $userId})-[:FRIEND]->(friend:user)-[r:HAS_POST]->(post:post)
-           OPTIONAL MATCH (user)-[isLiked:LIKE]->(post)
-           OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)
-           WITH post, friend, r, count(r_like) AS likeCount, r_like, isLiked
-           RETURN post, friend as userNodes, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked
-           ORDER BY post.create_date DESC, post.id ASC
-           SKIP $skip
-           LIMIT $limit;
+            MATCH (user:user {user_id: $userId})-[is_friend_1:FRIEND]->(friend:user)-[has_post_1:HAS_POST]->(post:post)
+            OPTIONAL MATCH (user)-[isLiked:LIKE]->(post)
+            OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)
+            return post as posts, friend as userNodes, has_post_1 as has_posts, count(r_like) as likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked
+            UNION
+            OPTIONAL MATCH (friend)-[is_friend_2:FRIEND]->(friend_2:user)-[has_post_2:HAS_POST]->(post_2:post)
+            OPTIONAL MATCH (user)-[isLiked:LIKE]->(post_2)
+            OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post_2)
+            RETURN post_2 as posts, friend_2 as userNodes, has_post_2 as has_posts, count(r_like) as likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked
             """)
     List<PostResponse> findPost(int userId, int skip, int limit);
 

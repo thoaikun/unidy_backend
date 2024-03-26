@@ -27,4 +27,12 @@ public interface PostService {
 
     @Async("threadPoolTaskExecutor")
     CompletableFuture<List<PostNode>> searchPost(String searchTerm, int limit, int skip);
+
+    ResponseEntity<?> comment(Principal connectedUser, String postId, String content);
+
+    ResponseEntity<?> replyComment(Principal connectedUser, Integer commentId, String content);
+
+    ResponseEntity<?> getComment(Principal connectedUser, String postId, int skip, int limit);
+
+    ResponseEntity<?> getReplyComment(Principal connectedUser, Integer commentId, int skip, int limit);
 }

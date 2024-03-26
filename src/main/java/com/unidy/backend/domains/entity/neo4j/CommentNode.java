@@ -17,16 +17,19 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 public class CommentNode implements Neo4JNode {
     @Id
     @Property("comment_id")
-    private Integer comment_id ;
+    private Integer commentId ;
 
-    @Property("comment_json")
-    private String commentJson;
+    @Property("body")
+    private String body;
 
     @Relationship(type = "HAS_COMMENT", direction = Relationship.Direction.INCOMING)
     private PostNode postNode;
 
+    @Relationship(type = "HAS_COMMENT", direction = Relationship.Direction.INCOMING)
+    private CampaignNode campaignNode;
+
     @Relationship(type = "REPLY_COMMENT", direction = Relationship.Direction.INCOMING)
-    private UserNode userReply;
+    private CommentNode replyComment;
 
     @Relationship(type = "WROTE_COMMENT", direction = Relationship.Direction.INCOMING)
     private UserNode userComment;

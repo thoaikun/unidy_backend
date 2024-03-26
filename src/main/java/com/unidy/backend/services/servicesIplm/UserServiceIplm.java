@@ -10,13 +10,10 @@ import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
 import com.unidy.backend.domains.dto.notification.extraData.FriendAcceptData;
 import com.unidy.backend.domains.dto.notification.extraData.FriendRequestData;
 import com.unidy.backend.domains.dto.requests.ChoseFavoriteRequest;
-import com.unidy.backend.domains.dto.responses.FollowOrganizationResponse;
-import com.unidy.backend.domains.dto.responses.InviteFriend;
-import com.unidy.backend.domains.dto.responses.RecommendFriendResponse;
-import com.unidy.backend.domains.dto.responses.TransactionResponse;
-import com.unidy.backend.domains.dto.responses.UserInformationRespond;
+import com.unidy.backend.domains.dto.responses.*;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
+import com.unidy.backend.domains.role.Role;
 import com.unidy.backend.firebase.FirebaseService;
 import com.unidy.backend.mapper.DtoMapper;
 import com.unidy.backend.repositories.*;
@@ -85,28 +82,58 @@ public class UserServiceIplm implements UserService {
     }
 
     @Override
-    public UserInformationRespond getUserInformationByUserId(int userId) {
-        User user = userRepository.findByUserId(userId);
-        UserInformationRespond information = new UserInformationRespond() ;
-        information.setUserId(user.getUserId());
-        information.setFullName(user.getFullName());
-        information.setAddress(user.getAddress());
-        information.setSex(user.getSex());
-        information.setPhone(user.getPhone());
-        information.setDayOfBirth(user.getDayOfBirth());
-        information.setJob(user.getJob());
-        information.setRole(user.getRole());
-        information.setWorkLocation(user.getWorkLocation());
+    public ResponseEntity<?> getUserInformationByUserId(Principal connectedUser,int userId) {
+        var userConnected = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            User user = userRepository.findByUserId(userId);
 
-        UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
-        if (image != null){
-            URL urlImage = s3Service.getObjectUrl(
-                    "unidy",
-                    "profile-images/%s/%s".formatted(user.getUserId(), image.getLinkImage())
-            );
-            information.setImage(urlImage.toString());
+            if (user.getRole().equals(Role.VOLUNTEER)){
+                UserInformationRespond information = new UserInformationRespond() ;
+
+                information.setUserId(user.getUserId());
+                information.setFullName(user.getFullName());
+                information.setAddress(user.getAddress());
+                information.setSex(user.getSex());
+                information.setPhone(user.getPhone());
+                information.setDayOfBirth(user.getDayOfBirth());
+                information.setJob(user.getJob());
+                information.setRole(user.getRole());
+                information.setWorkLocation(user.getWorkLocation());
+                UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
+                if (image != null){
+                    URL urlImage = s3Service.getObjectUrl(
+                            "unidy",
+                            "profile-images/%s/%s".formatted(user.getUserId(), image.getLinkImage())
+                    );
+                    information.setImage(urlImage.toString());
+                }
+                return ResponseEntity.ok().body(information);
+            }
+            else {
+                OrganizationInformation organizationInformation = new OrganizationInformation();
+                organizationInformation.setUserId(user.getUserId());
+                Organization organization = organizationRepository.findByUserId(user.getUserId()).get();
+                CheckResult checkFollow = neo4jUserRepository.checkFollow(userConnected.getUserId(),user.getUserId());
+                organizationInformation.setOrganizationName(organization.getOrganizationName());
+                organizationInformation.setFollowed(checkFollow.isResult());
+                organizationInformation.setEmail(organization.getEmail());
+                organizationInformation.setAddress(organization.getAddress());
+                organizationInformation.setCountry(organization.getCountry());
+                organizationInformation.setPhone(organization.getPhone());
+                UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
+                if (image != null){
+                    URL urlImage = s3Service.getObjectUrl(
+                            "unidy",
+                            "profile-images/%s/%s".formatted(user.getUserId(), image.getLinkImage())
+                    );
+                    organizationInformation.setImage(urlImage.toString());
+                }
+                return ResponseEntity.ok().body(organizationInformation);
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
-        return information ;
     }
 
     public ResponseEntity<?> updateUserInformation(UserDto userDto,Principal connectedUser){
