@@ -62,7 +62,7 @@ public class PostController {
     }
 
     @PostMapping("{postId}/comments/{commentId}/replies")
-    public  ResponseEntity<?> commentPost(Principal connectedUser, @PathVariable String postId, @PathVariable int commentId, @RequestBody CommentRequest commentRequest){
+    public  ResponseEntity<?> commentPost(Principal connectedUser, @PathVariable int commentId, @RequestBody CommentRequest commentRequest){
         return postService.replyComment(connectedUser,commentId, commentRequest.getContent());
     }
 
@@ -71,8 +71,8 @@ public class PostController {
         return postService.getComment(connectedUser,postId,skip,limit);
     }
 
-    @GetMapping("{postId}/comments/{commentId}/replies")
-    public  ResponseEntity<?> getReplyComment(Principal connectedUser, @PathVariable String postId, @PathVariable Integer commentId, @RequestParam int skip, @RequestParam int limit ){
+    @GetMapping("comments/{commentId}/replies")
+    public  ResponseEntity<?> getReplyComment(Principal connectedUser, @PathVariable Integer commentId, @RequestParam int skip, @RequestParam int limit ){
         return postService.getReplyComment(connectedUser,commentId,skip,limit);
     }
 }

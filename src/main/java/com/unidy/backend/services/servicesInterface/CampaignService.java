@@ -29,4 +29,9 @@ public interface CampaignService {
     ResponseEntity<?> likeCampaign(Principal connectedUser, String campaignId);
 
     ResponseEntity<?> cancelLikeCampaign(Principal connectedUser, String campaignId);
+
+    ResponseEntity<?> comment(Principal connectedUser, String postId, String content);
+
+    ResponseEntity<?> getComment(Principal connectedUser, String postId, int skip, int limit);
+
 }

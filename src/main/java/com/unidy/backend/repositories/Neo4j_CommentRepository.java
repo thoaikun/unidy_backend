@@ -38,5 +38,17 @@ public interface Neo4j_CommentRepository extends Neo4jRepository<CommentNode,Int
                 SKIP $skip
                 LIMIT $limit;
             """)
-    List<CommentResponse> getAllReplyCommentByPostId(Integer commentId, int skip, int limit);
+    List<CommentResponse> getAllReplyComment(Integer commentId, int skip, int limit);
+
+    @Query("""
+            MATCH (userPost: user) - [has_post: HAS_CAMPAIGN] -> (campaign:campaign {campaign_id : $campaignId})
+            OPTIONAL MATCH (campaign)-[:HAS_COMMENT]->(comment:comment)<-[:WROTE_COMMENT]-(user:user)
+            OPTIONAL MATCH (comment)<-[:REPLY_COMMENT]-(commentReply:comment)
+            WITH user, comment, collect(DISTINCT commentReply) AS replies
+            RETURN user, comment, size(replies) > 0 AS haveReply
+            ORDER BY comment.comment_id
+            SKIP $skip
+            LIMIT $limit;
+            """)
+    List<CommentResponse> getAllCommentByCampaignId(@Param("campaignId") String campaignId, @Param("skip") int skip, @Param("limit") int limit);
 }

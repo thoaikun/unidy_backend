@@ -3,6 +3,7 @@ package com.unidy.backend.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
+import com.unidy.backend.domains.dto.requests.CommentRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.services.servicesInterface.CampaignService;
 import lombok.RequiredArgsConstructor;
@@ -89,5 +90,15 @@ public class CampaignController {
     @PatchMapping("/cancel-like")
     public  ResponseEntity<?> cancelLikeCampaign(Principal connectedUser, @RequestParam String campaignId){
         return campaignService.cancelLikeCampaign(connectedUser,campaignId);
+    }
+
+    @PostMapping("/{campaignId}/comments")
+    public  ResponseEntity<?> commentPost(Principal connectedUser, @PathVariable String campaignId, @RequestBody CommentRequest commentRequest){
+        return campaignService.comment(connectedUser, campaignId, commentRequest.getContent());
+    }
+
+    @GetMapping("/{campaignId}/comments")
+    public  ResponseEntity<?> getComment(Principal connectedUser, @PathVariable String campaignId, @RequestParam int skip, @RequestParam int limit){
+        return campaignService.getComment(connectedUser,campaignId,skip,limit);
     }
 }

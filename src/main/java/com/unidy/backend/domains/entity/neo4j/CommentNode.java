@@ -25,6 +25,9 @@ public class CommentNode implements Neo4JNode {
     @Relationship(type = "HAS_COMMENT", direction = Relationship.Direction.INCOMING)
     private PostNode postNode;
 
+    @Relationship(type = "HAS_COMMENT", direction = Relationship.Direction.INCOMING)
+    private CampaignNode campaignNode;
+
     @Relationship(type = "REPLY_COMMENT", direction = Relationship.Direction.INCOMING)
     private CommentNode replyComment;
 

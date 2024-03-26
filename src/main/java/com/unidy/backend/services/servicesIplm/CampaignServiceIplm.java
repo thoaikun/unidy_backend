@@ -12,8 +12,10 @@ import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
 import com.unidy.backend.domains.dto.notification.extraData.NewCampaignData;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
+import com.unidy.backend.domains.dto.responses.CommentResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.CampaignNode;
+import com.unidy.backend.domains.entity.neo4j.CommentNode;
 import com.unidy.backend.domains.entity.neo4j.PostNode;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
 import com.unidy.backend.domains.entity.relationship.CampaignType;
@@ -52,6 +54,8 @@ public class CampaignServiceIplm implements CampaignService {
     private final UserProfileImageRepository userProfileImageRepository;
     private final FirebaseService firebaseService;
     private final CampaignTypeRepository campaignTypeRepository;
+    private final CommentRepository commentRepository;
+    private final Neo4j_CommentRepository neo4jCommentRepository;
     @Override
     @Transactional
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) throws JsonProcessingException {
@@ -312,5 +316,46 @@ public class CampaignServiceIplm implements CampaignService {
         }
     }
 
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> comment(Principal connectedUser, String campaignId, String content) {
+        try {
+            if (campaignId == null) {
+                return ResponseEntity.badRequest().body("Campaign id must not be null");
+            }
+
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            Comment mysql_comment = Comment.builder()
+                    .content(content)
+                    .createTime(new Date())
+                    .idBlock(false)
+                    .replyByComment(null)
+                    .build();
+            commentRepository.save(mysql_comment);
+
+            CampaignNode campaign = neo4jCampaignRepository.findCampaignNodeByCampaignId(campaignId);
+            UserNode userComment = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
+            CommentNode comment = CommentNode.builder()
+                    .commentId(mysql_comment.getCommentId())
+                    .body(content)
+                    .build();
+            comment.setUserComment(userComment);
+            comment.setCampaignNode(campaign);
+            neo4jCommentRepository.save(comment);
+            return ResponseEntity.ok().body("Comment success");
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body("Comment fail");
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getComment(Principal connectedUser, String campaignId, int skip, int limit) {
+        try {
+            List<CommentResponse> listComment = neo4jCommentRepository.getAllCommentByCampaignId(campaignId,skip,limit);
+            return ResponseEntity.ok().body(listComment);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.toString());
+        }
+    }
 
 }

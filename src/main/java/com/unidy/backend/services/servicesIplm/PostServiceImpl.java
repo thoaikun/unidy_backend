@@ -335,7 +335,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public ResponseEntity<?> getReplyComment(Principal connectedUser, Integer commentId, int skip, int limit) {
         try {
-            List<CommentResponse> listReplyComment = neo4jCommentRepository.getAllReplyCommentByPostId(commentId, skip, limit);
+            List<CommentResponse> listReplyComment = neo4jCommentRepository.getAllReplyComment(commentId, skip, limit);
             return ResponseEntity.ok().body(listReplyComment);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.toString());
