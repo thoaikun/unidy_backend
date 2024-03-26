@@ -101,4 +101,14 @@ public class CampaignController {
     public  ResponseEntity<?> getComment(Principal connectedUser, @PathVariable String campaignId, @RequestParam int skip, @RequestParam int limit){
         return campaignService.getComment(connectedUser,campaignId,skip,limit);
     }
+
+    @PostMapping("{campaignId}/comments/{commentId}/replies")
+    public  ResponseEntity<?> replyComment(Principal connectedUser, @PathVariable String campaignId, @PathVariable Integer commentId, @RequestBody CommentRequest commentRequest){
+        return campaignService.replyComment(connectedUser,commentId,commentRequest.getContent());
+    }
+
+    @GetMapping("{campaignId}/comments/{commentId}/replies")
+    public  ResponseEntity<?> getReplyComment(Principal connectedUser, @PathVariable String campaignId, @PathVariable Integer commentId, @RequestParam int skip, @RequestParam int limit){
+        return campaignService.getReplyComment(connectedUser,commentId,skip,limit);
+    }
 }

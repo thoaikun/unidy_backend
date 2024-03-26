@@ -325,18 +325,18 @@ public class CampaignServiceIplm implements CampaignService {
             }
 
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-            Comment mysql_comment = Comment.builder()
+            Comment mysqlComment = Comment.builder()
                     .content(content)
                     .createTime(new Date())
                     .idBlock(false)
                     .replyByComment(null)
                     .build();
-            commentRepository.save(mysql_comment);
+            commentRepository.save(mysqlComment);
 
             CampaignNode campaign = neo4jCampaignRepository.findCampaignNodeByCampaignId(campaignId);
             UserNode userComment = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
             CommentNode comment = CommentNode.builder()
-                    .commentId(mysql_comment.getCommentId())
+                    .commentId(mysqlComment.getCommentId())
                     .body(content)
                     .build();
             comment.setUserComment(userComment);
@@ -358,4 +358,46 @@ public class CampaignServiceIplm implements CampaignService {
         }
     }
 
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> replyComment(Principal connectedUser, Integer commentId, String content) {
+        try {
+            if (commentId == null) {
+                return ResponseEntity.badRequest().body("Comment id must not be null");
+            }
+
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            Comment mysqlComment = Comment.builder()
+                    .content(content)
+                    .createTime(new Date())
+                    .idBlock(false)
+                    .replyByComment(null)
+                    .build();
+            commentRepository.save(mysqlComment);
+
+            CommentNode comment = neo4jCommentRepository.findCommentNodeByCommentId(commentId);
+            UserNode userComment = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
+            CommentNode reply = CommentNode.builder()
+                    .commentId(mysqlComment.getCommentId())
+                    .body(content)
+                    .build();
+            reply.setUserComment(userComment);
+            comment.setReplyComment(reply);
+            neo4jCommentRepository.save(reply);
+            neo4jCommentRepository.save(comment);
+            return ResponseEntity.ok().body("Comment success");
+        } catch (Exception e){
+            return ResponseEntity.ok().body("Comment fail");
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getReplyComment(Principal connectedUser, Integer commentId, int skip, int limit) {
+        try {
+            List<CommentResponse> listReplyComment = neo4jCommentRepository.getAllReplyComment(commentId, skip, limit);
+            return ResponseEntity.ok().body(listReplyComment);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.toString());
+        }
+    }
 }
