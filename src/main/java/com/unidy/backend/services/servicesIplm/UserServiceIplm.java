@@ -89,7 +89,7 @@ public class UserServiceIplm implements UserService {
 
             if (user.getRole().equals(Role.VOLUNTEER)){
                 UserInformationRespond information = new UserInformationRespond() ;
-
+                CheckResult checkFriend = neo4jUserRepository.checkFriend(userConnected.getUserId(),user.getUserId());
                 information.setUserId(user.getUserId());
                 information.setFullName(user.getFullName());
                 information.setAddress(user.getAddress());
@@ -99,6 +99,7 @@ public class UserServiceIplm implements UserService {
                 information.setJob(user.getJob());
                 information.setRole(user.getRole());
                 information.setWorkLocation(user.getWorkLocation());
+                information.setIsFriend(checkFriend.isResult());
                 UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
                 if (image != null){
                     URL urlImage = s3Service.getObjectUrl(

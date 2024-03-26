@@ -100,4 +100,11 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
              RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result
              """)
      CheckResult checkFollow(int userId, int organizationId);
+
+     @Query("""
+             OPTIONAL MATCH (user1: user {user_id: $userId})-[r:FRIEND]->(user2: user {user_id: $friendId})
+             RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result
+     """)
+     CheckResult checkFriend(int userId, int friendId);
+
 }
