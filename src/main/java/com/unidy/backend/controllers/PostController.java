@@ -67,12 +67,12 @@ public class PostController {
     }
 
     @GetMapping("{postId}/comments")
-        public  ResponseEntity<?> getComment(Principal connectedUser, @PathVariable String postId, @RequestParam int skip, @RequestParam int limit){
+    public  ResponseEntity<?> getComment(Principal connectedUser, @PathVariable String postId, @RequestParam int skip, @RequestParam int limit){
         return postService.getComment(connectedUser,postId,skip,limit);
     }
 
-    @GetMapping("comments/{commentId}/replies")
-    public  ResponseEntity<?> getReplyComment(Principal connectedUser, @PathVariable Integer commentId, @RequestParam int skip, @RequestParam int limit ){
+    @GetMapping("{postId}/comments/{commentId}/replies")
+    public  ResponseEntity<?> getReplyComment(Principal connectedUser, @PathVariable String postId, @PathVariable Integer commentId, @RequestParam int skip, @RequestParam int limit ){
         return postService.getReplyComment(connectedUser,commentId,skip,limit);
     }
 }
