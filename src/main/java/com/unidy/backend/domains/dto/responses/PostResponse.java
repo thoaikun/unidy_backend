@@ -18,7 +18,7 @@ public class PostResponse {
     private String updateDate;
     private Boolean isBlock;
     private String linkImage;
-    private UserNode userNodes;
+    private UserNode userNode;
 //    private List<UserNode> userLikes;
     private Boolean isLiked;
     private int likeCount ;
