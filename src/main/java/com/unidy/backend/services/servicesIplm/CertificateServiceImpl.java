@@ -21,12 +21,16 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 @Service
 @RequiredArgsConstructor
 public class CertificateServiceImpl implements CertificateService {
-
     @Override
     public ResponseEntity<?> createCertificate(Principal connectedUser, CertificateRequest certificateRequest) {
         try {
             String html = parseThymeleafTemplate();
-            String outputFilePath = "src/main/resources/PDF/certificate.pdf";
+            String outputFilePath = String.format(
+                "src/main/resources/certificate/pdf/%s_%s_%s.pdf",
+                certificateRequest.getVolunteerId(),
+                certificateRequest.getCampaignId(),
+                System.currentTimeMillis()
+            );
 
             OutputStream outputStream = new FileOutputStream(outputFilePath);
 
@@ -47,15 +51,16 @@ public class CertificateServiceImpl implements CertificateService {
 
     private String parseThymeleafTemplate() {
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setPrefix("certificate/templates/");
         templateResolver.setSuffix(".html");
         templateResolver.setTemplateMode(TemplateMode.HTML);
-
+        templateResolver.setCharacterEncoding("UTF-8");
         TemplateEngine templateEngine = new TemplateEngine();
         templateEngine.setTemplateResolver(templateResolver);
 
         Context context = new Context();
         context.setVariable("volunteerName", "Huy Thái");
 
-        return templateEngine.process("src/main/resources/templates/Certificate.html", context);
+        return templateEngine.process("certificate", context);
     }
 }
