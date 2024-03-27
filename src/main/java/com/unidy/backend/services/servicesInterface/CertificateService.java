@@ -7,4 +7,6 @@ import java.security.Principal;
 
 public interface CertificateService {
     ResponseEntity<?> createCertificate(Principal connectedUser, CertificateRequest certificateRequest);
+
+    ResponseEntity<?> getCertificate(Principal connectedUser);
 }

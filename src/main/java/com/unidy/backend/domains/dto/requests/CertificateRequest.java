@@ -7,7 +7,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CertificateRequest {
-    private int volunteerId;
+    private int userId;
     private int campaignId;
-    private int organizationId;
 }

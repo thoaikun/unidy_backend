@@ -16,7 +16,6 @@ import com.unidy.backend.domains.dto.responses.CommentResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.CampaignNode;
 import com.unidy.backend.domains.entity.neo4j.CommentNode;
-import com.unidy.backend.domains.entity.neo4j.PostNode;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
 import com.unidy.backend.domains.entity.relationship.CampaignType;
 import com.unidy.backend.domains.role.Role;
@@ -75,7 +74,7 @@ public class CampaignServiceIplm implements CampaignService {
                                         fileContentType.equals("image/jpeg") ||
                                         fileContentType.equals("image/jpg"))) {
                             fileContentType = fileContentType.replace("image/",".");
-                            s3Service.putImage(
+                            s3Service.putObject(
                                     "unidy",
                                     fileContentType,
                                     "campaign-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),

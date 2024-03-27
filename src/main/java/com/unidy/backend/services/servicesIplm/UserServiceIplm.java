@@ -20,16 +20,13 @@ import com.unidy.backend.repositories.*;
 import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
 import com.unidy.backend.services.servicesInterface.UserService;
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.core.env.Environment;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -194,7 +191,7 @@ public class UserServiceIplm implements UserService {
                             fileContentType.equals("image/jpeg") ||
                             fileContentType.equals("image/jpg"))) {
                 fileContentType = fileContentType.replace("image/",".");
-                s3Service.putImage(
+                s3Service.putObject(
                         "unidy",
                         fileContentType,
                         "profile-images/%s/%s".formatted(userId, profileImageId+fileContentType ),

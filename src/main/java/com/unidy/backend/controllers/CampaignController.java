@@ -3,9 +3,11 @@ package com.unidy.backend.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
+import com.unidy.backend.domains.dto.requests.CertificateRequest;
 import com.unidy.backend.domains.dto.requests.CommentRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.services.servicesInterface.CampaignService;
+import com.unidy.backend.services.servicesInterface.CertificateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class CampaignController {
     private final CampaignService campaignService;
+    private final CertificateService certificateService;
 
     @PreAuthorize("hasRole('ORGANIZATION')")
     @PostMapping("")
@@ -110,5 +113,16 @@ public class CampaignController {
     @GetMapping("{campaignId}/comments/{commentId}/replies")
     public  ResponseEntity<?> getReplyComment(Principal connectedUser, @PathVariable String campaignId, @PathVariable Integer commentId, @RequestParam int skip, @RequestParam int limit){
         return campaignService.getReplyComment(connectedUser,commentId,skip,limit);
+    }
+
+    @PreAuthorize("hasRole('ORGANIZATION')")
+    @PostMapping("/certificate")
+    public ResponseEntity<?> createCertificate(Principal connectedUser, @RequestBody CertificateRequest certificateRequest){
+        return certificateService.createCertificate(connectedUser,certificateRequest);
+    }
+
+    @GetMapping("/certificate")
+    public ResponseEntity<?> getCertificate(Principal connectedUser){
+        return certificateService.getCertificate(connectedUser);
     }
 }

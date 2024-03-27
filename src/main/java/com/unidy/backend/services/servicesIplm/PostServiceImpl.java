@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.text.SimpleDateFormat;
@@ -91,7 +90,7 @@ public class PostServiceImpl implements PostService {
                                     fileContentType.equals("image/jpeg") ||
                                     fileContentType.equals("image/jpg"))) {
                         fileContentType = fileContentType.replace("image/",".");
-                        s3Service.putImage(
+                        s3Service.putObject(
                                 "unidy",
                                 fileContentType,
                                 "post-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),
@@ -160,7 +159,7 @@ public class PostServiceImpl implements PostService {
                                             fileContentType.equals("image/jpeg") ||
                                             fileContentType.equals("image/jpg"))) {
                                 fileContentType = fileContentType.replace("image/",".");
-                                s3Service.putImage(
+                                s3Service.putObject(
                                         "unidy",
                                         fileContentType,
                                         "post-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),

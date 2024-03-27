@@ -143,10 +143,12 @@ CREATE TABLE certificate
 
 CREATE TABLE volunteer_certificate
 (
-    volunteer_id   BIGINT,
+    volunteer_id   INTEGER,
     certificate_id INTEGER,
     campaign_id    INTEGER,
-    PRIMARY KEY (volunteer_id, certificate_id),
+    PRIMARY KEY (volunteer_id, certificate_id,campaign_id),
+    FOREIGN KEY (volunteer_id) REFERENCES volunteer (volunteer_id),
+    FOREIGN KEY (certificate_id) REFERENCES certificate (certificate_id),
     FOREIGN KEY (campaign_id) REFERENCES campaign (campaign_id)
 );
 

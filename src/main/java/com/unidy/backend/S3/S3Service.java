@@ -15,7 +15,7 @@ import java.net.URL;
 public class S3Service {
     private final S3Client s3;
 
-    public void putImage(String bucketName, String containType, String key, byte[] file){
+    public void putObject(String bucketName, String containType, String key, byte[] file){
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
