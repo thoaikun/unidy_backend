@@ -18,5 +18,6 @@ public class OrganizationInformation {
     private String email;
     private String country;
     private String image;
+    private String firebaseTopic;
     private Boolean followed;
 }

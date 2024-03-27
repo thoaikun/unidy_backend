@@ -57,6 +57,7 @@ public class OrganizationServiceIplm implements OrganizationService {
             organizationInformation.setAddress(organization.get().getAddress());
             organizationInformation.setCountry(organization.get().getCountry());
             organizationInformation.setPhone(organization.get().getPhone());
+            organizationInformation.setFirebaseTopic(organization.get().getFirebaseTopic());
             UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
             if (image != null){
                 URL urlImage = s3Service.getObjectUrl(
