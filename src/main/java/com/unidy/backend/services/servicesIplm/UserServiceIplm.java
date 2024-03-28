@@ -352,14 +352,9 @@ public class UserServiceIplm implements UserService {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
             if (neo4jUserRepository.checkFollowRequest(user.getUserId(), organizationId).isResult()) {
-                return ResponseEntity.badRequest().body(new ErrorResponseDto("You have follow requested yet"));
+                return ResponseEntity.badRequest().body(new FollowOrganizationResponse("Already followed", null));
             }
-            Date date = new Date();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            neo4jUserRepository.sendFollowRequest(user.getUserId(), organizationId, sdf.format(date));
-
-            // return organization firebase topic for device to subscribe
-            Optional<Organization> followedOrganization = this.organizationRepository.findByOrganizationId(organizationId);
+            Optional<Organization> followedOrganization = this.organizationRepository.findByUserId(organizationId);
             if (followedOrganization.isEmpty()) {
                 return ResponseEntity.badRequest().body(new FollowOrganizationResponse(
                         "Follow failed",
@@ -367,6 +362,11 @@ public class UserServiceIplm implements UserService {
                 ));
             }
 
+            Date date = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            neo4jUserRepository.sendFollowRequest(user.getUserId(), organizationId, sdf.format(date));
+
+            // return organization firebase topic for device to subscribe
             return ResponseEntity.ok().body(new FollowOrganizationResponse(
                     "Follow success",
                     followedOrganization.get().getFirebaseTopic()
@@ -401,7 +401,8 @@ public class UserServiceIplm implements UserService {
     }
 
     @Async("threadPoolTaskExecutor")
-    public CompletableFuture<List<UserNode>> searchUser(String searchTerm, int limit, int skip){
-        return CompletableFuture.completedFuture(neo4jUserRepository.searchUser(searchTerm, limit, skip));
+    public CompletableFuture<List<UserNode>> searchUser(Principal connectedUser, String searchTerm, int limit, int skip){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        return CompletableFuture.completedFuture(neo4jUserRepository.searchUser(user.getUserId(), searchTerm, limit, skip));
     }
 }

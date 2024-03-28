@@ -4,18 +4,14 @@ import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.Type.VolunteerStatus;
 import com.unidy.backend.domains.dto.notification.NotificationDto;
-import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
-import com.unidy.backend.domains.dto.notification.extraData.NewCampaignData;
 import com.unidy.backend.domains.dto.responses.CheckResult;
 import com.unidy.backend.domains.dto.responses.ListVolunteerResponse;
 import com.unidy.backend.domains.dto.responses.OrganizationInformation;
 import com.unidy.backend.domains.entity.*;
-import com.unidy.backend.domains.entity.neo4j.UserNode;
 import com.unidy.backend.firebase.FirebaseService;
 import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -52,17 +48,17 @@ public class OrganizationServiceIplm implements OrganizationService {
 
             CheckResult checkFollow = neo4j_UserRepository.checkFollow(user.getUserId(), organizationId);
             organizationInformation.setOrganizationName(organization.get().getOrganizationName());
-            organizationInformation.setFollowed(checkFollow.isResult());
+            organizationInformation.setIsFollow(checkFollow.isResult());
             organizationInformation.setEmail(organization.get().getEmail());
             organizationInformation.setAddress(organization.get().getAddress());
             organizationInformation.setCountry(organization.get().getCountry());
             organizationInformation.setPhone(organization.get().getPhone());
             organizationInformation.setFirebaseTopic(organization.get().getFirebaseTopic());
-            UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
+            UserProfileImage image = userProfileImageRepository.findByUserId(organizationId);
             if (image != null){
                 URL urlImage = s3Service.getObjectUrl(
                         "unidy",
-                        "profile-images/%s/%s".formatted(user.getUserId(), image.getLinkImage())
+                        "profile-images/%s/%s".formatted(organizationId, image.getLinkImage())
                 );
                 organizationInformation.setImage(urlImage.toString());
             }

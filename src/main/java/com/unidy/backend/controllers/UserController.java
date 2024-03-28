@@ -1,5 +1,6 @@
 package com.unidy.backend.controllers;
 
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.unidy.backend.domains.dto.UserDto;
 import com.unidy.backend.domains.dto.requests.ChoseFavoriteRequest;
 import com.unidy.backend.domains.dto.requests.UserInformationRequest;
@@ -130,5 +131,10 @@ public class UserController {
     @GetMapping("/campaigns")
     public ResponseEntity<?> getUserCampaigns(Principal connectedUser, @RequestParam int pageSize, @RequestParam int pageNumber){
         return userService.getUserJoinedCampaigns(connectedUser, pageSize, pageNumber);
+    }
+
+    @GetMapping("topic")
+    public ResponseEntity<?> getTopic(Principal connectedUser){
+        FirebaseMessaging.getInstance().
     }
 }
