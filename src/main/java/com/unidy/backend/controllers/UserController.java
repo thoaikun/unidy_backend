@@ -132,9 +132,4 @@ public class UserController {
     public ResponseEntity<?> getUserCampaigns(Principal connectedUser, @RequestParam int pageSize, @RequestParam int pageNumber){
         return userService.getUserJoinedCampaigns(connectedUser, pageSize, pageNumber);
     }
-
-    @GetMapping("topic")
-    public ResponseEntity<?> getTopic(Principal connectedUser){
-        FirebaseMessaging.getInstance().
-    }
 }
