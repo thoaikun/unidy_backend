@@ -6,6 +6,7 @@ import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
 import com.unidy.backend.domains.dto.notification.extraData.NewCampaignData;
 import com.unidy.backend.domains.dto.responses.ListVolunteerResponse;
+import com.unidy.backend.domains.dto.responses.VolunteerJoinResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
 import com.unidy.backend.firebase.FirebaseService;
@@ -43,8 +44,13 @@ public class OrganizationServiceIplm implements OrganizationService {
     }
 
     @Override
-    public ResponseEntity<?> getListVolunteer() {
-        return null;
+    public ResponseEntity<?> getListVolunteer(Principal connectedUser, int campaignId) {
+        try {
+            List<VolunteerJoinResponse> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByCampaignId(campaignId);
+            return ResponseEntity.ok().body(volunteerJoinCampaigns);
+        } catch (Exception exception){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
+        }
     }
 
     public ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
