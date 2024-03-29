@@ -13,6 +13,7 @@ import com.unidy.backend.domains.dto.notification.extraData.NewCampaignData;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.dto.responses.CommentResponse;
+import com.unidy.backend.domains.dto.responses.TransactionResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.CampaignNode;
 import com.unidy.backend.domains.entity.neo4j.CommentNode;
@@ -276,7 +277,7 @@ public class CampaignServiceIplm implements CampaignService {
     public ResponseEntity<?> getTransactionByCampaignId(int campaignId, int pageNumber, int pageSize) {
         try {
             Pageable pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
-            List<Transaction> transactions = transactionRepository.findTransactionsByCampaignId(campaignId, pageable);
+            List<TransactionResponse> transactions = transactionRepository.findTransactionsByCampaignId(campaignId, pageable);
             return ResponseEntity.ok().body(transactions);
         }
         catch (Exception e){

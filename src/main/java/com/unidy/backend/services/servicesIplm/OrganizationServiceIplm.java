@@ -4,11 +4,8 @@ import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.Type.VolunteerStatus;
 import com.unidy.backend.domains.dto.notification.NotificationDto;
-import com.unidy.backend.domains.dto.responses.CheckResult;
-import com.unidy.backend.domains.dto.responses.ListVolunteerResponse;
-import com.unidy.backend.domains.dto.responses.VolunteerJoinResponse;
+import com.unidy.backend.domains.dto.responses.*;
 import com.unidy.backend.domains.entity.*;
-import com.unidy.backend.domains.dto.responses.OrganizationInformation;
 import com.unidy.backend.firebase.FirebaseService;
 import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
@@ -118,7 +115,7 @@ public class OrganizationServiceIplm implements OrganizationService {
     public ResponseEntity<?> getListTransaction(int organizationUserId, int pageNumber, int pageSize){
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("transactionTime").descending());
-            List<Transaction> transaction = transactionRepository.findTransactionsByOrganizationUserId(organizationUserId, pageable);
+            List<TransactionResponse> transaction = transactionRepository.findTransactionsByOrganizationUserId(organizationUserId, pageable);
             return ResponseEntity.ok().body(transaction);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -128,7 +125,7 @@ public class OrganizationServiceIplm implements OrganizationService {
     public ResponseEntity<?> getListCampaignTransaction(Integer organizationUserId, int campaignId, int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("transactionTime").descending());
-            List<Transaction> transaction = transactionRepository.findTransactionsByOrganizationUserIdAndCampaignId(organizationUserId,campaignId, pageable);
+            List<TransactionResponse> transaction = transactionRepository.findTransactionsByOrganizationUserIdAndCampaignId(organizationUserId,campaignId, pageable);
             return ResponseEntity.ok().body(transaction);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));

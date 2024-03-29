@@ -1,5 +1,7 @@
 package com.unidy.backend.domains.entity;
 
+import com.unidy.backend.domains.dto.UserDto;
+import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
