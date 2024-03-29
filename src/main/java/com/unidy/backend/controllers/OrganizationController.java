@@ -64,4 +64,9 @@ public class OrganizationController {
     public ResponseEntity<?> getListCampaignTransaction(Principal connectedUser, NotificationDto notificationDto) {
         return organizationService.sendNotifyToMember(connectedUser,notificationDto);
     }
+
+    @GetMapping("/volunteer/{campaignId}")
+    public ResponseEntity<?> getListVolunteerByCampaignId(Principal connectedUser,@PathVariable int campaignId) {
+        return organizationService.getListVolunteer(connectedUser,campaignId);
+    }
 }

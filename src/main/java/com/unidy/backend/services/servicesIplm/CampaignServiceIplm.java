@@ -16,7 +16,6 @@ import com.unidy.backend.domains.dto.responses.CommentResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.CampaignNode;
 import com.unidy.backend.domains.entity.neo4j.CommentNode;
-import com.unidy.backend.domains.entity.neo4j.PostNode;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
 import com.unidy.backend.domains.entity.relationship.CampaignType;
 import com.unidy.backend.domains.role.Role;
@@ -27,6 +26,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -56,6 +56,8 @@ public class CampaignServiceIplm implements CampaignService {
     private final CampaignTypeRepository campaignTypeRepository;
     private final CommentRepository commentRepository;
     private final Neo4j_CommentRepository neo4jCommentRepository;
+    private final TransactionRepository transactionRepository;
+
     @Override
     @Transactional
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) throws JsonProcessingException {
@@ -75,7 +77,7 @@ public class CampaignServiceIplm implements CampaignService {
                                         fileContentType.equals("image/jpeg") ||
                                         fileContentType.equals("image/jpg"))) {
                             fileContentType = fileContentType.replace("image/",".");
-                            s3Service.putImage(
+                            s3Service.putObject(
                                     "unidy",
                                     fileContentType,
                                     "campaign-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),
@@ -268,6 +270,18 @@ public class CampaignServiceIplm implements CampaignService {
     public CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign(String searchTerm, int limit, int skip) {
         List<CampaignPostResponse.CampaignPostResponseData> campaigns = neo4jCampaignRepository.searchCampaign(searchTerm, limit, skip);
         return CompletableFuture.supplyAsync(() -> campaigns);
+    }
+
+    @Override
+    public ResponseEntity<?> getTransactionByCampaignId(int campaignId, int pageNumber, int pageSize) {
+        try {
+            Pageable pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
+            List<Transaction> transactions = transactionRepository.findTransactionsByCampaignId(campaignId, pageable);
+            return ResponseEntity.ok().body(transactions);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Không thể lấy danh sách giao dịch"));
+        }
     }
 
     @Override

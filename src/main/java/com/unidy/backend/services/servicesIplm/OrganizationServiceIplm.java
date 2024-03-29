@@ -6,12 +6,14 @@ import com.unidy.backend.domains.Type.VolunteerStatus;
 import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.responses.CheckResult;
 import com.unidy.backend.domains.dto.responses.ListVolunteerResponse;
-import com.unidy.backend.domains.dto.responses.OrganizationInformation;
+import com.unidy.backend.domains.dto.responses.VolunteerJoinResponse;
 import com.unidy.backend.domains.entity.*;
+import com.unidy.backend.domains.dto.responses.OrganizationInformation;
 import com.unidy.backend.firebase.FirebaseService;
 import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -69,8 +71,13 @@ public class OrganizationServiceIplm implements OrganizationService {
     }
 
     @Override
-    public ResponseEntity<?> getListVolunteer() {
-        return null;
+    public ResponseEntity<?> getListVolunteer(Principal connectedUser, int campaignId) {
+        try {
+            List<VolunteerJoinResponse> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByCampaignId(campaignId);
+            return ResponseEntity.ok().body(volunteerJoinCampaigns);
+        } catch (Exception exception){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
+        }
     }
 
     public ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId, int pageNumber, int pageSize){

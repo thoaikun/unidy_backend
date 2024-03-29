@@ -19,5 +19,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     List<Transaction> findTransactionsByOrganizationUserIdAndCampaignId(int organizationUserId, int campaignId, Pageable pageable);
 
+    List<Transaction> findTransactionsByCampaignId(int campaignId, Pageable pageable);
+
     List<Transaction> findTransactionByUserId(@Param("userId") int userId, Pageable pageable);
 }

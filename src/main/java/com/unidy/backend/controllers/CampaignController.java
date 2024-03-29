@@ -6,11 +6,11 @@ import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.requests.CommentRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.services.servicesInterface.CampaignService;
+import com.unidy.backend.services.servicesInterface.CertificateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import software.amazon.awssdk.services.devicefarm.model.Run;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class CampaignController {
     private final CampaignService campaignService;
+    private final CertificateService certificateService;
 
     @PreAuthorize("hasRole('ORGANIZATION')")
     @PostMapping("")
@@ -82,6 +83,11 @@ public class CampaignController {
         }
     }
 
+    @GetMapping("/{campaignId}/transactions")
+    public ResponseEntity<?> getTransactionByCampaignId(@PathVariable int campaignId, @RequestParam int pageNumber, @RequestParam int pageSize){
+        return campaignService.getTransactionByCampaignId(campaignId,pageNumber,pageSize);
+    }
+
     @PatchMapping("/like")
     public  ResponseEntity<?> likeCampaign(Principal connectedUser, @RequestParam String campaignId){
         return campaignService.likeCampaign(connectedUser,campaignId);
@@ -110,5 +116,16 @@ public class CampaignController {
     @GetMapping("{campaignId}/comments/{commentId}/replies")
     public  ResponseEntity<?> getReplyComment(Principal connectedUser, @PathVariable String campaignId, @PathVariable Integer commentId, @RequestParam int skip, @RequestParam int limit){
         return campaignService.getReplyComment(connectedUser,commentId,skip,limit);
+    }
+
+    @PreAuthorize("hasRole('ORGANIZATION')")
+    @PostMapping("{campaignId}/certificates")
+    public ResponseEntity<?> createCertificate(Principal connectedUser, @PathVariable int campaignId){
+        return certificateService.createCertificate(connectedUser,campaignId);
+    }
+
+    @GetMapping("{campaignId}/certificates")
+    public ResponseEntity<?> getCertificate(Principal connectedUser, @PathVariable int campaignId){
+        return certificateService.getCertificate(connectedUser);
     }
 }
