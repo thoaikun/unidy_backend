@@ -28,7 +28,6 @@ public class CertificateServiceImpl implements CertificateService {
     private final CertificateRepository certificateRepository;
     private final VolunteerCertificateRepository volunteerCertificateRepository;
     private final OrganizationRepository organizationRepository;
-    private final VolunteerRepository volunteerRepository;
     private final CampaignRepository campaignRepository;
     private final UserRepository userRepository;
     private final VolunteerJoinCampaignRepository volunteerJoinCampaignRepository;
