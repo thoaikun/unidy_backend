@@ -57,17 +57,19 @@ public class CertificateServiceImpl implements CertificateService {
                     certificatePath
                 );
 
-                Certificate certificate = Certificate.builder()
-                        .file(certificateLink)
-                        .build();
-                certificateRepository.save(certificate);
-
-                VolunteerCertificate volunteerCertificate = VolunteerCertificate.builder()
-                        .volunteerId(volunteer.getUserId())
-                        .campaignId(campaignId)
-                        .certificateId(certificate.getCertificateId())
-                        .build();
-                volunteerCertificateRepository.save(volunteerCertificate);
+                Certificate isExist = certificateRepository.findCertificateByFile(certificateLink);
+                if (isExist == null){
+                    Certificate certificate = Certificate.builder()
+                            .file(certificateLink)
+                            .build();
+                    certificateRepository.save(certificate);
+                    VolunteerCertificate volunteerCertificate = VolunteerCertificate.builder()
+                            .volunteerId(volunteer.getUserId())
+                            .campaignId(campaignId)
+                            .certificateId(certificate.getCertificateId())
+                            .build();
+                    volunteerCertificateRepository.save(volunteerCertificate);
+                }
             }
 
             return ResponseEntity.ok().body(new SuccessReponse("Certificate created successfully"));
@@ -82,7 +84,7 @@ public class CertificateServiceImpl implements CertificateService {
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
             List<CertificateResponse> certificateResponses = certificateRepository.findCertificate(user.getUserId());
             return ResponseEntity.ok().body(certificateResponses);
-        } catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body("Something Error");
         }
     }

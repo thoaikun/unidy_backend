@@ -32,4 +32,6 @@ public interface CertificateRepository extends JpaRepository<Certificate,Integer
         WHERE user.userId = :userId
         """)
     List<CertificateResponse> findCertificate(Integer userId);
+
+    Certificate findCertificateByFile(String file);
 }
