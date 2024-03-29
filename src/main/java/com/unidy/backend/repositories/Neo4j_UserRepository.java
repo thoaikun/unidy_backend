@@ -69,7 +69,7 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
           OPTIONAL MATCH (root) - [r:FRIEND] -> (friend: user)
           WITH friend
           ORDER BY friend.user_id
-          RETURN friend
+          RETURN friend, true as isFriend, false as isFollow
           SKIP $skip
           LIMIT $limit;
      """)
