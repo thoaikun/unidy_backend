@@ -19,7 +19,6 @@ public interface VolunteerJoinCampaignRepository extends JpaRepository<Volunteer
     List<VolunteerJoinCampaign> findVolunteerJoinCampaignByCampaignIdInAndUserId(List<Integer> campaignIds, Integer userId);
 
     @Query("""
-
             SELECT new com.unidy.backend.domains.dto.responses.VolunteerJoinResponse(
           user.userId,
           user.fullName,
@@ -34,6 +33,5 @@ public interface VolunteerJoinCampaignRepository extends JpaRepository<Volunteer
        """)
     List<VolunteerJoinResponse> findVolunteerJoinCampaignByCampaignId(@Param("campaignId") int campaignId);
 
-
-
+    List<VolunteerJoinCampaign> findUserIdsByCampaignIdAndStatus(int campaignId, String status);
 }

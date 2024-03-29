@@ -7,6 +7,5 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CertificateRequest {
-    private int userId;
     private int campaignId;
 }
