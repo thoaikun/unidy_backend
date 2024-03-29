@@ -3,7 +3,6 @@ package com.unidy.backend.services.servicesIplm;
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
-import com.unidy.backend.domains.dto.requests.CertificateRequest;
 import com.unidy.backend.domains.dto.responses.CertificateResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.repositories.*;
@@ -37,11 +36,11 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     @Transactional
-    public ResponseEntity<?> createCertificate(Principal connectedUser, CertificateRequest certificateRequest) {
+    public ResponseEntity<?> createCertificate(Principal connectedUser, int campaignId) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         Optional<Organization> organization = organizationRepository.findByUserId(user.getUserId());
-        List<VolunteerJoinCampaign> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findUserIdsByCampaignIdAndStatus(certificateRequest.getCampaignId(), "APPROVE");
-        Campaign campaign = campaignRepository.findCampaignByCampaignId(certificateRequest.getCampaignId());
+        List<VolunteerJoinCampaign> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findUserIdsByCampaignIdAndStatus(campaignId, "APPROVE");
+        Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
 
         if (organization.isEmpty()){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find organization"));
@@ -49,7 +48,7 @@ public class CertificateServiceImpl implements CertificateService {
         try {
             for (VolunteerJoinCampaign volunteerJoinCampaign : volunteerJoinCampaigns) {
                 User volunteer = userRepository.findByUserId(volunteerJoinCampaign.getUserId());
-                String certificatePath = "certificate/%s.pdf".formatted(volunteer.getUserId()+"_"+ certificateRequest.getCampaignId()+"_"+ organization.get().getOrganizationId());
+                String certificatePath = "certificate/%s.pdf".formatted(volunteer.getUserId()+"_"+ campaignId+"_"+ organization.get().getOrganizationId());
                 String certificateLink = environment.getProperty("LINK_S3") + certificatePath;
                 generateCertificate(
                     volunteer.getFullName(),
@@ -66,7 +65,7 @@ public class CertificateServiceImpl implements CertificateService {
 
                 VolunteerCertificate volunteerCertificate = VolunteerCertificate.builder()
                         .volunteerId(volunteer.getUserId())
-                        .campaignId(certificateRequest.getCampaignId())
+                        .campaignId(campaignId)
                         .certificateId(certificate.getCertificateId())
                         .build();
                 volunteerCertificateRepository.save(volunteerCertificate);
