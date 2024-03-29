@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.security.Principal;
 import java.util.List;
 
 @Repository
@@ -88,16 +89,25 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
      @Query("""
             CALL db.index.fulltext.queryNodes("searchUserIndex", $searchTerm) YIELD node, score
             WITH node, score
-            RETURN node
+            OPTIONAL MATCH (user1: user {user_id: $userId})-[friend:FRIEND]->(node)
+            OPTIONAL MATCH (user1: user {user_id: $userId})-[follow:FOLLOW_ORGANIZATION]->(node)
+            RETURN node, CASE WHEN friend IS NULL THEN FALSE ELSE TRUE END AS isFriend, CASE WHEN follow IS NULL THEN FALSE ELSE TRUE END AS isFollow
             ORDER BY score DESC, node.user_id ASC
             SKIP $skip
             LIMIT $limit;
      """)
-     List<UserNode> searchUser(String searchTerm, int limit, int skip);
+     List<UserNode> searchUser(int userId, String searchTerm, int limit, int skip);
 
      @Query("""
              OPTIONAL MATCH (user1: user {user_id: $userId})-[r:FOLLOW_ORGANIZATION]->(user2: user {user_id: $organizationId, role: 'ORGANIZATION'})
              RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result
              """)
      CheckResult checkFollow(int userId, int organizationId);
+
+     @Query("""
+             OPTIONAL MATCH (user1: user {user_id: $userId})-[r:FRIEND]->(user2: user {user_id: $friendId})
+             RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result
+     """)
+     CheckResult checkFriend(int userId, int friendId);
+
 }

@@ -1,5 +1,6 @@
 package com.unidy.backend.domains.entity.neo4j;
 
+import jakarta.annotation.Nullable;
 import lombok.*;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
@@ -30,9 +31,10 @@ public class UserNode implements Neo4JNode {
 
     @Property("role")
     private String role;
-//    @Property("__nodeLabels__")
-//    private List<String> nodeLabels;
 
-//    @Relationship(type = "HAS_POST", direction = Relationship.Direction.OUTGOING)
-//    private List<Post> postList;
+    @Nullable
+    private Boolean isFriend;
+
+    @Nullable
+    private Boolean isFollow;
 }

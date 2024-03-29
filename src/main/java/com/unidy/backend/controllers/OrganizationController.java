@@ -19,8 +19,8 @@ public class OrganizationController {
     private final OrganizationService organizationService;
 
     @GetMapping("/profile/{organizationId}")
-    public ResponseEntity<?> getProfile(@PathVariable int organizationId) {
-        return organizationService.getProfileOrganization(organizationId);
+    public ResponseEntity<?> getProfile(Principal connectedUser, @PathVariable int organizationId) {
+        return organizationService.getProfileOrganization(connectedUser, organizationId);
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")

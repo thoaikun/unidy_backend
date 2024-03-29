@@ -1,11 +1,8 @@
 package com.unidy.backend.domains.dto.responses;
 
-import com.unidy.backend.domains.role.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -18,5 +15,6 @@ public class OrganizationInformation {
     private String email;
     private String country;
     private String image;
-    private Boolean followed;
+    private String firebaseTopic;
+    private Boolean isFollow;
 }

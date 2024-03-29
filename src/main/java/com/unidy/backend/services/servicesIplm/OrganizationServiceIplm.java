@@ -1,14 +1,14 @@
 package com.unidy.backend.services.servicesIplm;
 
+import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.Type.VolunteerStatus;
 import com.unidy.backend.domains.dto.notification.NotificationDto;
-import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
-import com.unidy.backend.domains.dto.notification.extraData.NewCampaignData;
+import com.unidy.backend.domains.dto.responses.CheckResult;
 import com.unidy.backend.domains.dto.responses.ListVolunteerResponse;
 import com.unidy.backend.domains.dto.responses.VolunteerJoinResponse;
 import com.unidy.backend.domains.entity.*;
-import com.unidy.backend.domains.entity.neo4j.UserNode;
+import com.unidy.backend.domains.dto.responses.OrganizationInformation;
 import com.unidy.backend.firebase.FirebaseService;
 import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
+import java.net.URL;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -32,12 +33,38 @@ public class OrganizationServiceIplm implements OrganizationService {
     private final TransactionRepository transactionRepository;
     private final VolunteerJoinCampaignRepository volunteerJoinCampaignRepository;
     private final CampaignRepository campaignRepository;
-    private final Neo4j_UserRepository neo4j_userRepository;
     private final FirebaseService firebaseService;
-    public ResponseEntity<?> getProfileOrganization(int organizationId){
+    private final UserProfileImageRepository userProfileImageRepository;
+    private final Neo4j_UserRepository neo4j_UserRepository;
+    private final S3Service s3Service;
+
+    public ResponseEntity<?> getProfileOrganization(Principal connectedUser,  int organizationId){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
+            OrganizationInformation organizationInformation = new OrganizationInformation();
+            organizationInformation.setUserId(organizationId);
             Optional<Organization> organization = organizationRepository.findByUserId(organizationId);
-            return ResponseEntity.ok().body(organization);
+            if (organization.isEmpty()){
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Organization not found"));
+            }
+
+            CheckResult checkFollow = neo4j_UserRepository.checkFollow(user.getUserId(), organizationId);
+            organizationInformation.setOrganizationName(organization.get().getOrganizationName());
+            organizationInformation.setIsFollow(checkFollow.isResult());
+            organizationInformation.setEmail(organization.get().getEmail());
+            organizationInformation.setAddress(organization.get().getAddress());
+            organizationInformation.setCountry(organization.get().getCountry());
+            organizationInformation.setPhone(organization.get().getPhone());
+            organizationInformation.setFirebaseTopic(organization.get().getFirebaseTopic());
+            UserProfileImage image = userProfileImageRepository.findByUserId(organizationId);
+            if (image != null){
+                URL urlImage = s3Service.getObjectUrl(
+                        "unidy",
+                        "profile-images/%s/%s".formatted(organizationId, image.getLinkImage())
+                );
+                organizationInformation.setImage(urlImage.toString());
+            }
+            return ResponseEntity.ok().body(organizationInformation);
         } catch (Exception exception){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
         }
