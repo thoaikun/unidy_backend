@@ -15,14 +15,14 @@ import java.security.Principal;
 public class PostController {
     private final PostService postService;
 
-    @GetMapping("/get-post-by-postId")
-    public ResponseEntity<?> getPostByPostId(@RequestParam String postId) {
+    @GetMapping("/{postId}")
+    public ResponseEntity<?> getPostByPostId(@PathVariable String postId) {
         return postService.getPostById(postId);
     }
 
-    @GetMapping("/get-post-by-userId")
-    public ResponseEntity<?> getPostByUserId(Principal connectUser, @RequestParam int skip, @RequestParam int limit){
-        return postService.getPostByUserId(connectUser, skip, limit);
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<?> getPostByUserId(@PathVariable int userId, @RequestParam int skip, @RequestParam int limit){
+        return postService.getPostByUserId(userId, skip, limit);
     }
 
     @GetMapping("")
