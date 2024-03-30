@@ -1,8 +1,8 @@
 package com.unidy.backend.domains.dto.responses;
-import com.unidy.backend.domains.dto.UserDto;
 import com.unidy.backend.domains.entity.Campaign;
-import jakarta.persistence.JoinColumn;
+import jakarta.annotation.Nullable;
 import lombok.*;
+import org.springframework.core.env.Environment;
 
 import java.util.Date;
 
@@ -35,16 +35,16 @@ public class TransactionResponse {
     private UserInfo user;
 
     public TransactionResponse(
-        int transactionId,
+        Integer transactionId,
         String transactionType,
         Date transactionTime,
         Long transactionAmount,
         String transactionCode,
         String signature,
-        int organizationUserId,
-        int campaignId,
+        Integer organizationUserId,
+        Integer campaignId,
         Campaign campaign,
-        int userId,
+        Integer userId,
         String fullName,
         String linkImages
     ) {
@@ -60,6 +60,23 @@ public class TransactionResponse {
         this.user = new UserInfo();
         this.user.userId = userId;
         this.user.fullName = fullName;
-        this.user.linkImage = linkImages;
+        this.user.linkImage = "https://unidy.s3.ap-southeast-1.amazonaws.com/" + "profile-images/" + userId + "/" + linkImages;
+    }
+
+    public TransactionResponse(
+            Long transactionAmount,
+            int organizationUserId,
+            int campaignId,
+            int userId,
+            String fullName,
+            String linkImages
+    ) {
+        this.transactionAmount = transactionAmount;
+        this.organizationUserId = organizationUserId;
+        this.campaignId = campaignId;
+        this.user = new UserInfo();
+        this.user.userId = userId;
+        this.user.fullName = fullName;
+        this.user.linkImage = "https://unidy.s3.ap-southeast-1.amazonaws.com/" + "profile-images/" + userId + "/" + linkImages;
     }
 }

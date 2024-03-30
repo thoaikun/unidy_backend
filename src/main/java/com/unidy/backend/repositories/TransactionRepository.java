@@ -62,24 +62,18 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     @Query("""
         SELECT new com.unidy.backend.domains.dto.responses.TransactionResponse(
-            t.transactionId,
-            t.transactionType,
-            t.transactionTime,
-            t.transactionAmount,
-            t.transactionCode,
-            t.signature,
+            SUM(t.transactionAmount),
             t.organizationUserId,
             t.campaignId,
-            c,
             u.userId,
             u.fullName,
             upi.linkImage
         )
         FROM Transaction t
-        JOIN Campaign c ON t.campaignId = c.campaignId
         JOIN User u ON t.userId = u.userId
         JOIN UserProfileImage upi ON u.userId = upi.userId
         WHERE t.campaignId = :campaignId
+        GROUP BY u.userId
     """)
     List<TransactionResponse> findTransactionsByCampaignId(int campaignId, Pageable pageable);
 
