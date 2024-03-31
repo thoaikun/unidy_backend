@@ -91,7 +91,6 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
             OPTIONAL MATCH (user1: user {user_id: $userId})-[friend:FRIEND]->(node)
             OPTIONAL MATCH (user1: user {user_id: $userId})-[follow:FOLLOW_ORGANIZATION]->(node)
             RETURN node, CASE WHEN friend IS NULL THEN FALSE ELSE TRUE END AS isFriend, CASE WHEN follow IS NULL THEN FALSE ELSE TRUE END AS isFollow
-            RETURN node
             ORDER BY score DESC, node.user_id ASC
             SKIP $skip
             LIMIT $limit;
