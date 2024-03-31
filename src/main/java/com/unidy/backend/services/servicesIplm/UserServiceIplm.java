@@ -411,6 +411,6 @@ public class UserServiceIplm implements UserService {
     @Async("threadPoolTaskExecutor")
     public CompletableFuture<List<UserNode>> searchUser(Principal connectedUser, String searchTerm, int limit, int skip){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return CompletableFuture.completedFuture(neo4jUserRepository.searchUser(searchTerm, limit, skip));
+        return CompletableFuture.completedFuture(neo4jUserRepository.searchUser(user.getUserId(), searchTerm, limit, skip));
     }
 }
