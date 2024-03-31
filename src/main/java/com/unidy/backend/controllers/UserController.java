@@ -3,18 +3,12 @@ package com.unidy.backend.controllers;
 import com.unidy.backend.domains.dto.UserDto;
 import com.unidy.backend.domains.dto.requests.ChoseFavoriteRequest;
 import com.unidy.backend.domains.dto.requests.UserInformationRequest;
-import com.unidy.backend.domains.dto.responses.UserInformationRespond;
-import com.unidy.backend.domains.entity.User;
-import com.unidy.backend.mapper.DtoMapper;
-import com.unidy.backend.repositories.UserRepository;
 import com.unidy.backend.services.servicesInterface.UserService;
 import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 
@@ -95,6 +89,11 @@ public class UserController {
     @GetMapping("/list-invite")
     public ResponseEntity<?> getListInvite(Principal connectedUser, @RequestParam int skip, @RequestParam int limit){
         return userService.getListInvite(connectedUser, skip, limit);
+    }
+
+    @PatchMapping("/decline-invite")
+    public ResponseEntity<?> declineInvite(Principal connectedUser, @RequestParam int friendId){
+        return userService.declineInvite(connectedUser,friendId);
     }
 
     @PatchMapping("/delete-invite")

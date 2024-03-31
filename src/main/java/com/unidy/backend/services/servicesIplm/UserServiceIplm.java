@@ -262,7 +262,7 @@ public class UserServiceIplm implements UserService {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
             if (neo4jUserRepository.checkInviteRequest(user.getUserId(), friendId).isResult()){
-                neo4jUserRepository.deleteInviteRequest(user.getUserId(),friendId);
+                neo4jUserRepository.declineInviteRequest(user.getUserId(),friendId);
                 neo4jUserRepository.createFriendship(user.getUserId(),friendId);
 
                 User requestUser = userRepository.findByUserId(friendId);
@@ -311,11 +311,11 @@ public class UserServiceIplm implements UserService {
         }
     }
 
-    public ResponseEntity<?> deleteInvite(Principal connectedUser, int friendId){
+    public ResponseEntity<?> declineInvite(Principal connectedUser, int friendId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-             neo4jUserRepository.deleteInviteRequest(user.getUserId(),friendId);
-            return ResponseEntity.ok().body("Delete success");
+             neo4jUserRepository.declineInviteRequest(user.getUserId(),friendId);
+            return ResponseEntity.ok().body("Decline success");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
         }
@@ -338,6 +338,17 @@ public class UserServiceIplm implements UserService {
             return ResponseEntity.ok().body(recommendFriend);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> deleteInvite(Principal connectedUser, int friendId) {
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            neo4jUserRepository.deleteInvite(user.getUserId(),friendId);
+            return ResponseEntity.ok().body("Delete success");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
         }
     }
 

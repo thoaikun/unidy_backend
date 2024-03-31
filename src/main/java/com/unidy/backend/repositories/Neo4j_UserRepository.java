@@ -27,7 +27,7 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
      @Query("OPTIONAL MATCH (user1: user {user_id: $friendId})-[r:INVITE_FRIEND]->(user2: user {user_id: $userId}) RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result")
      CheckResult checkInviteRequest(@RequestParam int userId, @RequestParam int friendId);
      @Query("OPTIONAL MATCH (user1: user {user_id: $friendId})-[r:INVITE_FRIEND]->(user2: user {user_id: $userId}) DELETE r;")
-     void deleteInviteRequest(Integer userId, int friendId);
+     void declineInviteRequest(Integer userId, int friendId);
 
      @Query("""
           MATCH (user1:user {user_id: $userId})
@@ -100,4 +100,7 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
              RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result
              """)
      CheckResult checkFollow(int userId, int organizationId);
+
+     @Query("OPTIONAL MATCH (user1: user {user_id: userId})-[r:INVITE_FRIEND]->(user2: user {user_id: $userId}) DELETE r;")
+     void deleteInvite(Integer userId, int friendId);
 }

@@ -8,6 +8,7 @@ import com.unidy.backend.domains.dto.requests.CommentRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.services.servicesInterface.CampaignService;
 import com.unidy.backend.services.servicesInterface.CertificateService;
+import com.unidy.backend.services.servicesInterface.OrganizationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 public class CampaignController {
     private final CampaignService campaignService;
     private final CertificateService certificateService;
+    private final OrganizationService organizationService;
 
     @PreAuthorize("hasRole('ORGANIZATION')")
     @PostMapping("")
@@ -124,5 +126,15 @@ public class CampaignController {
     @GetMapping("/certificate")
     public ResponseEntity<?> getCertificate(Principal connectedUser){
         return certificateService.getCertificate(connectedUser);
+    }
+
+    @GetMapping("/list-donation/{:campaignId}")
+    public ResponseEntity<?> getListDonation(Principal connectedUser, @PathVariable String campaignId){
+        return campaignService.getlistDonation(connectedUser,campaignId);
+    }
+
+    @GetMapping("/volunteer/{campaignId}")
+    public ResponseEntity<?> getListVolunteerByCampaignId(Principal connectedUser,@PathVariable int campaignId) {
+        return organizationService.getListVolunteer(connectedUser,campaignId);
     }
 }
