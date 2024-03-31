@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -31,6 +32,7 @@ public class SearchController {
 
     @GetMapping("")
     public ResponseEntity<?> fulltextSearch(
+        Principal connectedUser,
         @RequestParam(defaultValue = "") String searchTerm,
         @RequestParam(defaultValue = "5", required = false) int limit,
         @RequestParam(defaultValue = "0", required = false) int skip
@@ -38,7 +40,7 @@ public class SearchController {
         try {
             CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign = campaignService.searchCampaign(searchTerm, limit, skip);
             CompletableFuture<List<PostNode>> searchPost = postService.searchPost(searchTerm, limit, skip);
-            CompletableFuture<List<UserNode>> searchUser = userService.searchUser(searchTerm, limit, skip);
+            CompletableFuture<List<UserNode>> searchUser = userService.searchUser(connectedUser, searchTerm, limit, skip);
             List<Neo4JNode> results = CompletableFuture.allOf(searchCampaign, searchPost, searchUser)
                     .thenApplyAsync(v -> {
                         List<Neo4JNode> temp = new ArrayList<>();
@@ -101,12 +103,13 @@ public class SearchController {
 
     @GetMapping("/user")
     public ResponseEntity<?> searchUser(
+        Principal  connectedUser,
         @RequestParam(defaultValue = "") String searchTerm,
         @RequestParam(defaultValue = "5", required = false) int limit,
         @RequestParam(defaultValue = "0", required = false) int skip
     ){
         try {
-            List<UserNode> users = userService.searchUser(searchTerm, limit, skip).join();
+            List<UserNode> users = userService.searchUser(connectedUser, searchTerm, limit, skip).join();
             List<Neo4JNode> results = new ArrayList<>(users);
             NodeFulltextSearchResponse response = NodeFulltextSearchResponse.builder()
                     .totals(results.size())

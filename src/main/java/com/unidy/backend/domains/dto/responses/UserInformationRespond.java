@@ -20,4 +20,5 @@ public class UserInformationRespond {
     private String workLocation;
     private Role role;
     private String image;
+    private Boolean isFriend;
 }

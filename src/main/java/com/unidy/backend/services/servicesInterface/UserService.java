@@ -33,5 +33,5 @@ public interface UserService {
     ResponseEntity<?> getUserTransaction(Principal connectedUser, int pageSize, int pageNumber);
     ResponseEntity<?> getUserJoinedCampaigns(Principal connectedUser, int pageSize, int pageNumber);
     @Async("threadPoolTaskExecutor")
-    CompletableFuture<List<UserNode>> searchUser(String searchTerm, int limit, int skip);
+    CompletableFuture<List<UserNode>> searchUser(Principal connectedUser, String searchTerm, int limit, int skip);
 }

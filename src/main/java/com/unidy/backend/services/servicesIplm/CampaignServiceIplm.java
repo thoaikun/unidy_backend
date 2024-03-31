@@ -27,6 +27,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -268,6 +269,18 @@ public class CampaignServiceIplm implements CampaignService {
     public CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign(String searchTerm, int limit, int skip) {
         List<CampaignPostResponse.CampaignPostResponseData> campaigns = neo4jCampaignRepository.searchCampaign(searchTerm, limit, skip);
         return CompletableFuture.supplyAsync(() -> campaigns);
+    }
+
+    @Override
+    public ResponseEntity<?> getTransactionByCampaignId(int campaignId, int pageNumber, int pageSize) {
+        try {
+            Pageable pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
+            List<TransactionResponse> transactions = transactionRepository.findTransactionsByCampaignId(campaignId, pageable);
+            return ResponseEntity.ok().body(transactions);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Không thể lấy danh sách giao dịch"));
+        }
     }
 
     @Override

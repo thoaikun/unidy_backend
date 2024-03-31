@@ -86,7 +86,7 @@ public class UserServiceIplm implements UserService {
 
             if (user.getRole().equals(Role.VOLUNTEER)){
                 UserInformationRespond information = new UserInformationRespond() ;
-
+                CheckResult checkFriend = neo4jUserRepository.checkFriend(userConnected.getUserId(),user.getUserId());
                 information.setUserId(user.getUserId());
                 information.setFullName(user.getFullName());
                 information.setAddress(user.getAddress());
@@ -96,6 +96,7 @@ public class UserServiceIplm implements UserService {
                 information.setJob(user.getJob());
                 information.setRole(user.getRole());
                 information.setWorkLocation(user.getWorkLocation());
+                information.setIsFriend(checkFriend.isResult());
                 UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
                 if (image != null){
                     URL urlImage = s3Service.getObjectUrl(
@@ -107,25 +108,7 @@ public class UserServiceIplm implements UserService {
                 return ResponseEntity.ok().body(information);
             }
             else {
-                OrganizationInformation organizationInformation = new OrganizationInformation();
-                organizationInformation.setUserId(user.getUserId());
-                Organization organization = organizationRepository.findByUserId(user.getUserId()).get();
-                CheckResult checkFollow = neo4jUserRepository.checkFollow(userConnected.getUserId(),user.getUserId());
-                organizationInformation.setOrganizationName(organization.getOrganizationName());
-                organizationInformation.setFollowed(checkFollow.isResult());
-                organizationInformation.setEmail(organization.getEmail());
-                organizationInformation.setAddress(organization.getAddress());
-                organizationInformation.setCountry(organization.getCountry());
-                organizationInformation.setPhone(organization.getPhone());
-                UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
-                if (image != null){
-                    URL urlImage = s3Service.getObjectUrl(
-                            "unidy",
-                            "profile-images/%s/%s".formatted(user.getUserId(), image.getLinkImage())
-                    );
-                    organizationInformation.setImage(urlImage.toString());
-                }
-                return ResponseEntity.ok().body(organizationInformation);
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("User is not volunteer"));
             }
 
         } catch (Exception e) {
@@ -377,14 +360,9 @@ public class UserServiceIplm implements UserService {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
             if (neo4jUserRepository.checkFollowRequest(user.getUserId(), organizationId).isResult()) {
-                return ResponseEntity.badRequest().body(new ErrorResponseDto("You have follow requested yet"));
+                return ResponseEntity.badRequest().body(new FollowOrganizationResponse("Already followed", null));
             }
-            Date date = new Date();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            neo4jUserRepository.sendFollowRequest(user.getUserId(), organizationId, sdf.format(date));
-
-            // return organization firebase topic for device to subscribe
-            Optional<Organization> followedOrganization = this.organizationRepository.findByOrganizationId(organizationId);
+            Optional<Organization> followedOrganization = this.organizationRepository.findByUserId(organizationId);
             if (followedOrganization.isEmpty()) {
                 return ResponseEntity.badRequest().body(new FollowOrganizationResponse(
                         "Follow failed",
@@ -392,6 +370,11 @@ public class UserServiceIplm implements UserService {
                 ));
             }
 
+            Date date = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            neo4jUserRepository.sendFollowRequest(user.getUserId(), organizationId, sdf.format(date));
+
+            // return organization firebase topic for device to subscribe
             return ResponseEntity.ok().body(new FollowOrganizationResponse(
                     "Follow success",
                     followedOrganization.get().getFirebaseTopic()
@@ -405,7 +388,7 @@ public class UserServiceIplm implements UserService {
         try {
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
             Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("transactionId").descending());
-            List<Transaction> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId(), pageable);
+            List<TransactionResponse> transactionResponses = transactionRepository.findTransactionByUserId(user.getUserId(), pageable);
             return ResponseEntity.ok().body(transactionResponses);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -426,7 +409,8 @@ public class UserServiceIplm implements UserService {
     }
 
     @Async("threadPoolTaskExecutor")
-    public CompletableFuture<List<UserNode>> searchUser(String searchTerm, int limit, int skip){
-        return CompletableFuture.completedFuture(neo4jUserRepository.searchUser(searchTerm, limit, skip));
+    public CompletableFuture<List<UserNode>> searchUser(Principal connectedUser, String searchTerm, int limit, int skip){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        return CompletableFuture.completedFuture(neo4jUserRepository.searchUser(user.getUserId(), searchTerm, limit, skip));
     }
 }

@@ -3,7 +3,8 @@ package com.unidy.backend.services.servicesInterface;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
-import com.unidy.backend.domains.entity.neo4j.CampaignNode;
+import com.unidy.backend.domains.entity.Transaction;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 
@@ -25,6 +26,8 @@ public interface CampaignService {
 
     @Async("threadPoolTaskExecutor")
     CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign(String searchTerm, int limit, int skip);
+
+    ResponseEntity<?> getTransactionByCampaignId(int campaignId, int pageNumber, int pageSize);
 
     ResponseEntity<?> likeCampaign(Principal connectedUser, String campaignId);
 

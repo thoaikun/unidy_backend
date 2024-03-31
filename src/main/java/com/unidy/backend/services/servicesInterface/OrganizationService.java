@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import java.security.Principal;
 
 public interface OrganizationService {
-    ResponseEntity<?> getProfileOrganization(int organizationId);
+    ResponseEntity<?> getProfileOrganization(Principal connectedUser, int organizationId);
     ResponseEntity<?> getListVolunteer(Principal connectedUser, int campaignId);
     ResponseEntity<?> approveVolunteer(Principal connectedUser, int volunteerId, int campaignId);
     ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int pageNumber, int pageSize);

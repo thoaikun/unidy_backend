@@ -27,9 +27,11 @@ public interface CertificateRepository extends JpaRepository<Certificate,Integer
         ON campaign.campaignId = volunteerCertificate.campaignId
         INNER JOIN Organization organization
         ON campaign.owner = organization.userId
-        INNER JOIN Volunteer volunteer
-        ON volunteer.volunteerId = volunteerCertificate.volunteerId
-        WHERE volunteer.userId = :userId
+        INNER JOIN User user
+        ON user.userId = volunteerCertificate.volunteerId
+        WHERE user.userId = :userId
         """)
     List<CertificateResponse> findCertificate(Integer userId);
+
+    Certificate findCertificateByFile(String file);
 }

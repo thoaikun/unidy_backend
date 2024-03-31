@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface PostService {
-    public ResponseEntity<?> getPostById(String postId);
-    public ResponseEntity<?> getPostByUserId(Principal connectUser, int skip, int limit);
+    ResponseEntity<?> getPostById(String postId);
+    ResponseEntity<?> getPostByUserId(int userId, int skip, int limit);
 
     ResponseEntity<?> getPost(Principal connectUser, int skip, int limit);
 
