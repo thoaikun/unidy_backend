@@ -97,7 +97,7 @@ public class UserController {
         return userService.declineInvite(connectedUser,friendId);
     }
 
-    @PatchMapping("/delete-invite")
+    @DeleteMapping("/delete-invite")
     public ResponseEntity<?> deleteInvite(Principal connectedUser, @RequestParam int friendId){
         return userService.deleteInvite(connectedUser,friendId);
     }
