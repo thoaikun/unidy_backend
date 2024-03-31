@@ -58,7 +58,6 @@ public class CampaignServiceIplm implements CampaignService {
     private final CommentRepository commentRepository;
     private final Neo4j_CommentRepository neo4jCommentRepository;
     private final TransactionRepository transactionRepository;
-
     @Override
     @Transactional
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) throws JsonProcessingException {

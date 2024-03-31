@@ -7,6 +7,7 @@ import com.unidy.backend.domains.dto.requests.CommentRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.services.servicesInterface.CampaignService;
 import com.unidy.backend.services.servicesInterface.CertificateService;
+import com.unidy.backend.services.servicesInterface.OrganizationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 public class CampaignController {
     private final CampaignService campaignService;
     private final CertificateService certificateService;
+    private final OrganizationService organizationService;
 
     @PreAuthorize("hasRole('ORGANIZATION')")
     @PostMapping("")
@@ -88,13 +90,13 @@ public class CampaignController {
         return campaignService.getTransactionByCampaignId(campaignId,pageNumber,pageSize);
     }
 
-    @PatchMapping("/like")
-    public  ResponseEntity<?> likeCampaign(Principal connectedUser, @RequestParam String campaignId){
+    @PatchMapping("/{campaignId}/like")
+    public  ResponseEntity<?> likeCampaign(Principal connectedUser, @PathVariable String campaignId){
         return campaignService.likeCampaign(connectedUser,campaignId);
     }
 
-    @PatchMapping("/cancel-like")
-    public  ResponseEntity<?> cancelLikeCampaign(Principal connectedUser, @RequestParam String campaignId){
+    @PatchMapping("/{campaignId}/unlike")
+    public  ResponseEntity<?> cancelLikeCampaign(Principal connectedUser, @PathVariable String campaignId){
         return campaignService.cancelLikeCampaign(connectedUser,campaignId);
     }
 
@@ -127,5 +129,10 @@ public class CampaignController {
     @GetMapping("{campaignId}/certificates")
     public ResponseEntity<?> getCertificate(Principal connectedUser, @PathVariable int campaignId){
         return certificateService.getCertificate(connectedUser);
+    }
+
+    @GetMapping("{campaignId}/volunteers")
+    public ResponseEntity<?> getListVolunteerByCampaignId(Principal connectedUser,@PathVariable int campaignId) {
+        return organizationService.getListVolunteer(connectedUser,campaignId);
     }
 }

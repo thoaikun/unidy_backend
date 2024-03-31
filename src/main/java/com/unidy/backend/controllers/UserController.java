@@ -4,18 +4,12 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.unidy.backend.domains.dto.UserDto;
 import com.unidy.backend.domains.dto.requests.ChoseFavoriteRequest;
 import com.unidy.backend.domains.dto.requests.UserInformationRequest;
-import com.unidy.backend.domains.dto.responses.UserInformationRespond;
-import com.unidy.backend.domains.entity.User;
-import com.unidy.backend.mapper.DtoMapper;
-import com.unidy.backend.repositories.UserRepository;
 import com.unidy.backend.services.servicesInterface.UserService;
 import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 
@@ -98,7 +92,12 @@ public class UserController {
         return userService.getListInvite(connectedUser, skip, limit);
     }
 
-    @PatchMapping("/delete-invite")
+    @PatchMapping("/decline-invite")
+    public ResponseEntity<?> declineInvite(Principal connectedUser, @RequestParam int friendId){
+        return userService.declineInvite(connectedUser,friendId);
+    }
+
+    @DeleteMapping("/delete-invite")
     public ResponseEntity<?> deleteInvite(Principal connectedUser, @RequestParam int friendId){
         return userService.deleteInvite(connectedUser,friendId);
     }
