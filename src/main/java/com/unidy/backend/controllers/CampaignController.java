@@ -90,13 +90,13 @@ public class CampaignController {
         return campaignService.getTransactionByCampaignId(campaignId,pageNumber,pageSize);
     }
 
-    @PatchMapping("/like")
-    public  ResponseEntity<?> likeCampaign(Principal connectedUser, @RequestParam String campaignId){
+    @PatchMapping("/{campaignId}/like")
+    public  ResponseEntity<?> likeCampaign(Principal connectedUser, @PathVariable String campaignId){
         return campaignService.likeCampaign(connectedUser,campaignId);
     }
 
-    @PatchMapping("/cancel-like")
-    public  ResponseEntity<?> cancelLikeCampaign(Principal connectedUser, @RequestParam String campaignId){
+    @PatchMapping("/{campaignId}/unlike")
+    public  ResponseEntity<?> cancelLikeCampaign(Principal connectedUser, @PathVariable String campaignId){
         return campaignService.cancelLikeCampaign(connectedUser,campaignId);
     }
 
