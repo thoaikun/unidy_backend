@@ -13,6 +13,7 @@ import com.unidy.backend.domains.dto.notification.extraData.NewCampaignData;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.dto.responses.CommentResponse;
+import com.unidy.backend.domains.dto.responses.TransactionResponse;
 import com.unidy.backend.domains.dto.responses.VolunteerDonationResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.CampaignNode;
@@ -57,6 +58,7 @@ public class CampaignServiceIplm implements CampaignService {
     private final CampaignTypeRepository campaignTypeRepository;
     private final CommentRepository commentRepository;
     private final Neo4j_CommentRepository neo4jCommentRepository;
+    private final TransactionRepository transactionRepository;
     @Override
     @Transactional
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) throws JsonProcessingException {
