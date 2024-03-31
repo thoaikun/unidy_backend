@@ -14,7 +14,6 @@ import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.dto.responses.CommentResponse;
 import com.unidy.backend.domains.dto.responses.TransactionResponse;
-import com.unidy.backend.domains.dto.responses.VolunteerDonationResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.CampaignNode;
 import com.unidy.backend.domains.entity.neo4j.CommentNode;
@@ -411,16 +410,6 @@ public class CampaignServiceIplm implements CampaignService {
         try {
             List<CommentResponse> listReplyComment = neo4jCommentRepository.getAllReplyComment(commentId, skip, limit);
             return ResponseEntity.ok().body(listReplyComment);
-        } catch (Exception e){
-            return ResponseEntity.badRequest().body(e.toString());
-        }
-    }
-
-    @Override
-    public ResponseEntity<?> getlistDonation(Principal connectedUser, String campaignId) {
-        try {
-            List<VolunteerDonationResponse> listDonation = campaignRepository.getListDonationByCampaignId(campaignId);
-            return ResponseEntity.ok().body(listDonation);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.toString());
         }

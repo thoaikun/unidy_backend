@@ -41,5 +41,4 @@ public interface CampaignService {
 
     ResponseEntity<?> getReplyComment(Principal connectedUser, Integer commentId, int skip, int limit);
 
-    ResponseEntity<?> getlistDonation(Principal connectedUser, String campaignId);
 }
