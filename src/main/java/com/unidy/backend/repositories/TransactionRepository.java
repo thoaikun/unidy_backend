@@ -16,15 +16,9 @@ import java.util.List;
 public interface TransactionRepository extends JpaRepository<Transaction, Integer> {
     @Query("""
             SELECT new com.unidy.backend.domains.dto.responses.TransactionResponse(
-                t.transactionId,
-                t.transactionType,
-                t.transactionTime,
-                t.transactionAmount,
-                t.transactionCode,
-                t.signature,
+                SUM (t.transactionAmount),
                 t.organizationUserId,
                 t.campaignId,
-                c,
                 u.userId,
                 u.fullName,
                 upi.linkImage
@@ -34,8 +28,29 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             JOIN User u ON t.userId = u.userId
             JOIN UserProfileImage upi ON u.userId = upi.userId
             WHERE t.organizationUserId = :organizationUserId
+            GROUP BY u.userId
+            ORDER BY t.transactionTime DESC
     """)
-    List<TransactionResponse> findTransactionsByOrganizationUserId(int organizationUserId, Pageable pageable);
+    List<TransactionResponse> findTransactionsByOrganizationUserIdSortByDate(int organizationUserId, Pageable pageable);
+
+    @Query("""
+            SELECT new com.unidy.backend.domains.dto.responses.TransactionResponse(
+                SUM (t.transactionAmount),
+                t.organizationUserId,
+                t.campaignId,
+                u.userId,
+                u.fullName,
+                upi.linkImage
+            )
+            FROM Transaction t
+            JOIN Campaign c ON t.campaignId = c.campaignId
+            JOIN User u ON t.userId = u.userId
+            JOIN UserProfileImage upi ON u.userId = upi.userId
+            WHERE t.organizationUserId = :organizationUserId
+            GROUP BY u.userId
+            ORDER BY SUM(t.transactionAmount) DESC
+    """)
+    List<TransactionResponse> findTransactionsByOrganizationUserIdSortByTransactionAmount(int organizationUserId, Pageable pageable);
 
     @Query("""
         SELECT new com.unidy.backend.domains.dto.responses.TransactionResponse(
