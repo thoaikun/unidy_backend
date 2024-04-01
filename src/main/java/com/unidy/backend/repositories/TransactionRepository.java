@@ -99,4 +99,18 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             WHERE t.userId = :userId
     """)
     List<TransactionResponse> findTransactionByUserId(@Param("userId") int userId, Pageable pageable);
+
+    @Query("""
+        SELECT COALESCE(SUM(t.transactionAmount), 0)
+        FROM Transaction t
+        WHERE t.organizationUserId = :organizationUserId
+    """)
+    Integer sumAmountTransactionByOrganizationUserId(Integer organizationUserId);
+
+    @Query("""
+        SELECT COALESCE(SUM(t.transactionAmount), 0)
+        FROM Transaction t
+        WHERE t.userId = :organizationUserId AND t.transactionTime = CURRENT_DATE()
+    """)
+    Integer sumAmountTransactionByOrganizationUserIdInDay(Integer organizationUserId);
 }

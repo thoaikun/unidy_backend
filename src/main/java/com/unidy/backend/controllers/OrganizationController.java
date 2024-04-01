@@ -18,6 +18,12 @@ import java.security.Principal;
 public class OrganizationController {
     private final OrganizationService organizationService;
 
+    @PreAuthorize("hasRole('ORGANIZATION')")
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(Principal connectedUser) {
+        return organizationService.getProfileOrganization(connectedUser);
+    }
+
     @GetMapping("/profile/{organizationId}")
     public ResponseEntity<?> getProfile(Principal connectedUser, @PathVariable int organizationId) {
         return organizationService.getProfileOrganization(connectedUser, organizationId);

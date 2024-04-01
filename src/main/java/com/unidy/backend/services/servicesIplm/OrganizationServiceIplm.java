@@ -35,6 +35,35 @@ public class OrganizationServiceIplm implements OrganizationService {
     private final Neo4j_UserRepository neo4j_UserRepository;
     private final S3Service s3Service;
 
+    @Override
+    public ResponseEntity<?> getProfileOrganization(Principal connectedUser) {
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            OrganizationInformation organizationInformation = organizationRepository.getOrganizationInformation(user.getUserId());
+            if (organizationInformation.getImage() != null){
+                URL urlImage = s3Service.getObjectUrl(
+                        "unidy",
+                        "profile-images/%s/%s".formatted(organizationInformation.getUserId(), organizationInformation.getImage())
+                );
+                organizationInformation.setImage(urlImage.toString());
+            }
+            Integer totalCampaign = campaignRepository.countCampaignByOwner(user.getUserId());
+            Integer totalVolunteer = volunteerJoinCampaignRepository.countVolunteerByOrganizationId(user.getUserId());
+            Integer totalAmountTransaction = transactionRepository.sumAmountTransactionByOrganizationUserId(user.getUserId());
+            Integer totalAmountTransactionInDay = transactionRepository.sumAmountTransactionByOrganizationUserIdInDay(user.getUserId());
+            OrganizationInformation.OverallFigure overallFigure = new OrganizationInformation.OverallFigure(
+                totalCampaign,
+                totalVolunteer,
+                totalAmountTransaction,
+                totalAmountTransactionInDay
+            );
+            organizationInformation.setOverallFigure(overallFigure);
+            return ResponseEntity.ok().body(organizationInformation);
+        } catch (Exception exception){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
+        }
+    }
+
     public ResponseEntity<?> getProfileOrganization(Principal connectedUser,  int organizationId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {

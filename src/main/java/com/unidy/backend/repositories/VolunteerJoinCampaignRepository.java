@@ -34,4 +34,14 @@ public interface VolunteerJoinCampaignRepository extends JpaRepository<Volunteer
     List<VolunteerJoinResponse> findVolunteerJoinCampaignByCampaignId(@Param("campaignId") int campaignId);
 
     List<VolunteerJoinCampaign> findUserIdsByCampaignIdAndStatus(int campaignId, String status);
+
+    @Query("""
+            SELECT COUNT(vjc)
+            FROM VolunteerJoinCampaign vjc
+            JOIN Campaign c
+                ON vjc.campaignId = c.campaignId
+            WHERE c.owner = :organizationId
+            AND vjc.status = 'APPROVE'
+    """)
+    Integer countVolunteerByOrganizationId(Integer organizationId);
 }
