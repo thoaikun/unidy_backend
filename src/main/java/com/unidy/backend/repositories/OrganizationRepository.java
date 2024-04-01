@@ -22,16 +22,16 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
         new com.unidy.backend.domains.dto.responses.ListVolunteerResponse(
             u.userId,
             u.fullName,
-            u.address,
-            u.email,
             vjc.timeJoin,
             vjc.status,
             c.campaignId,
-            c.description
+            upi.linkImage
         )
         FROM User u
         INNER JOIN VolunteerJoinCampaign vjc
             ON u.userId = vjc.userId
+        LEFT JOIN UserProfileImage upi
+            ON u.userId = upi.userId
         INNER JOIN Campaign c
             on vjc.campaignId = c.campaignId
         WHERE vjc.status = 'NOT_APPROVE_YET' and c.owner = :organizationId
@@ -47,17 +47,17 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
         new com.unidy.backend.domains.dto.responses.ListVolunteerResponse(
             u.userId,
             u.fullName,
-            u.address,
-            u.email,
             vjc.timeJoin,
             vjc.status,
             c.campaignId,
-            c.description
+            upi.linkImage
         )
     FROM
         User u
     INNER JOIN VolunteerJoinCampaign vjc
         ON u.userId = vjc.userId
+    INNER JOIN UserProfileImage upi
+        ON u.userId = upi.userId
     INNER JOIN Campaign c
         ON vjc.campaignId = c.campaignId
     WHERE vjc.status = 'APPROVED' AND c.owner = :organizationId
