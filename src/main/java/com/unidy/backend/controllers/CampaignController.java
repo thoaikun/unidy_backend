@@ -130,9 +130,4 @@ public class CampaignController {
     public ResponseEntity<?> getCertificate(Principal connectedUser, @PathVariable int campaignId){
         return certificateService.getCertificate(connectedUser);
     }
-
-    @GetMapping("{campaignId}/volunteers")
-    public ResponseEntity<?> getListVolunteerByCampaignId(Principal connectedUser,@PathVariable int campaignId) {
-        return organizationService.getListVolunteer(connectedUser,campaignId);
-    }
 }

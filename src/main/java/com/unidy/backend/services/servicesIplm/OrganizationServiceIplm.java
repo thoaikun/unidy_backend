@@ -29,7 +29,6 @@ public class OrganizationServiceIplm implements OrganizationService {
     private final TransactionRepository transactionRepository;
     private final VolunteerJoinCampaignRepository volunteerJoinCampaignRepository;
     private final CampaignRepository campaignRepository;
-    private final FirebaseService firebaseService;
     private final UserProfileImageRepository userProfileImageRepository;
     private final Neo4j_UserRepository neo4j_UserRepository;
     private final S3Service s3Service;
@@ -95,21 +94,21 @@ public class OrganizationServiceIplm implements OrganizationService {
         }
     }
 
-    @Override
-    public ResponseEntity<?> getListVolunteer(Principal connectedUser, int campaignId) {
-        try {
-            List<VolunteerJoinResponse> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByCampaignId(campaignId);
-            return ResponseEntity.ok().body(volunteerJoinCampaigns);
-        } catch (Exception exception){
-            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
-        }
-    }
-
     public ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            List<ListVolunteerResponse> listVolunteerNotApproved = organizationRepository.getListVolunteerNotApproved(organizationId,campaignId,pageable);
+            List<ListVolunteerResponse> listVolunteerNotApproved = volunteerJoinCampaignRepository.getListVolunteerNotApproved(organizationId,campaignId,pageable);
             return ResponseEntity.ok().body(listVolunteerNotApproved);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    public ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            List<ListVolunteerResponse> listVolunteerApproved = volunteerJoinCampaignRepository.getListVolunteerApproved(organizationId,campaignId,pageable);
+            return ResponseEntity.ok().body(listVolunteerApproved);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
@@ -161,15 +160,6 @@ public class OrganizationServiceIplm implements OrganizationService {
         }
     }
 
-    public ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
-        try {
-            Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            List<ListVolunteerResponse> listVolunteerApproved = organizationRepository.getListVolunteerApproved(organizationId,campaignId,pageable);
-            return ResponseEntity.ok().body(listVolunteerApproved);
-        } catch (Exception e){
-            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
-        }
-    }
     public ResponseEntity<?> getListTransaction(int organizationUserId, int pageNumber, int pageSize, String sort){
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -200,15 +190,6 @@ public class OrganizationServiceIplm implements OrganizationService {
     public ResponseEntity<?> sendNotifyToMember(Principal connectedUser, NotificationDto notificationDto) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-//            List<UserNode> userFollow = neo4j_userRepository.findUserFollowOrganization(user.getUserId());
-////            ExtraData extraData = new NewCampaignData(campaignId, organization.get().getOrganizationId(), request.getTitle());
-//            NotificationDto notification = NotificationDto.builder()
-//                    .title(organization.getOrganizationName() + " tổ chức chiến dịch mới")
-//                    .body(request.getDescription())
-//                    .topic(organization.get().getFirebaseTopic())
-//                    .extraData("extraData")
-//                    .build();
-//            firebaseService.pushNotificationToTopic(notification);
             return null;
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));

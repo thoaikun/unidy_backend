@@ -5,15 +5,21 @@ import lombok.*;
 import java.util.Date;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class ListVolunteerResponse {
     private Integer userId;
     private String fullName;
-    private String address;
-    private String email;
     private Date timeJoin;
     private String status;
     private Integer campaignId;
-    private String description;
+    private String linkImage;
+
+    public ListVolunteerResponse(Integer userId, String fullName, Date timeJoin, String status, Integer campaignId, String linkImages) {
+        this.userId = userId;
+        this.fullName = fullName;
+        this.timeJoin = timeJoin;
+        this.status = status;
+        this.campaignId = campaignId;
+        this.linkImage = linkImages == null ? null : "https://unidy.s3.ap-southeast-1.amazonaws.com/" + "profile-images/" + userId + "/" + linkImages;
+    }
 }

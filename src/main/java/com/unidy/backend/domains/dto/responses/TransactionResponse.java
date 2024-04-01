@@ -60,7 +60,7 @@ public class TransactionResponse {
         this.user = new UserInfo();
         this.user.userId = userId;
         this.user.fullName = fullName;
-        this.user.linkImage = "https://unidy.s3.ap-southeast-1.amazonaws.com/" + "profile-images/" + userId + "/" + linkImages;
+        this.user.linkImage = linkImages == null ? null : "https://unidy.s3.ap-southeast-1.amazonaws.com/" + "profile-images/" + userId + "/" + linkImages;
     }
 
     public TransactionResponse(
@@ -77,6 +77,6 @@ public class TransactionResponse {
         this.user = new UserInfo();
         this.user.userId = userId;
         this.user.fullName = fullName;
-        this.user.linkImage = "https://unidy.s3.ap-southeast-1.amazonaws.com/" + "profile-images/" + userId + "/" + linkImages;
+        this.user.linkImage = linkImages == null ? null : "https://unidy.s3.ap-southeast-1.amazonaws.com/" + "profile-images/" + userId + "/" + linkImages;
     }
 }

@@ -26,7 +26,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             FROM Transaction t
             JOIN Campaign c ON t.campaignId = c.campaignId
             JOIN User u ON t.userId = u.userId
-            JOIN UserProfileImage upi ON u.userId = upi.userId
+            LEFT JOIN UserProfileImage upi ON u.userId = upi.userId
             WHERE t.organizationUserId = :organizationUserId
             GROUP BY u.userId
             ORDER BY t.transactionTime DESC
@@ -45,7 +45,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             FROM Transaction t
             JOIN Campaign c ON t.campaignId = c.campaignId
             JOIN User u ON t.userId = u.userId
-            JOIN UserProfileImage upi ON u.userId = upi.userId
+            LEFT JOIN UserProfileImage upi ON u.userId = upi.userId
             WHERE t.organizationUserId = :organizationUserId
             GROUP BY u.userId
             ORDER BY SUM(t.transactionAmount) DESC
@@ -70,7 +70,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
         FROM Transaction t
         JOIN Campaign c ON t.campaignId = c.campaignId
         JOIN User u ON t.userId = u.userId
-        JOIN UserProfileImage upi ON u.userId = upi.userId
+        LEFT JOIN UserProfileImage upi ON u.userId = upi.userId
         WHERE t.organizationUserId = :organizationUserId AND t.campaignId = :campaignId
     """)
     List<TransactionResponse> findTransactionsByOrganizationUserIdAndCampaignId(int organizationUserId, int campaignId, Pageable pageable);
@@ -86,7 +86,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
         )
         FROM Transaction t
         JOIN User u ON t.userId = u.userId
-        JOIN UserProfileImage upi ON u.userId = upi.userId
+        LEFT JOIN UserProfileImage upi ON u.userId = upi.userId
         WHERE t.campaignId = :campaignId
         GROUP BY u.userId
     """)
@@ -110,7 +110,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             FROM Transaction t
             JOIN Campaign c ON t.campaignId = c.campaignId
             JOIN User u ON t.userId = u.userId
-            JOIN UserProfileImage upi ON u.userId = upi.userId
+            LEFT JOIN UserProfileImage upi ON u.userId = upi.userId
             WHERE t.userId = :userId
     """)
     List<TransactionResponse> findTransactionByUserId(@Param("userId") int userId, Pageable pageable);
