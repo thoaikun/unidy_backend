@@ -2,6 +2,7 @@ package com.unidy.backend.services.servicesIplm;
 
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
+import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.Type.VolunteerStatus;
 import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.responses.*;
@@ -116,22 +117,52 @@ public class OrganizationServiceIplm implements OrganizationService {
         }
     }
 
-    public ResponseEntity<?> approveVolunteer(Principal connectedUser, int volunteerId, int campaignId){
+    public ResponseEntity<?> approveVolunteer(Principal connectedUser, int campaignId, List<Integer> volunteerIds){
+        if (volunteerIds.isEmpty())
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("VolunteerIds is empty"));
+
         var organization = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            VolunteerJoinCampaign volunteerJoinCampaign = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByUserIdAndCampaignId(volunteerId,campaignId);
+            List<VolunteerJoinCampaign> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByCampaignIdAndUserIdIn(campaignId, volunteerIds);
             Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
-            if (organization.getUserId().equals(campaign.getOwner()) && campaign.getNumberVolunteerRegistered() < campaign.getNumberVolunteer() ){
-                volunteerJoinCampaign.setStatus(String.valueOf(VolunteerStatus.APPROVED));
-                volunteerJoinCampaignRepository.save(volunteerJoinCampaign);
-                return ResponseEntity.ok().body("Approve success");
-            } else {
-                return ResponseEntity.badRequest().body(new ErrorResponseDto("Not permission"));
-            }
+
+            if (!organization.getUserId().equals(campaign.getOwner()))
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("CampaignId không thuộc quyền sở hữu của bạn"));
+            if (volunteerJoinCampaigns.isEmpty())
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("VolunteerIds không tồn tại"));
+            else if (campaign.getNumberVolunteerRegistered() + volunteerIds.size() > campaign.getNumberVolunteer())
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Số lượng tình nguyện viên vượt quá số lượng cho phép"));
+
+            volunteerJoinCampaignRepository.approveVolunteerJoinCampaignByCampaignIdAndUserIdIn(campaignId, volunteerIds);
+            return ResponseEntity.ok().body(new SuccessReponse("Approve volunteer success"));
+
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
         }
     }
+
+    @Override
+    public ResponseEntity<?> rejectVolunteer(Principal connectedUser, int campaignId, List<Integer> volunteerIds) {
+        if (volunteerIds.isEmpty())
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("VolunteerIds is empty"));
+
+        var organization = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        try {
+            List<VolunteerJoinCampaign> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByCampaignIdAndUserIdIn(campaignId, volunteerIds);
+            Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
+
+            if (!organization.getUserId().equals(campaign.getOwner()))
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("CampaignId không thuộc quyền sở hữu của bạn"));
+            if (volunteerJoinCampaigns.isEmpty())
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("VolunteerIds không tồn tại"));
+
+            volunteerJoinCampaignRepository.rejectVolunteerJoinCampaignByCampaignIdAndUserIdIn(campaignId, volunteerIds);
+            return ResponseEntity.ok().body(new SuccessReponse("Reject volunteer success"));
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
+        }
+    }
+
     public ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);

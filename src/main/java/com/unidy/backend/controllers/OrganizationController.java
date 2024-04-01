@@ -1,6 +1,7 @@
 package com.unidy.backend.controllers;
 
 import com.unidy.backend.domains.dto.notification.NotificationDto;
+import com.unidy.backend.domains.dto.requests.ApproveVolunteerRequest;
 import com.unidy.backend.domains.entity.User;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
 import lombok.RequiredArgsConstructor;
@@ -38,8 +39,14 @@ public class OrganizationController {
 
     @PreAuthorize("hasRole('ORGANIZATION')")
     @PatchMapping("/campaign/{campaignId}/approve-volunteer")
-    public ResponseEntity<?> approveVolunteer(Principal connectedUser, @RequestParam("userId") int userId, @PathVariable("campaignId") int campaignId) {
-        return organizationService.approveVolunteer(connectedUser, userId, campaignId);
+    public ResponseEntity<?> approveVolunteer(Principal connectedUser, @PathVariable("campaignId") int campaignId, @RequestBody ApproveVolunteerRequest body) {
+        return organizationService.approveVolunteer(connectedUser, campaignId, body.getVolunteerIds());
+    }
+
+    @PreAuthorize("hasRole('ORGANIZATION')")
+    @PatchMapping("/campaign/{campaignId}/reject-volunteer")
+    public ResponseEntity<?> rejectVolunteer(Principal connectedUser, @PathVariable("campaignId") int campaignId, @RequestBody ApproveVolunteerRequest body) {
+        return organizationService.rejectVolunteer(connectedUser, campaignId, body.getVolunteerIds());
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
@@ -49,7 +56,6 @@ public class OrganizationController {
         return organizationService.getListVolunteerApproved(user.getUserId(), campaignId, pageNumber, pageSize);
     }
 
-    //tat ca cac giao dich
     @PreAuthorize("hasRole('ORGANIZATION')")
     @GetMapping("/transactions")
     public ResponseEntity<?> getListTransaction(Principal connectedUser, @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
