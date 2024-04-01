@@ -3,7 +3,6 @@ package com.unidy.backend.services.servicesIplm;
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
-import com.unidy.backend.domains.Type.VolunteerStatus;
 import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.responses.*;
 import com.unidy.backend.domains.entity.*;
@@ -11,7 +10,6 @@ import com.unidy.backend.firebase.FirebaseService;
 import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -172,10 +170,16 @@ public class OrganizationServiceIplm implements OrganizationService {
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
-    public ResponseEntity<?> getListTransaction(int organizationUserId, int pageNumber, int pageSize){
+    public ResponseEntity<?> getListTransaction(int organizationUserId, int pageNumber, int pageSize, String sort){
         try {
-            Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("transactionTime").descending());
-            List<TransactionResponse> transaction = transactionRepository.findTransactionsByOrganizationUserId(organizationUserId, pageable);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            List<TransactionResponse> transaction;
+            if (sort == null || sort.equals("newest")) {
+                transaction = transactionRepository.findTransactionsByOrganizationUserIdSortByDate(organizationUserId, pageable);
+            }
+            else {
+                transaction = transactionRepository.findTransactionsByOrganizationUserIdSortByTransactionAmount(organizationUserId, pageable);
+            }
             return ResponseEntity.ok().body(transaction);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
