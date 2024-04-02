@@ -11,10 +11,12 @@ import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
 import com.unidy.backend.domains.dto.requests.CampaignDto;
 import com.unidy.backend.domains.dto.responses.*;
 import com.unidy.backend.domains.entity.*;
+import com.unidy.backend.domains.entity.neo4j.CampaignNode;
 import com.unidy.backend.firebase.FirebaseService;
 import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.CertificateService;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.data.domain.Page;
@@ -48,6 +50,7 @@ public class OrganizationServiceIplm implements OrganizationService {
     private final CertificateRepository certificateRepository;
     private final UserRepository userRepository;
     private final UserDeviceFcmTokenRepository userDeviceFcmTokenRepository;
+    private final Neo4j_CampaignRepository neo4jCampaignRepository;
     public ResponseEntity<?> getProfileOrganization(Principal connectedUser,  int organizationId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
@@ -165,6 +168,7 @@ public class OrganizationServiceIplm implements OrganizationService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<?> endCampaign(Principal connectedUser, int campaignId) {
         try {
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
@@ -200,10 +204,15 @@ public class OrganizationServiceIplm implements OrganizationService {
                 firebaseService.pushNotificationToMultipleDevices(notificationDto);
             }
 
+            CampaignNode campaignNode = neo4jCampaignRepository.findCampaignNodeByCampaignId(String.valueOf(campaignId));
+            campaignNode.setStatus(CampaignStatus.COMPLETE.toString());
+            neo4jCampaignRepository.save(campaignNode);
+
 //            List<Transaction> listTransaction = transactionRepository.findTransactionsByCampaignId(campaignId);
 //            for (Transaction transaction : listTransaction){
 //                certificateRepository.findCertificate(volunteerJoinCampaign.getUserId());
 //            }
+
             return ResponseEntity.ok().body(new SuccessReponse("End campaign success"));
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
