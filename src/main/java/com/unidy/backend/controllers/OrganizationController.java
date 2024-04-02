@@ -31,6 +31,13 @@ public class OrganizationController {
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
+    @GetMapping("/campaigns")
+    public ResponseEntity<?> getListCampaign(Principal connectedUser, @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        return organizationService.getListCampaign(user.getUserId(), pageNumber, pageSize);
+    }
+
+    @PreAuthorize("hasRole('ORGANIZATION')")
     @GetMapping("/campaigns/{campaignId}/not-approved-volunteers")
     public ResponseEntity<?> getListVolunteer(Principal connectedUser, @PathVariable("campaignId") int campaignId, @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
