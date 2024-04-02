@@ -25,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 public class CampaignController {
     private final CampaignService campaignService;
     private final CertificateService certificateService;
-    private final OrganizationService organizationService;
 
     @PreAuthorize("hasRole('ORGANIZATION')")
     @PostMapping("")
@@ -118,12 +117,6 @@ public class CampaignController {
     @GetMapping("{campaignId}/comments/{commentId}/replies")
     public  ResponseEntity<?> getReplyComment(Principal connectedUser, @PathVariable String campaignId, @PathVariable Integer commentId, @RequestParam int skip, @RequestParam int limit){
         return campaignService.getReplyComment(connectedUser,commentId,skip,limit);
-    }
-
-    @PreAuthorize("hasRole('ORGANIZATION')")
-    @PostMapping("{campaignId}/certificates")
-    public ResponseEntity<?> createCertificate(Principal connectedUser, @PathVariable int campaignId){
-        return certificateService.createCertificate(connectedUser,campaignId);
     }
 
     @GetMapping("{campaignId}/certificates")
