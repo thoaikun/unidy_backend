@@ -1,6 +1,7 @@
 package com.unidy.backend.services.servicesInterface;
 
 import com.unidy.backend.domains.dto.notification.NotificationDto;
+import com.unidy.backend.domains.dto.requests.CampaignDto;
 import com.unidy.backend.services.servicesIplm.OrganizationServiceIplm;
 import org.springframework.http.ResponseEntity;
 
@@ -15,4 +16,6 @@ public interface OrganizationService {
     ResponseEntity<?> getListTransaction(int organizationUserId, int pageNumber, int pageSize);
     ResponseEntity<?> getListCampaignTransaction(Integer userId, int campaignId, int pageNumber, int pageSize);
     ResponseEntity<?> sendNotifyToMember(Principal connectedUser, NotificationDto notificationDto);
+    ResponseEntity<?> endCampaign(Principal connectedUser, int campaignId);
+    ResponseEntity<?> updateCampaignInformation(Principal connectedUser, int campaignId, CampaignDto campaignDto);
 }

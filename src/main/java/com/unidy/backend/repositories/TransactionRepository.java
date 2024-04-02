@@ -99,4 +99,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             WHERE t.userId = :userId
     """)
     List<TransactionResponse> findTransactionByUserId(@Param("userId") int userId, Pageable pageable);
+
+
+    List<Transaction> findTransactionsByCampaignId(int campaignId);
 }

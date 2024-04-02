@@ -28,7 +28,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -417,9 +419,10 @@ public class CampaignServiceIplm implements CampaignService {
     }
 
     @Override
-    public ResponseEntity<?> getlistDonation(Principal connectedUser, String campaignId) {
+    public ResponseEntity<?> getlistDonation(Principal connectedUser, String campaignId, int pageNumber, int pageSize) {
         try {
-            List<VolunteerDonationResponse> listDonation = campaignRepository.getListDonationByCampaignId(campaignId);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            List<VolunteerDonationResponse> listDonation = campaignRepository.getListDonationByCampaignId(campaignId,pageable);
             return ResponseEntity.ok().body(listDonation);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.toString());

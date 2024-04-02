@@ -77,9 +77,6 @@ public class CampaignController {
                     .build();
             return ResponseEntity.ok().body(response);
         }
-        catch (RuntimeException e){
-            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.getMessage()));
-        }
         catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Có lỗi xảy ra khi lấy danh sách chiến dịch của tổ chức"));
         }
@@ -131,9 +128,9 @@ public class CampaignController {
         return certificateService.getCertificate(connectedUser);
     }
 
-    @GetMapping("/list-donation/{:campaignId}")
-    public ResponseEntity<?> getListDonation(Principal connectedUser, @PathVariable String campaignId){
-        return campaignService.getlistDonation(connectedUser,campaignId);
+    @GetMapping("/{campaignId}/donation")
+    public ResponseEntity<?> getListDonation(Principal connectedUser, @PathVariable String campaignId, @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize){
+        return campaignService.getlistDonation(connectedUser,campaignId,pageNumber,pageSize);
     }
 
     @GetMapping("/volunteer/{campaignId}")
@@ -141,3 +138,4 @@ public class CampaignController {
         return organizationService.getListVolunteer(connectedUser,campaignId);
     }
 }
+

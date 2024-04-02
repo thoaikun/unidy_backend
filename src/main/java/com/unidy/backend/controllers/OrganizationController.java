@@ -1,6 +1,7 @@
 package com.unidy.backend.controllers;
 
 import com.unidy.backend.domains.dto.notification.NotificationDto;
+import com.unidy.backend.domains.dto.requests.CampaignDto;
 import com.unidy.backend.domains.entity.User;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
 import lombok.RequiredArgsConstructor;
@@ -65,5 +66,14 @@ public class OrganizationController {
         return organizationService.sendNotifyToMember(connectedUser,notificationDto);
     }
 
+    @PreAuthorize("hasRole('ORGANIZATION')")
+    @PatchMapping("/campaigns/{campaignId}/end")
+    public ResponseEntity<?> endCampaign(Principal connectedUser, @PathVariable int campaignId) {
+        return organizationService.endCampaign(connectedUser,campaignId);
+    }
 
+    @PatchMapping("/campaign-information/{campaignId}")
+    public ResponseEntity<?> updateCampaignInformation(Principal connectedUser, @PathVariable int campaignId, @RequestBody CampaignDto campaignDto) {
+        return organizationService.updateCampaignInformation(connectedUser,campaignId,campaignDto);
+    }
 }

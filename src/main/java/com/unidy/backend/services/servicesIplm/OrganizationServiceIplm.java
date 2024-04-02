@@ -2,14 +2,21 @@ package com.unidy.backend.services.servicesIplm;
 
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
+import com.unidy.backend.domains.SuccessReponse;
+import com.unidy.backend.domains.Type.CampaignStatus;
 import com.unidy.backend.domains.Type.VolunteerStatus;
 import com.unidy.backend.domains.dto.notification.NotificationDto;
+import com.unidy.backend.domains.dto.notification.extraData.CertificateData;
+import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
+import com.unidy.backend.domains.dto.requests.CampaignDto;
 import com.unidy.backend.domains.dto.responses.*;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.firebase.FirebaseService;
 import com.unidy.backend.repositories.*;
+import com.unidy.backend.services.servicesInterface.CertificateService;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,8 +27,11 @@ import org.springframework.stereotype.Service;
 
 import java.net.URL;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import org.modelmapper.ModelMapper;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +44,10 @@ public class OrganizationServiceIplm implements OrganizationService {
     private final UserProfileImageRepository userProfileImageRepository;
     private final Neo4j_UserRepository neo4j_UserRepository;
     private final S3Service s3Service;
-
+    private final CertificateService certificateService;
+    private final CertificateRepository certificateRepository;
+    private final UserRepository userRepository;
+    private final UserDeviceFcmTokenRepository userDeviceFcmTokenRepository;
     public ResponseEntity<?> getProfileOrganization(Principal connectedUser,  int organizationId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
@@ -146,6 +159,79 @@ public class OrganizationServiceIplm implements OrganizationService {
 //                    .build();
 //            firebaseService.pushNotificationToTopic(notification);
             return null;
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> endCampaign(Principal connectedUser, int campaignId) {
+        try {
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            Optional<Organization> organization = organizationRepository.findByUserId(user.getUserId());
+            Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
+            campaign.setStatus(CampaignStatus.COMPLETE.toString());
+            certificateService.createCertificate(connectedUser,campaignId);
+            List<VolunteerJoinCampaign> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findUserIdsByCampaignIdAndStatus(campaignId, "APPROVE");
+            for (VolunteerJoinCampaign volunteerJoinCampaign : volunteerJoinCampaigns) {
+                certificateRepository.findCertificate(volunteerJoinCampaign.getUserId());
+                User volunteer = userRepository.findByUserId(volunteerJoinCampaign.getUserId());
+                Certificate certificate = certificateRepository.findCertificateByUserId(volunteer.getUserId(),campaignId);
+                ExtraData extraData = new CertificateData(
+                        campaign.getCampaignId(),
+                        campaign.getDescription(),
+                        user.getUserId(),
+                        organization.get().getOrganizationName(),
+                        volunteer.getFullName(),
+                        certificate.getFile()
+                );
+                List<UserDeviceFcmToken> userDeviceFcmToken = userDeviceFcmTokenRepository.findByUserId(volunteer.getUserId());
+                ArrayList<String> listFCMToken = new ArrayList<>();
+                for (UserDeviceFcmToken token : userDeviceFcmToken){
+                    listFCMToken.add(token.getFcmToken());
+                }
+                NotificationDto notificationDto =  NotificationDto.builder()
+                        .title("Sự kiện " + campaign.getDescription() + " đã kết thúc.")
+                        .body(organization.get().getOrganizationName() + " gửi tới bạn chứng nhận tham gia chiến dịch")
+                        .deviceTokens(listFCMToken)
+                        .extraData(extraData)
+                        .build();
+
+                firebaseService.pushNotificationToMultipleDevices(notificationDto);
+            }
+
+//            List<Transaction> listTransaction = transactionRepository.findTransactionsByCampaignId(campaignId);
+//            for (Transaction transaction : listTransaction){
+//                certificateRepository.findCertificate(volunteerJoinCampaign.getUserId());
+//            }
+            return ResponseEntity.ok().body(new SuccessReponse("End campaign success"));
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> updateCampaignInformation(Principal connectedUser, int campaignId, CampaignDto campaignDto) {
+        try {
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
+            if (campaign == null) {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find campaign"));
+            }
+            if (!user.getUserId().equals(campaign.getOwner())){
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("You can't update this campaign"));
+            }
+
+            ModelMapper modelMapper = new ModelMapper();
+            modelMapper.getConfiguration()
+                    .setMatchingStrategy(MatchingStrategies.STRICT)
+                    .setSkipNullEnabled(true);
+            modelMapper.map(campaignDto, campaign);
+            campaign.setUpdateDate(new Date());
+            campaign.setUpdateBy(user.getUserId());
+            campaignRepository.save(campaign);
+
+            return ResponseEntity.ok().body(new SuccessReponse("Campaign information updated successfully."));
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
