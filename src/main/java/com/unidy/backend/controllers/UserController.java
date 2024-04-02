@@ -1,11 +1,11 @@
 package com.unidy.backend.controllers;
 
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.unidy.backend.domains.dto.UserDto;
 import com.unidy.backend.domains.dto.requests.ChoseFavoriteRequest;
 import com.unidy.backend.domains.dto.requests.UserInformationRequest;
 import com.unidy.backend.services.servicesInterface.UserService;
 import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
+import com.unidy.backend.services.servicesIplm.OrganizationServiceIplm;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,23 +17,13 @@ import java.security.Principal;
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
-
     private final UserService userService;
+    private final OrganizationServiceIplm organizationService;
 
     @GetMapping("/profile")
     public ResponseEntity<?> getUserInformation(Principal connectedUser){
         try{
             return ResponseEntity.ok().body(userService.getUserInformation(connectedUser));
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body("Lỗi hệ thống");
-        }
-    }
-
-    @GetMapping("/profile/{userId}")
-    public ResponseEntity<?> getUserInformationByUserId(Principal connectedUser, @PathVariable int userId){
-        try{
-            return userService.getUserInformationByUserId(connectedUser,userId);
         }
         catch (Exception e){
             return ResponseEntity.badRequest().body("Lỗi hệ thống");
@@ -48,6 +38,21 @@ public class UserController {
         catch (Exception e){
             return ResponseEntity.badRequest().body("Lỗi hệ thống");
         }
+    }
+
+    @GetMapping("/profile/volunteers/{volunteerId}")
+    public ResponseEntity<?> getUserInformationByUserId(Principal connectedUser, @PathVariable int volunteerId){
+        try{
+            return userService.getUserInformationByUserId(connectedUser, volunteerId);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body("Lỗi hệ thống");
+        }
+    }
+
+    @GetMapping("/profile/organizations/{organizationId}")
+    public ResponseEntity<?> getProfile(Principal connectedUser, @PathVariable int organizationId) {
+        return organizationService.getProfileOrganization(connectedUser, organizationId);
     }
 
     @PatchMapping("/new-password")

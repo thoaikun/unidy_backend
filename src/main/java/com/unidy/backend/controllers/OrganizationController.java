@@ -4,6 +4,7 @@ import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.requests.ApproveVolunteerRequest;
 import com.unidy.backend.domains.entity.User;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
+import com.unidy.backend.services.servicesIplm.CertificateServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +19,7 @@ import java.security.Principal;
 @RequestMapping("/api/v1/organization")
 public class OrganizationController {
     private final OrganizationService organizationService;
+    private final CertificateServiceImpl certificateService;
 
     @PreAuthorize("hasRole('ORGANIZATION')")
     @GetMapping("/profile")
@@ -25,9 +27,11 @@ public class OrganizationController {
         return organizationService.getProfileOrganization(connectedUser);
     }
 
-    @GetMapping("/profile/{organizationId}")
-    public ResponseEntity<?> getProfile(Principal connectedUser, @PathVariable int organizationId) {
-        return organizationService.getProfileOrganization(connectedUser, organizationId);
+    @PreAuthorize("hasRole('ORGANIZATION')")
+    @GetMapping("/campaigns")
+    public ResponseEntity<?> getListCampaign(Principal connectedUser, @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        return organizationService.getListCampaign(user.getUserId(), pageNumber, pageSize);
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
@@ -62,6 +66,20 @@ public class OrganizationController {
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
+    @PostMapping("campaigns/{campaignId}/create-certificate")
+    public ResponseEntity<?> createCertificate(Principal connectedUser, @PathVariable int campaignId){
+        return certificateService.createCertificate(connectedUser,campaignId);
+    }
+
+    @PreAuthorize("hasRole('ORGANIZATION')")
+    @GetMapping("/campaigns/{campaignId}/transactions")
+    public ResponseEntity<?> getListCampaignTransaction(Principal connectedUser, @PathVariable("campaignId") int campaignId,
+                                                        @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        return organizationService.getListCampaignTransaction(user.getUserId(), campaignId, pageNumber, pageSize);
+    }
+
+    @PreAuthorize("hasRole('ORGANIZATION')")
     @GetMapping("/transactions")
     public ResponseEntity<?> getListTransaction(
         Principal connectedUser,
@@ -74,18 +92,8 @@ public class OrganizationController {
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
-    @GetMapping("/campaigns/{campaignId}/transactions")
-    public ResponseEntity<?> getListCampaignTransaction(Principal connectedUser, @PathVariable("campaignId") int campaignId,
-                                                        @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
-        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return organizationService.getListCampaignTransaction(user.getUserId(), campaignId, pageNumber, pageSize);
-    }
-
-    @PreAuthorize("hasRole('ORGANIZATION')")
     @GetMapping("/notify-member")
     public ResponseEntity<?> getListCampaignTransaction(Principal connectedUser, NotificationDto notificationDto) {
         return organizationService.sendNotifyToMember(connectedUser,notificationDto);
     }
-
-
 }

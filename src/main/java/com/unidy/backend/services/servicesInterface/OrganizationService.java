@@ -9,6 +9,7 @@ import java.util.List;
 public interface OrganizationService {
     ResponseEntity<?> getProfileOrganization(Principal connectedUser);
     ResponseEntity<?> getProfileOrganization(Principal connectedUser, int organizationId);
+    ResponseEntity<?> getListCampaign(int organizationId, int pageNumber, int pageSize);
     ResponseEntity<?> approveVolunteer(Principal connectedUser, int campaignId, List<Integer> volunteerIds);
     ResponseEntity<?> rejectVolunteer(Principal connectedUser, int campaignId, List<Integer> volunteerIds);
     ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int pageNumber, int pageSize);
