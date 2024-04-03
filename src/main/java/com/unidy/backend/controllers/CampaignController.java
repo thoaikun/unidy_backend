@@ -32,6 +32,13 @@ public class CampaignController {
         return campaignService.createCampaign(connectedUser,request);
     }
 
+    @GetMapping("/{campaignId}")
+    public ResponseEntity<?> getCampaignByCampaignId(@PathVariable String campaignId){
+        return campaignService.getCampaignByCampaignId(campaignId);
+    }
+
+
+
     @PreAuthorize("hasRole('VOLUNTEER')")
     @PatchMapping("/register")
     public ResponseEntity<?> registerCampaign(Principal connectedUser, @RequestParam int campaignId){

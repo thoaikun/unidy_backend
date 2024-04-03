@@ -413,4 +413,17 @@ public class CampaignServiceIplm implements CampaignService {
             return ResponseEntity.badRequest().body(e.toString());
         }
     }
+
+    @Override
+    public ResponseEntity<?> getCampaignByCampaignId(String campaignId) {
+        try {
+            CampaignNode campaign = neo4jCampaignRepository.findCampaignNodeByCampaignId(campaignId);
+            if (campaign == null){
+                ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find this post"));
+            }
+            return ResponseEntity.ok().body(campaign);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.toString());
+        }
+    }
 }
