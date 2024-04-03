@@ -4,4 +4,5 @@ import com.unidy.backend.domains.entity.relationship.CampaignType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CampaignTypeRepository extends JpaRepository<CampaignType,Integer> {
+    CampaignType getCampaignTypeByCampaignId(Integer campaignId);
 }

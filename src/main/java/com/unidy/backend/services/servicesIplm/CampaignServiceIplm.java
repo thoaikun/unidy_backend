@@ -111,7 +111,6 @@ public class CampaignServiceIplm implements CampaignService {
                     .hashTag(request.getHashTag())
                     .link_image(listImageLink.toString())
                     .owner(user.getUserId())
-                    .categories("OK")
                     .numberVolunteerRegistered(0)
                     .build();
             campaignRepository.save(campaign_mysql);

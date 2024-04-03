@@ -1,5 +1,6 @@
 package com.unidy.backend.domains.entity;
 
+import com.unidy.backend.domains.entity.relationship.CampaignType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,9 +27,6 @@ public class Campaign {
 
     @Column(name= "content")
     private String description;
-
-    @Column(name = "categories")
-    private String categories;
 
     @Column(name = "numbers_volunteer")
     private Integer numberVolunteer;
@@ -74,4 +72,8 @@ public class Campaign {
 
     @Column(name = "link_image")
     private String link_image;
+
+    @JoinColumn(name = "campaign_id")
+    @OneToOne(cascade = CascadeType.ALL)
+    private CampaignType campaignType;
 }

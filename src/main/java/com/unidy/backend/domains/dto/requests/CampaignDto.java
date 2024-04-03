@@ -1,5 +1,6 @@
 package com.unidy.backend.domains.dto.requests;
 
+import com.unidy.backend.domains.entity.relationship.CampaignType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
