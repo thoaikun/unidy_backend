@@ -124,3 +124,4 @@ public class CampaignController {
         return certificateService.getCertificate(connectedUser);
     }
 }
+

@@ -128,4 +128,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
         WHERE t.userId = :organizationUserId AND t.transactionTime = CURRENT_DATE()
     """)
     Integer sumAmountTransactionByOrganizationUserIdInDay(Integer organizationUserId);
+
+    List<Transaction> findTransactionsByCampaignId(int campaignId);
 }

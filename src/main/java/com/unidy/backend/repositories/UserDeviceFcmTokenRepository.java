@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface UserDeviceFcmTokenRepository extends JpaRepository<UserDeviceFcmToken,Integer> {
     @Query("SELECT u FROM UserDeviceFcmToken u WHERE u.fcmToken = ?1")
@@ -12,4 +14,6 @@ public interface UserDeviceFcmTokenRepository extends JpaRepository<UserDeviceFc
 
     @Query("DELETE FROM UserDeviceFcmToken u WHERE u.fcmToken = ?1")
     void deleteByFcmToken(String fcmToken);
+
+    List<UserDeviceFcmToken> findByUserId(Integer userId);
 }

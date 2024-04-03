@@ -1,5 +1,6 @@
 package com.unidy.backend.repositories;
 
+import com.miragesql.miragesql.annotation.In;
 import com.unidy.backend.domains.dto.responses.CertificateResponse;
 import com.unidy.backend.domains.entity.Certificate;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,4 +35,21 @@ public interface CertificateRepository extends JpaRepository<Certificate,Integer
     List<CertificateResponse> findCertificate(Integer userId);
 
     Certificate findCertificateByFile(String file);
+
+    @Query("""            
+            SELECT new com.unidy.backend.domains.entity.Certificate(
+                certificate.certificateId,
+                certificate.file
+            )
+            FROM User user
+            INNER JOIN
+            VolunteerCertificate volunteercertificate
+            ON user.userId = volunteercertificate.volunteerId
+            INNER JOIN
+            Certificate certificate
+            ON volunteercertificate.certificateId = certificate.certificateId
+            WHERE user.userId = :userId
+            and volunteercertificate.campaignId = :campaignId
+            """)
+    Certificate findCertificateByUserId(Integer userId, Integer campaignId);
 }

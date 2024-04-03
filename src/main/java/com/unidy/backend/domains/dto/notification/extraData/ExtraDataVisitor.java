@@ -39,4 +39,21 @@ public class ExtraDataVisitor {
         multicastMessageBuilder.putData("campaignId", String.valueOf(newCampaignData.getCampaignId()));
         multicastMessageBuilder.putData("campaignName", newCampaignData.getCampaignName());
     }
+
+    public void visitCertificateWithSingleMessage(CertificateData certificateData, Message.Builder messageBuilder) {
+        messageBuilder.putData("campaignId", String.valueOf(certificateData.getCampaignId()));
+        messageBuilder.putData("campaignName", certificateData.getCampaignName());
+        messageBuilder.putData("organizationId", String.valueOf(certificateData.getOrganizationId()));
+        messageBuilder.putData("organizationName", String.valueOf(certificateData.getOrganizationName()));
+        messageBuilder.putData("volunteerName", certificateData.getVolunteerName());
+        messageBuilder.putData("certificateLink", certificateData.getCertificateLink());
+
+    }
+    public void visitCertificateWithMultiMessage(CertificateData certificateData, MulticastMessage.Builder multicastMessageBuilder) {
+        multicastMessageBuilder.putData("campaignId", String.valueOf(certificateData.getCampaignId()));
+        multicastMessageBuilder.putData("campaignName", certificateData.getCampaignName());
+        multicastMessageBuilder.putData("organizationId", String.valueOf(certificateData.getOrganizationId()));
+        multicastMessageBuilder.putData("organizationName", String.valueOf(certificateData.getOrganizationName()));
+        multicastMessageBuilder.putData("certificateLink", certificateData.getCertificateLink());
+    }
 }
