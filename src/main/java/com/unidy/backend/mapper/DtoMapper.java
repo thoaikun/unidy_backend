@@ -1,6 +1,8 @@
 package com.unidy.backend.mapper;
 
 import com.unidy.backend.domains.dto.UserDto;
+import com.unidy.backend.domains.dto.requests.CampaignDto;
+import com.unidy.backend.domains.entity.Campaign;
 import com.unidy.backend.domains.entity.User;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
@@ -16,4 +18,6 @@ public interface DtoMapper {
 
 //    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 //    void updatePostInformation(PostRequest newData, @MappingTarget PostNode data);
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateCampaignInformation(CampaignDto newData, @MappingTarget Campaign data);
 }

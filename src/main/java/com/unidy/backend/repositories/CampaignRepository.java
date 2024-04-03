@@ -1,9 +1,9 @@
 package com.unidy.backend.repositories;
 
-import com.unidy.backend.domains.dto.responses.CampaignResponse;
 import com.unidy.backend.domains.entity.Campaign;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 

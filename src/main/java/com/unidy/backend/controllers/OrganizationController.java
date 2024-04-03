@@ -2,6 +2,7 @@ package com.unidy.backend.controllers;
 
 import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.requests.ApproveVolunteerRequest;
+import com.unidy.backend.domains.dto.requests.CampaignDto;
 import com.unidy.backend.domains.entity.User;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
 import com.unidy.backend.services.servicesIplm.CertificateServiceImpl;
@@ -95,5 +96,16 @@ public class OrganizationController {
     @GetMapping("/notify-member")
     public ResponseEntity<?> getListCampaignTransaction(Principal connectedUser, NotificationDto notificationDto) {
         return organizationService.sendNotifyToMember(connectedUser,notificationDto);
+    }
+
+    @PreAuthorize("hasRole('ORGANIZATION')")
+    @PatchMapping("/campaigns/{campaignId}/end")
+    public ResponseEntity<?> endCampaign(Principal connectedUser, @PathVariable int campaignId) {
+        return organizationService.endCampaign(connectedUser,campaignId);
+    }
+
+    @PatchMapping("/campaigns/{campaignId}")
+    public ResponseEntity<?> updateCampaignInformation(Principal connectedUser, @PathVariable int campaignId, @RequestBody CampaignDto campaignDto) {
+        return organizationService.updateCampaignInformation(connectedUser,campaignId,campaignDto);
     }
 }

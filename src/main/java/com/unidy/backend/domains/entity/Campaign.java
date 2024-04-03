@@ -61,7 +61,7 @@ public class Campaign {
     private String createDate;
 
     @Column(name = "update_day")
-    private String updateDate;
+    private Date updateDate;
 
     @Column(name = "update_by")
     private Integer updateBy;
