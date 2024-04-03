@@ -25,7 +25,7 @@ public class CampaignRequest {
     private String hashTag;
     private String location;
     private int donationBudget;
-    private int numOfVolunteer;
+    private int numberVolunteer;
     private int numberRegistered;
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private Date startDate;

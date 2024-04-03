@@ -101,7 +101,7 @@ public class CampaignServiceIplm implements CampaignService {
                     .title(request.getTitle())
                     .description(request.getDescription())
                     .status(request.getStatus())
-                    .numberVolunteer(request.getNumOfVolunteer())
+                    .numberVolunteer(request.getNumberVolunteer())
                     .donationBudget(request.getDonationBudget())
                     .startDate(request.getStartDate())
                     .endDate((request.getEndDate()))
@@ -128,7 +128,7 @@ public class CampaignServiceIplm implements CampaignService {
             campaign.setContent(request.getDescription());
             campaign.setTitle(request.getTitle());
             campaign.setStatus(request.getStatus());
-            campaign.setNumOfRegister(request.getNumOfVolunteer());
+            campaign.setNumOfRegister(request.getNumberVolunteer());
             campaign.setCreateDate(sdf.format(new Date()));
             campaign.setStartDate(request.getStartDate().toString());
             campaign.setEndDate(request.getEndDate().toString());

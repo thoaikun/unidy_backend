@@ -18,6 +18,7 @@ public class CampaignDto {
     private String hashTag;
     private String location;
     private int numberVolunteer;
+    private int budgetTarget;
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private Date startDate;
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
