@@ -43,6 +43,9 @@ public class CampaignNode implements Neo4JNode {
     @Property("location")
     private String location;
 
+    @Property("numbers_volunteer")
+    private int numbersVolunteer;
+
     @Property("num_of_register")
     private int numOfRegister;
 
