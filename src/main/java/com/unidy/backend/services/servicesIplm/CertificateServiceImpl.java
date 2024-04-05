@@ -79,10 +79,10 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public ResponseEntity<?> getCertificate(Principal connectedUser) {
+    public ResponseEntity<?> getCertificate(Principal connectedUser, int campaignId) {
         try {
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-            List<CertificateResponse> certificateResponses = certificateRepository.findCertificate(user.getUserId());
+            List<CertificateResponse> certificateResponses = certificateRepository.findCertificate(user.getUserId(), campaignId);
             return ResponseEntity.ok().body(certificateResponses);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Something Error");
