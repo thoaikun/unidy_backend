@@ -43,9 +43,11 @@ public class ExtraDataVisitor {
 
     public void visitCertificateWithSingleMessage(CertificateData certificateData, Message.Builder messageBuilder) {
         messageBuilder.putData("campaign", certificateData.getCampaignId());
+        messageBuilder.putData("type", certificateData.getType());
     }
 
     public void visitCertificateWithMultiMessage(CertificateData certificateData, MulticastMessage.Builder multicastMessageBuilder) {
         multicastMessageBuilder.putData("campaignId", certificateData.getCampaignId());
+        multicastMessageBuilder.putData("type", certificateData.getType());
     }
 }
