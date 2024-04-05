@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
+import com.unidy.backend.domains.Type.NotificationType;
 import com.unidy.backend.domains.Type.VolunteerStatus;
 import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
@@ -52,12 +53,13 @@ public class CampaignServiceIplm implements CampaignService {
     private final Environment environment;
     private final OrganizationRepository organizationRepository;
     private final UserRepository userRepository;
-    private final UserProfileImageRepository userProfileImageRepository;
     private final FirebaseService firebaseService;
     private final CampaignTypeRepository campaignTypeRepository;
     private final CommentRepository commentRepository;
     private final Neo4j_CommentRepository neo4jCommentRepository;
     private final TransactionRepository transactionRepository;
+    private final Neo4j_UserRepository neo4j_UserRepository;
+
     @Override
     @Transactional
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) throws JsonProcessingException {
@@ -153,6 +155,12 @@ public class CampaignServiceIplm implements CampaignService {
                         .extraData(extraData)
                         .build();
                 firebaseService.pushNotificationToTopic(notification);
+                List<Integer> followerIds = neo4j_UserRepository.getFollowers(user.getUserId());
+                Map<String, String> extra = new HashMap<>();
+                extra.put("id", campaign.getCampaignId());
+                firebaseService.saveNotification(organization.get().getUserId(), followerIds,
+                        NotificationType.NEW_CAMPAIGN, organization.get().getOrganizationName() + " tổ chức chiến dịch mới",
+                        request.getDescription(), new Gson().toJson(extra));
             }
 
             return ResponseEntity.ok().body(new SuccessReponse("Create campaign success")) ;

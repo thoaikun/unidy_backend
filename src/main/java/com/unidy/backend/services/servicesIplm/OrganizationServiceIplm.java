@@ -1,10 +1,12 @@
 package com.unidy.backend.services.servicesIplm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.Type.CampaignStatus;
+import com.unidy.backend.domains.Type.NotificationType;
 import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.notification.extraData.CertificateData;
 import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
@@ -30,10 +32,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.URL;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -235,37 +234,26 @@ public class OrganizationServiceIplm implements OrganizationService {
             Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
             campaign.setStatus(CampaignStatus.COMPLETE.toString());
             certificateService.createCertificate(connectedUser,campaignId);
-            List<VolunteerJoinCampaign> volunteerJoinCampaigns = volunteerJoinCampaignRepository.findUserIdsByCampaignIdAndStatus(campaignId, "APPROVE");
-            for (VolunteerJoinCampaign volunteerJoinCampaign : volunteerJoinCampaigns) {
-                certificateRepository.findCertificate(volunteerJoinCampaign.getUserId());
-                User volunteer = userRepository.findByUserId(volunteerJoinCampaign.getUserId());
-                Certificate certificate = certificateRepository.findCertificateByUserId(volunteer.getUserId(),campaignId);
-                ExtraData extraData = new CertificateData(
-                        campaign.getCampaignId(),
-                        campaign.getDescription(),
-                        user.getUserId(),
-                        organization.get().getOrganizationName(),
-                        volunteer.getFullName(),
-                        certificate.getFile()
-                );
-                List<UserDeviceFcmToken> userDeviceFcmToken = userDeviceFcmTokenRepository.findByUserId(volunteer.getUserId());
-                ArrayList<String> listFCMToken = new ArrayList<>();
-                for (UserDeviceFcmToken token : userDeviceFcmToken){
-                    listFCMToken.add(token.getFcmToken());
-                }
-                NotificationDto notificationDto =  NotificationDto.builder()
-                        .title("Sự kiện " + campaign.getDescription() + " đã kết thúc.")
-                        .body(organization.get().getOrganizationName() + " gửi tới bạn chứng nhận tham gia chiến dịch")
-                        .deviceTokens(listFCMToken)
-                        .extraData(extraData)
-                        .build();
-
-                firebaseService.pushNotificationToMultipleDevices(notificationDto);
-            }
 
             CampaignNode campaignNode = neo4j_CampaignRepository.findCampaignNodeByCampaignId(String.valueOf(campaignId));
             campaignNode.setStatus(CampaignStatus.COMPLETE.toString());
             neo4j_CampaignRepository.save(campaignNode);
+
+            ExtraData extraData = new CertificateData(campaign.getCampaignId().toString());
+            NotificationDto notificationDto =  NotificationDto.builder()
+                .title("Sự kiện " + campaign.getDescription() + " đã kết thúc.")
+                .body(organization.get().getOrganizationName() + " gửi tới bạn chứng nhận tham gia chiến dịch")
+                .extraData(extraData)
+                .topic(organization.get().getFirebaseTopic())
+                .build();
+            firebaseService.pushNotificationToTopic(notificationDto);
+            List<Integer> followerIds = neo4j_UserRepository.getFollowers(user.getUserId());
+            Map<String, String> extra = new HashMap<>();
+            extra.put("id", campaign.getCampaignId().toString());
+            firebaseService.saveNotification(organization.get().getUserId(), followerIds, NotificationType.CAMPAIGN_END,
+                    "Sự kiện " + campaign.getDescription() + " đã kết thúc.",
+                    organization.get().getOrganizationName() + " gửi tới bạn chứng nhận tham gia chiến dịch",
+                    new Gson().toJson(extra));
 
             return ResponseEntity.ok().body(new SuccessReponse("End campaign success"));
         } catch (Exception e){
