@@ -18,6 +18,8 @@ public interface NotificationRepository extends JpaRepository<Notification,Integ
             n.description,
             n.createdTime,
             n.seenTime,
+            n.type,
+            n.extra,
             n.receiverId,
             u.userId,
             u.fullName,
