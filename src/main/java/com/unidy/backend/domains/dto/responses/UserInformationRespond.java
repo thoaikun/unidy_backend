@@ -21,4 +21,6 @@ public class UserInformationRespond {
     private Role role;
     private String image;
     private Boolean isFriend;
+    private Boolean isRequested;
+    private Boolean isRequesting;
 }

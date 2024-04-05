@@ -91,9 +91,9 @@ public class OrganizationServiceIplm implements OrganizationService {
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("Organization not found"));
             }
 
-            CheckResult checkFollow = neo4j_UserRepository.checkFollow(user.getUserId(), organizationId);
+            RelationshipCheckResult checkFollow = neo4j_UserRepository.checkRelationship(user.getUserId(), organizationId);
             organizationInformation.setOrganizationName(organization.get().getOrganizationName());
-            organizationInformation.setIsFollow(checkFollow.isResult());
+            organizationInformation.setIsFollow(checkFollow.isFollowed());
             organizationInformation.setEmail(organization.get().getEmail());
             organizationInformation.setAddress(organization.get().getAddress());
             organizationInformation.setCountry(organization.get().getCountry());
