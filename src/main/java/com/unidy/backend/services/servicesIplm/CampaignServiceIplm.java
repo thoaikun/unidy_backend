@@ -157,7 +157,7 @@ public class CampaignServiceIplm implements CampaignService {
                 firebaseService.pushNotificationToTopic(notification);
                 List<Integer> followerIds = neo4j_UserRepository.getFollowers(user.getUserId());
                 Map<String, String> extra = new HashMap<>();
-                extra.put("campaignId", campaign.getCampaignId());
+                extra.put("id", campaign.getCampaignId());
                 firebaseService.saveNotification(organization.get().getUserId(), followerIds,
                         NotificationType.NEW_CAMPAIGN, organization.get().getOrganizationName() + " tổ chức chiến dịch mới",
                         request.getDescription(), new Gson().toJson(extra));

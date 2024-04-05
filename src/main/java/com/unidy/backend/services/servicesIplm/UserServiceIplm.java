@@ -235,7 +235,7 @@ public class UserServiceIplm implements UserService {
                 firebaseService.pushNotificationToMultipleDevices(notification);
             }
             Map<String, String> extra = new HashMap<>();
-            extra.put("requesterId", String.valueOf(user.getUserId()));
+            extra.put("id", String.valueOf(user.getUserId()));
             firebaseService.saveNotification(user.getUserId(), friendId, NotificationType.FRIEND_REQUEST,
                     "Lời mời kết bạn", "%s đã gửi lời mời kết bạn".formatted(user.getFullName()),
                     new Gson().toJson(extra));
@@ -274,7 +274,7 @@ public class UserServiceIplm implements UserService {
                     firebaseService.pushNotificationToMultipleDevices(notification);
                 }
                 Map<String, String> extra = new HashMap<>();
-                extra.put("accepterId", String.valueOf(user.getUserId()));
+                extra.put("id", String.valueOf(user.getUserId()));
                 firebaseService.saveNotification(user.getUserId(), friendId, NotificationType.FRIEND_ACCEPT,
                         "Kết bạn thành công", "%s đã chấp nhận lời mời kết bạn".formatted(user.getFullName()),
                         new Gson().toJson(extra));

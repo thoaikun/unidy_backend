@@ -249,7 +249,7 @@ public class OrganizationServiceIplm implements OrganizationService {
             firebaseService.pushNotificationToTopic(notificationDto);
             List<Integer> followerIds = neo4j_UserRepository.getFollowers(user.getUserId());
             Map<String, String> extra = new HashMap<>();
-            extra.put("campaignId", campaign.getCampaignId().toString());
+            extra.put("id", campaign.getCampaignId().toString());
             firebaseService.saveNotification(organization.get().getUserId(), followerIds, NotificationType.CAMPAIGN_END,
                     "Sự kiện " + campaign.getDescription() + " đã kết thúc.",
                     organization.get().getOrganizationName() + " gửi tới bạn chứng nhận tham gia chiến dịch",
