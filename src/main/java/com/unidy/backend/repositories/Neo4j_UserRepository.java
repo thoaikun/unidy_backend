@@ -79,6 +79,12 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
      CheckResult checkFollowRequest(Integer userId, int organizationId);
 
      @Query("""
+             MATCH (user:user) - [r:FOLLOW_ORGANIZATION] -> (organization:user {user_id: $organizationId})
+             return toInteger(user.user_id)
+     """)
+     List<Integer> getFollowers(int organizationId);
+
+     @Query("""
           MATCH (user1:user {user_id: $userId})
           MATCH (user2:user {user_id: $organizationId})
           MERGE (user1)-[:FOLLOW_ORGANIZATION {request_at: $date}]->(user2);
