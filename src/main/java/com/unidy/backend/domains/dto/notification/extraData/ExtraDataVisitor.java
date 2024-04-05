@@ -42,10 +42,10 @@ public class ExtraDataVisitor {
     }
 
     public void visitCertificateWithSingleMessage(CertificateData certificateData, Message.Builder messageBuilder) {
-        messageBuilder.putData("campaign", new Gson().toJson(certificateData.getCampaign()));
+        messageBuilder.putData("campaign", certificateData.getCampaignId());
     }
 
     public void visitCertificateWithMultiMessage(CertificateData certificateData, MulticastMessage.Builder multicastMessageBuilder) {
-        multicastMessageBuilder.putData("campaignId", new Gson().toJson(certificateData.getCampaign()));
+        multicastMessageBuilder.putData("campaignId", certificateData.getCampaignId());
     }
 }

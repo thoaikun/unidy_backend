@@ -239,7 +239,7 @@ public class OrganizationServiceIplm implements OrganizationService {
             campaignNode.setStatus(CampaignStatus.COMPLETE.toString());
             neo4j_CampaignRepository.save(campaignNode);
 
-            ExtraData extraData = new CertificateData(campaign);
+            ExtraData extraData = new CertificateData(campaign.getCampaignId().toString());
             NotificationDto notificationDto =  NotificationDto.builder()
                 .title("Sự kiện " + campaign.getDescription() + " đã kết thúc.")
                 .body(organization.get().getOrganizationName() + " gửi tới bạn chứng nhận tham gia chiến dịch")

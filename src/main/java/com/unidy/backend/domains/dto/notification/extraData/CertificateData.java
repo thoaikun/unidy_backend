@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CertificateData implements ExtraData {
     private String type = "campaignDetail";
-    private Campaign campaign;
+    private String campaignId;
 
-    public CertificateData(Campaign campaign) {
-        this.campaign = campaign;
+    public CertificateData(String campaignId) {
+        this.campaignId = campaignId;
     }
 
     @Override
