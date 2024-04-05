@@ -1,6 +1,7 @@
 package com.unidy.backend.domains.dto.responses;
 
 import com.google.api.client.util.DateTime;
+import com.google.gson.Gson;
 import com.unidy.backend.domains.Type.NotificationType;
 import lombok.*;
 
@@ -31,13 +32,20 @@ public class NotificationResponse {
         private int unseenCount;
     }
 
+    @Data
+    @Setter
+    @Getter
+    static private class NotificationExtra {
+        private String id;
+    }
+
     private int notificationId;
     private String title;
     private String description;
     private Timestamp createdTime;
     private Timestamp seenTime;
     private String type;
-    private String extra;
+    private NotificationExtra extra;
     private int receiver;
     private UserInfo owner;
 
@@ -60,7 +68,7 @@ public class NotificationResponse {
         this.createdTime = createdTime;
         this.seenTime = seenTime;
         this.type = type;
-        this.extra = extra;
+        this.extra = new Gson().fromJson(extra, NotificationExtra.class);
         this.receiver = receiverId;
         ownerLinkImages = ownerLinkImages == null ? null : "https://unidy.s3.ap-southeast-1.amazonaws.com/" + "profile-images/" + ownerId + "/" + ownerLinkImages;
         this.owner = new UserInfo(ownerId, ownerFullName, ownerLinkImages);
