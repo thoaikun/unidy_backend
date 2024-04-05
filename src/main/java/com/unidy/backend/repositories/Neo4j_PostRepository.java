@@ -3,11 +3,13 @@ package com.unidy.backend.repositories;
 import com.unidy.backend.domains.dto.responses.PostResponse;
 import com.unidy.backend.domains.entity.neo4j.PostNode;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -66,4 +68,22 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
             LIMIT $limit;
     """)
     List<PostNode> searchPost(String searchTerm, int limit, int skip);
+
+    void deletePostByPostId(String postId);
+
+
+    @Query(
+            """
+            MATCH (user:user)-[r:HAS_POST]->(post:post)
+            WHERE post.create_date <= $toDate AND post.create_date >= $fromDate
+            OPTIONAL MATCH (userLike)-[isLiked:LIKE]->(post)
+            OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)
+            WITH post,user, r, count(userLike) AS likeCount,r_like, isLiked
+            RETURN post,user as userNodes, r, likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked
+            ORDER BY post.create_date DESC, post.id ASC
+            SKIP $skip
+            LIMIT $limit;
+            """
+    )
+    List<PostResponse> findPostNodeByDate(Date fromDate, Date toDate, int skip, int limit);
 }
