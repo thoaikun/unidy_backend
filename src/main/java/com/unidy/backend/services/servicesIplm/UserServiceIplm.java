@@ -90,7 +90,7 @@ public class UserServiceIplm implements UserService {
 
             if (user.getRole().equals(Role.VOLUNTEER)){
                 UserInformationRespond information = new UserInformationRespond() ;
-                CheckResult checkFriend = neo4jUserRepository.checkFriend(userConnected.getUserId(),user.getUserId());
+                RelationshipCheckResult checkRelationship = neo4jUserRepository.checkRelationship(userConnected.getUserId(),user.getUserId());
                 information.setUserId(user.getUserId());
                 information.setFullName(user.getFullName());
                 information.setAddress(user.getAddress());
@@ -100,7 +100,9 @@ public class UserServiceIplm implements UserService {
                 information.setJob(user.getJob());
                 information.setRole(user.getRole());
                 information.setWorkLocation(user.getWorkLocation());
-                information.setIsFriend(checkFriend.isResult());
+                information.setIsFriend(checkRelationship.isFriend());
+                information.setIsRequested(checkRelationship.isRequested());
+                information.setIsRequesting(checkRelationship.isRequesting());
                 UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
                 if (image != null){
                     URL urlImage = s3Service.getObjectUrl(
@@ -211,7 +213,7 @@ public class UserServiceIplm implements UserService {
     public ResponseEntity<?> addFriend(Principal connectedUser, int friendId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            if (neo4jUserRepository.checkInviteRequest(user.getUserId(), friendId).isResult()) {
+            if (neo4jUserRepository.checkRelationship(user.getUserId(), friendId).isRequesting()) {
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("Allready send invite"));
             }
             Date date = new Date();
@@ -253,7 +255,7 @@ public class UserServiceIplm implements UserService {
     public ResponseEntity<?> acceptFriendInvite(Principal connectedUser, int friendId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            if (neo4jUserRepository.checkInviteRequest(user.getUserId(), friendId).isResult()){
+            if (neo4jUserRepository.checkRelationship(user.getUserId(), friendId).isRequested()){
                 neo4jUserRepository.declineInviteRequest(user.getUserId(),friendId);
                 neo4jUserRepository.createFriendship(user.getUserId(),friendId);
 
@@ -373,7 +375,7 @@ public class UserServiceIplm implements UserService {
     public ResponseEntity<?> followOrganization(Principal connectedUser, int organizationId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            if (neo4jUserRepository.checkFollowRequest(user.getUserId(), organizationId).isResult()) {
+            if (neo4jUserRepository.checkRelationship(user.getUserId(), organizationId).isFollowed()) {
                 return ResponseEntity.badRequest().body(new FollowOrganizationResponse("Already followed", null));
             }
             Optional<Organization> followedOrganization = this.organizationRepository.findByUserId(organizationId);
