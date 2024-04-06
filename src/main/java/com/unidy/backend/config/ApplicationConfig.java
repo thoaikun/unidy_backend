@@ -6,6 +6,7 @@ import com.google.firebase.FirebaseException;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.unidy.backend.auditing.ApplicationAuditAware;
+import com.unidy.backend.repositories.AdminRepository;
 import com.unidy.backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -30,11 +31,18 @@ import java.util.Objects;
 public class ApplicationConfig {
 
   private final UserRepository repository;
+  private final AdminRepository adminRepository;
 
   @Bean
   public UserDetailsService userDetailsService() {
     return username -> repository.findByEmail(username)
         .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+  }
+
+  @Bean
+  public UserDetailsService userDetailsServiceAdmin() {
+    return username -> adminRepository.findByEmail(username)
+            .orElseThrow(() -> new UsernameNotFoundException("Account admin not found"));
   }
 
   @Bean

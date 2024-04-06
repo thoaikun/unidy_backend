@@ -1,6 +1,9 @@
 package com.unidy.backend.controllers;
 
+import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
+import com.unidy.backend.domains.dto.requests.RegisterRequest;
 import com.unidy.backend.services.servicesInterface.AdminService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +16,22 @@ import java.util.Date;
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
 
-//@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
     private final AdminService adminService;
+    @PostMapping("/authenticate/register")
+    public ResponseEntity<?> register(
+            @RequestBody @Valid RegisterRequest request
+    ) {
+        return adminService.register(request);
+    }
+
+
+    @PostMapping("/authenticate/login")
+    public ResponseEntity<?> authenticate(
+            @RequestBody AuthenticationRequest request
+    ){
+        return adminService.authenticate(request);
+    }
 
     @GetMapping("/runOrStopJob")
     public ResponseEntity<?> runOrStopScheduleJob(@RequestParam("jobId") int jobId){
@@ -32,6 +48,7 @@ public class AdminController {
         return adminService.deletePost(postId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/posts/date")
     public ResponseEntity<?> getPostByDate(
             @RequestParam("fromDate") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") Date fromDate,

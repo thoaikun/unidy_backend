@@ -1,12 +1,18 @@
 package com.unidy.backend.services.servicesIplm;
 
+import com.unidy.backend.config.JwtService;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
+import com.unidy.backend.domains.TokenType;
+import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
+import com.unidy.backend.domains.dto.requests.RegisterRequest;
+import com.unidy.backend.domains.dto.responses.AuthenticationResponse;
 import com.unidy.backend.domains.dto.responses.PostResponse;
-import com.unidy.backend.domains.entity.ScheduleJobs;
+import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.PostNode;
-import com.unidy.backend.repositories.Neo4j_PostRepository;
-import com.unidy.backend.repositories.ScheduleJobsRepository;
+import com.unidy.backend.domains.entity.neo4j.UserNode;
+import com.unidy.backend.domains.role.Role;
+import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.quartz.*;
@@ -14,12 +20,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +33,67 @@ public class AdminServiceImpl implements AdminService {
     private final ScheduleJobsRepository scheduleJobsRepository;
     private final Scheduler scheduler;
     private final Neo4j_PostRepository neo4jPostRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
+    private final AdminRepository adminRepository;
+    private final AdminTokenRepository adminTokenRepository;
+
+    public ResponseEntity<?> register(RegisterRequest request) {
+        try {
+            var findUser = adminRepository.findByEmail(request.getEmail());
+            if (findUser.isPresent()) {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Invalid Email"));
+            }
+
+
+            var user = Admin.builder()
+                    .fullName(request.getFullName())
+                    .dayOfBirth(request.getDayOfBirth())
+                    .phone(request.getPhone())
+                    .email(request.getEmail())
+                    .password(passwordEncoder.encode(request.getPassword()))
+                    .role(request.getRole())
+                    .build();
+            var savedUser = adminRepository.save(user);
+            var jwtToken = jwtService.generateToken(user);
+            saveUserToken(savedUser, jwtToken, jwtToken);
+
+
+            return ResponseEntity.ok().header("Register").body("Register success");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> authenticate(AuthenticationRequest request) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+            var user = adminRepository.findByEmail(request.getEmail())
+                    .orElseThrow();
+
+            Map<String, String> jwtTokens = getJwtToken(user);
+            if (jwtTokens.get("isExpired").equals("true")){
+                saveUserToken(user, jwtTokens.get("accessToken"), jwtTokens.get("refreshToken"));
+            }
+
+            return ResponseEntity.ok().body(AuthenticationResponse.builder()
+                    .accessToken(jwtTokens.get("accessToken"))
+                    .refreshToken(jwtTokens.get("refreshToken"))
+                    .role(user.getRole())
+                    .build());
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponseDto("Email hoặc mật khẩu không đúng"));
+        }
+    }
+
+
     @Override
     public ResponseEntity<?> runOrStopJob(int jobId) {
         Optional<ScheduleJobs> optionalScheduleJobs = scheduleJobsRepository.findById(jobId);
@@ -86,4 +153,52 @@ public class AdminServiceImpl implements AdminService {
             return  ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
+
+
+
+    private Map<String, String> getJwtToken(Admin user) {
+        List<AdminToken> previousTokens = adminTokenRepository.findAllValidTokenByUser(user.getAdmin_id());
+
+        for (AdminToken token : previousTokens) {
+            try {
+                isTokenStillValid(token);
+                return Map.of("accessToken", token.getToken(), "refreshToken", token.getRefreshToken(), "isExpired", "false");
+            } catch (Exception e) {
+                token.setExpired(true);
+                token.setRevoked(true);
+                adminTokenRepository.save(token);
+            }
+        }
+        return null;
+    }
+
+    private void saveUserToken(Admin user, String jwtToken, String refreshToken) {
+        var token = AdminToken.builder()
+                .admin(user)
+                .token(jwtToken)
+                .refreshToken(refreshToken)
+                .tokenType(TokenType.BEARER)
+                .expired(false)
+                .revoked(false)
+                .build();
+        adminTokenRepository.save(token);
+    }
+
+    private boolean isTokenStillValid(AdminToken token) {
+        return jwtService.isTokenExpired(token.getToken());
+    }
+
+    private void revokeAllUserTokens(User user) {
+        var validUserTokens = adminTokenRepository.findAllValidTokenByUser(user.getUserId());
+        if (validUserTokens.isEmpty())
+            return;
+        validUserTokens.forEach(token -> {
+            token.setExpired(true);
+            token.setRevoked(true);
+        });
+        adminTokenRepository.saveAll(validUserTokens);
+    }
+
+
+
 }
