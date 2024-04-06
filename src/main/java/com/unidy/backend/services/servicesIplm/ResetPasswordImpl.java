@@ -62,33 +62,12 @@ public class ResetPasswordImpl implements ResetPassword {
                     otpRepository.deleteByOtpCode(otpCode);
                     timer.cancel();
                 }
-            }, 60000);
+            }, 180000);
             return ResponseEntity.ok().body(otpCode);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Email không tồn tại"));
         }
     }
-
-    public ResponseEntity<?> submitOTP (OTPRequest OTP){
-        try {
-            var user = userRepository.findByEmail(OTP.getEmail()).orElseThrow(() -> new Exception("Email không đúng"));
-            var otp = otpRepository.findByOtpCode(OTP.getOtp());
-            if (otp.isPresent()) {
-                if (!otp.get().getUserId().equals(user.getUserId())){
-                    return ResponseEntity.badRequest().body(new ErrorResponseDto("OTP không đúng"));
-                }
-                Otp validateOtp = otp.get();
-                otpRepository.deleteByUserId(validateOtp.getUserId());
-                return ResponseEntity.ok().body(new SuccessReponse("Success"));
-            }
-            else {
-                return ResponseEntity.badRequest().body(new ErrorResponseDto("OTP không đúng"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
-        }
-    }
-
     public ResponseEntity<?> submitOTPChangePassword(OTPRequest OTP){
         try {
             var user = userRepository.findByEmail(OTP.getEmail()).orElseThrow(() -> new Exception("Email không tồn tại"));
@@ -100,9 +79,11 @@ public class ResetPasswordImpl implements ResetPassword {
                 Otp validateOtp = otp.get();
                 otpRepository.deleteByUserId(validateOtp.getUserId());
                 var jwtToken = jwtService.generateToken(user);
+                var refreshToken = jwtService.generateRefreshToken(user);
                 var token = Token.builder()
                         .user(user)
                         .token(jwtToken)
+                        .refreshToken(refreshToken)
                         .tokenType(TokenType.BEARER)
                         .expired(false)
                         .revoked(false)
@@ -110,6 +91,7 @@ public class ResetPasswordImpl implements ResetPassword {
                 tokenRepository.save(token);
                 return ResponseEntity.ok().body(AuthenticationResponse.builder()
                         .accessToken(jwtToken)
+                        .refreshToken(refreshToken)
                         .build());
             }
             else {
