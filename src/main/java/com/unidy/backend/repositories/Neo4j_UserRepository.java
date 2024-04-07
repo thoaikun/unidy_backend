@@ -65,7 +65,7 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
 
      @Query("""
           MATCH (root :user {user_id: $userId})
-          OPTIONAL MATCH (root) - [r:FRIEND] -> (friend: user)
+          MATCH (root) - [r:FRIEND] -> (friend: user)
           WITH friend
           ORDER BY friend.user_id
           RETURN friend, true as isFriend, false as isFollow
