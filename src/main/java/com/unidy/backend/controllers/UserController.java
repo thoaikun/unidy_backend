@@ -136,4 +136,24 @@ public class UserController {
     public ResponseEntity<?> getUserCampaigns(Principal connectedUser, @RequestParam int pageSize, @RequestParam int pageNumber){
         return userService.getUserJoinedCampaigns(connectedUser, pageSize, pageNumber);
     }
+
+    @GetMapping("/notifications")
+    public ResponseEntity<?> getUserNotifications(Principal connectedUser, @RequestParam int pageSize, @RequestParam int pageNumber){
+        return userService.getNotification(connectedUser, pageSize, pageNumber);
+    }
+
+    @PatchMapping("/notifications/unseen")
+    public ResponseEntity<?> markAllAsSeen(Principal connectedUser){
+        return userService.markAllAsSeen(connectedUser);
+    }
+
+    @PatchMapping("/notifications/unseen/{notificationId}")
+    public ResponseEntity<?> markAsSeen(Principal connectedUser, @PathVariable int notificationId){
+        return userService.markAsSeen(connectedUser, notificationId);
+    }
+
+    @GetMapping("/notifications/unseen/count")
+    public ResponseEntity<?> getUnseenNotifications(Principal connectedUser){
+        return userService.getUnseenNotification(connectedUser);
+    }
 }

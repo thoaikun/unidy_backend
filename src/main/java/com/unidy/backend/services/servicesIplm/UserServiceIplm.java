@@ -1,9 +1,11 @@
 package com.unidy.backend.services.servicesIplm;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.gson.Gson;
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
+import com.unidy.backend.domains.Type.NotificationType;
 import com.unidy.backend.domains.dto.UserDto;
 import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.notification.extraData.ExtraData;
@@ -33,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URL;
 import java.security.Principal;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -52,6 +55,7 @@ public class UserServiceIplm implements UserService {
     private final VolunteerJoinCampaignRepository volunteerJoinCampaignRepository;
     private final FirebaseService firebaseService;
     private final Environment environment;
+    private final NotificationRepository notificationRepository;
 
     public UserInformationRespond getUserInformation(Principal connectedUser){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
@@ -86,7 +90,7 @@ public class UserServiceIplm implements UserService {
 
             if (user.getRole().equals(Role.VOLUNTEER)){
                 UserInformationRespond information = new UserInformationRespond() ;
-                CheckResult checkFriend = neo4jUserRepository.checkFriend(userConnected.getUserId(),user.getUserId());
+                RelationshipCheckResult checkRelationship = neo4jUserRepository.checkRelationship(userConnected.getUserId(),user.getUserId());
                 information.setUserId(user.getUserId());
                 information.setFullName(user.getFullName());
                 information.setAddress(user.getAddress());
@@ -96,7 +100,9 @@ public class UserServiceIplm implements UserService {
                 information.setJob(user.getJob());
                 information.setRole(user.getRole());
                 information.setWorkLocation(user.getWorkLocation());
-                information.setIsFriend(checkFriend.isResult());
+                information.setIsFriend(checkRelationship.isFriend());
+                information.setIsRequested(checkRelationship.isRequested());
+                information.setIsRequesting(checkRelationship.isRequesting());
                 UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
                 if (image != null){
                     URL urlImage = s3Service.getObjectUrl(
@@ -207,7 +213,7 @@ public class UserServiceIplm implements UserService {
     public ResponseEntity<?> addFriend(Principal connectedUser, int friendId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            if (neo4jUserRepository.checkInviteRequest(user.getUserId(), friendId).isResult()) {
+            if (neo4jUserRepository.checkRelationship(user.getUserId(), friendId).isRequesting()) {
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("Allready send invite"));
             }
             Date date = new Date();
@@ -230,6 +236,11 @@ public class UserServiceIplm implements UserService {
                         .build();
                 firebaseService.pushNotificationToMultipleDevices(notification);
             }
+            Map<String, String> extra = new HashMap<>();
+            extra.put("id", String.valueOf(user.getUserId()));
+            firebaseService.saveNotification(user.getUserId(), friendId, NotificationType.FRIEND_REQUEST,
+                    "Lời mời kết bạn", "%s đã gửi lời mời kết bạn".formatted(user.getFullName()),
+                    new Gson().toJson(extra));
 
             return ResponseEntity.ok().body(new SuccessReponse("Send invite success"));
         } catch (FirebaseMessagingException error) {
@@ -244,7 +255,7 @@ public class UserServiceIplm implements UserService {
     public ResponseEntity<?> acceptFriendInvite(Principal connectedUser, int friendId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            if (neo4jUserRepository.checkInviteRequest(user.getUserId(), friendId).isResult()){
+            if (neo4jUserRepository.checkRelationship(user.getUserId(), friendId).isRequested()){
                 neo4jUserRepository.declineInviteRequest(user.getUserId(),friendId);
                 neo4jUserRepository.createFriendship(user.getUserId(),friendId);
 
@@ -264,6 +275,11 @@ public class UserServiceIplm implements UserService {
                             .build();
                     firebaseService.pushNotificationToMultipleDevices(notification);
                 }
+                Map<String, String> extra = new HashMap<>();
+                extra.put("id", String.valueOf(user.getUserId()));
+                firebaseService.saveNotification(user.getUserId(), friendId, NotificationType.FRIEND_ACCEPT,
+                        "Kết bạn thành công", "%s đã chấp nhận lời mời kết bạn".formatted(user.getFullName()),
+                        new Gson().toJson(extra));
 
                 return ResponseEntity.ok().body(new SuccessReponse("Accept invite success"));
             } else {
@@ -328,7 +344,7 @@ public class UserServiceIplm implements UserService {
     public ResponseEntity<?> deleteInvite(Principal connectedUser, int friendId) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            if (neo4jUserRepository.checkInviteRequest(friendId,user.getUserId()).isResult()){
+            if (neo4jUserRepository.checkRelationship(user.getUserId(),friendId).isRequesting()){
                 neo4jUserRepository.deleteInvite(user.getUserId(),friendId);
                 return ResponseEntity.ok().body("Delete success");
             } else {
@@ -363,7 +379,7 @@ public class UserServiceIplm implements UserService {
     public ResponseEntity<?> followOrganization(Principal connectedUser, int organizationId){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            if (neo4jUserRepository.checkFollowRequest(user.getUserId(), organizationId).isResult()) {
+            if (neo4jUserRepository.checkRelationship(user.getUserId(), organizationId).isFollowed()) {
                 return ResponseEntity.badRequest().body(new FollowOrganizationResponse("Already followed", null));
             }
             Optional<Organization> followedOrganization = this.organizationRepository.findByUserId(organizationId);
@@ -416,5 +432,58 @@ public class UserServiceIplm implements UserService {
     public CompletableFuture<List<UserNode>> searchUser(Principal connectedUser, String searchTerm, int limit, int skip){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         return CompletableFuture.completedFuture(neo4jUserRepository.searchUser(user.getUserId(), searchTerm, limit, skip));
+    }
+
+    public ResponseEntity<?> getNotification(Principal connectedUser, int pageSize, int pageNumber) {
+        try {
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdTime").descending());
+            List<NotificationResponse> notificationResponses = notificationRepository.getNotificationsByReceiverId(user.getUserId(), pageable);
+            return ResponseEntity.ok().body(notificationResponses);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    public ResponseEntity<?> getUnseenNotification(Principal connectedUser) {
+        try {
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            Integer unseenNotificationCount = notificationRepository.countByReceiverIdAndSeenTimeIsNull(user.getUserId());
+            return ResponseEntity.ok().body(new NotificationResponse.UnseenCountResponse(unseenNotificationCount));
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    public ResponseEntity<?> markAsSeen(Principal connectedUser, int notificationId) {
+        try {
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            Notification notification = notificationRepository.findById(notificationId).orElse(null);
+            if (notification == null) {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Không tìm thấy thông báo"));
+            }
+            if (notification.getReceiverId() != user.getUserId()) {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Không thể đánh dấu thông báo của người khác"));
+            }
+            notification.setSeenTime(new Timestamp(System.currentTimeMillis()));
+            notificationRepository.save(notification);
+            return ResponseEntity.ok().body(new SuccessReponse("Đã đánh dấu thông báo"));
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    public ResponseEntity<?> markAllAsSeen(Principal connectedUser) {
+        try {
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            List<Notification> notifications = notificationRepository.getNotificationsByReceiverIdAndSeenTimeIsNull(user.getUserId());
+            for (Notification notification : notifications) {
+                notification.setSeenTime(new Timestamp(System.currentTimeMillis()));
+            }
+            notificationRepository.saveAll(notifications);
+            return ResponseEntity.ok().body(new SuccessReponse("Đã đánh dấu tất cả thông báo"));
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
     }
 }

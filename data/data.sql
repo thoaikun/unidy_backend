@@ -1,6 +1,7 @@
 # DROP DATABASE unidy_database;
 CREATE DATABASE unidy_database;
 USE unidy_database;
+
 CREATE TABLE user
 (
     user_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -16,17 +17,6 @@ CREATE TABLE user
     role          VARCHAR(255)
 );
 
-
-
-CREATE TABLE sponsor
-(
-    sponsor_id   INTEGER AUTO_INCREMENT PRIMARY KEY,
-    sponsor_name VARCHAR(30) NOT NULL,
-    phone        VARCHAR(15),
-    email        VARCHAR(30) NOT NULL,
-    status       VARCHAR(10)
-);
-
 CREATE TABLE organization
 (
     organization_id   INTEGER AUTO_INCREMENT PRIMARY KEY,
@@ -38,7 +28,6 @@ CREATE TABLE organization
     country           VARCHAR(20),
     is_approved       boolean
 );
-
 
 CREATE TABLE volunteer
 (
@@ -63,16 +52,6 @@ CREATE TABLE token
     primary key (id)
 );
 
-
-CREATE TABLE notification
-(
-    notify_id   BIGINT AUTO_INCREMENT PRIMARY KEY,
-    content     VARCHAR(30),
-    time_create VARCHAR(15),
-    user_id     BIGINT,
-    FOREIGN KEY (user_id) REFERENCES user (user_id)
-);
-
 CREATE TABLE feed_back
 (
     fb_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -81,8 +60,6 @@ CREATE TABLE feed_back
     user_id     BIGINT,
     FOREIGN KEY (user_id) REFERENCES user (user_id)
 );
-
-
 
 CREATE TABLE campaign
 (
@@ -114,16 +91,6 @@ CREATE TABLE sponsor_location
     FOREIGN KEY (sponsor_id) REFERENCES sponsor (sponsor_id)
 );
 
-
-CREATE TABLE organize_campaign
-(
-    campaign_id  INTEGER PRIMARY KEY,
-    organize_id  INTEGER,
-    rating_point INTEGER,
-    FOREIGN KEY (organize_id) REFERENCES organization (organization_id)
-);
-
-
 CREATE TABLE volunteer_join_campaign
 (
     volunteer_id BIGINT AUTO_INCREMENT,
@@ -153,7 +120,6 @@ CREATE TABLE volunteer_certificate
     FOREIGN KEY (campaign_id) REFERENCES campaign (campaign_id)
 );
 
-
 CREATE TABLE post
 (
     post_id     INTEGER PRIMARY KEY,
@@ -161,33 +127,6 @@ CREATE TABLE post
     create_date DATE,
     update_date DATE,
     is_block    BOOLEAN
-);
-
-CREATE TABLE post_image
-(
-    image_id   INTEGER PRIMARY KEY,
-    link_image VARCHAR(255) NOT NULL,
-    post_id    INTEGER,
-    FOREIGN KEY (post_id) REFERENCES post (post_id)
-);
-
-CREATE TABLE post_log
-(
-    post_log_id INTEGER,
-    post_id     INTEGER,
-    type_log    VARCHAR(15),
-    log_content VARCHAR(255),
-    create_time DATE,
-    PRIMARY KEY (post_log_id, post_id)
-);
-
-
-CREATE TABLE volunteer_post
-(
-    post_id      INTEGER PRIMARY KEY,
-    volunteer_id BIGINT,
-    FOREIGN KEY (post_id) REFERENCES post (post_id),
-    FOREIGN KEY (volunteer_id) REFERENCES volunteer (volunteer_id)
 );
 
 CREATE TABLE comment
@@ -200,41 +139,10 @@ CREATE TABLE comment
     FOREIGN KEY (reply_by_comment) REFERENCES comment (comment_id)
 );
 
-CREATE TABLE comment_log
-(
-    comment_log_id INTEGER AUTO_INCREMENT,
-    comment_id     INTEGER,
-    type_log       VARCHAR(15),
-    log_content    VARCHAR(255),
-    create_time    DATE,
-    PRIMARY KEY (comment_log_id, comment_id)
-);
-
-
-CREATE TABLE comment_in_post
-(
-    volunteer_id BIGINT,
-    post_id      INTEGER,
-    comment_id   INTEGER,
-    PRIMARY KEY (volunteer_id, post_id),
-    FOREIGN KEY (comment_id) REFERENCES comment (comment_id)
-);
-
 CREATE TABLE campaign_post
 (
     post_id     INTEGER PRIMARY KEY,
     campaign_id INTEGER,
-    FOREIGN KEY (post_id) REFERENCES post (post_id)
-);
-
-CREATE TABLE reaction
-(
-    user_id    BIGINT,
-    post_id    INTEGER,
-    react_time DATE,
-    react_type VARCHAR(15),
-    PRIMARY KEY (user_id, post_id),
-    FOREIGN KEY (user_id) REFERENCES user (user_id),
     FOREIGN KEY (post_id) REFERENCES post (post_id)
 );
 
@@ -269,33 +177,6 @@ CREATE TABLE transaction
     FOREIGN KEY (campaign_id) REFERENCES campaign(campaign_id)
 );
 
-CREATE TABLE sponsor_transaction
-(
-    transaction_id INTEGER AUTO_INCREMENT PRIMARY KEY,
-    sponsor_id     INTEGER,
-    FOREIGN KEY (transaction_id) REFERENCES transaction (transaction_id),
-    FOREIGN KEY (sponsor_id) REFERENCES sponsor (sponsor_id)
-);
-
-
-CREATE TABLE organization_transaction
-(
-    transaction_id  INTEGER AUTO_INCREMENT PRIMARY KEY,
-    organization_id INTEGER,
-    FOREIGN KEY (transaction_id) REFERENCES transaction (transaction_id),
-    FOREIGN KEY (organization_id) REFERENCES organization (organization_id)
-);
-
-CREATE TABLE conversation
-(
-    conversation_id INTEGER,
-    user_id_1       BIGINT,
-    user_id_2       BIGINT,
-    PRIMARY KEY (conversation_id, user_id_1, user_id_2),
-    FOREIGN KEY (user_id_1) REFERENCES user (user_id),
-    FOREIGN KEY (user_id_2) REFERENCES user (user_id)
-);
-
 CREATE TABLE otp
 (
     otp_id      INTEGER AUTO_INCREMENT PRIMARY KEY,
@@ -326,6 +207,7 @@ CREATE TABLE campaign_type
     healthy                  FLOAT,
     emergency_preparedness   FLOAT
 );
+
 CREATE TABLE favorite_activities
 (
     id                       INTEGER AUTO_INCREMENT PRIMARY KEY,
@@ -339,12 +221,27 @@ CREATE TABLE favorite_activities
     emergency_preparedness   FLOAT,
     FOREIGN KEY (user_id) REFERENCES user (user_id)
 );
+
 CREATE TABLE IF NOT EXISTS user_device_fcm_token
 (
     id        INT AUTO_INCREMENT PRIMARY KEY ,
     fcm_token VARCHAR(150) NOT NULL,
     user_id   BIGINT       NOT NULL,
     FOREIGN KEY (user_id) REFERENCES user (user_id)
+);
+
+CREATE TABLE IF NOT EXISTS notification (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    receiver BIGINT,
+    owner BIGINT,
+    type VARCHAR(100),
+    title VARCHAR(255),
+    description VARCHAR(255),
+    extra TEXT,
+    created_time DATETIME DEFAULT NOW(),
+    seen_time TIMESTAMP,
+    FOREIGN KEY (owner) REFERENCES user(user_id),
+    FOREIGN KEY (receiver) REFERENCES user(user_id)
     );
 -- # INSERT INTO user VALUES (1,'Trương Huy Thái', 'Gò Vấp', '2002-05-31', 'male', '0348273185', 'huythai31052002@gmail.com', 'Student', 'BKU','123456','VOLUNTEER');
 -- # INSERT INTO user VALUES (2,'Lê Nguyễn Huyền Thoại', 'Thủ Đức', '2002-09-10', 'male', '0348273185', 'thoaile0910@gmail.com', 'Student', 'BKU','123456','VOLUNTEER');

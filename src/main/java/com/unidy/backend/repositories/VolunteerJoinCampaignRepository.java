@@ -48,6 +48,9 @@ public interface VolunteerJoinCampaignRepository extends JpaRepository<Volunteer
         new com.unidy.backend.domains.dto.responses.ListVolunteerResponse(
             u.userId,
             u.fullName,
+            DATE_FORMAT(FROM_DAYS(DATEDIFF(NOW(),u.dayOfBirth)), '%Y') + 0,
+            u.job,
+            u.workLocation,
             vjc.timeJoin,
             vjc.status,
             c.campaignId,
@@ -71,6 +74,9 @@ public interface VolunteerJoinCampaignRepository extends JpaRepository<Volunteer
         new com.unidy.backend.domains.dto.responses.ListVolunteerResponse(
             u.userId,
             u.fullName,
+            DATE_FORMAT(FROM_DAYS(DATEDIFF(NOW(),u.dayOfBirth)), '%Y') + 0,
+            u.job,
+            u.workLocation,
             vjc.timeJoin,
             vjc.status,
             c.campaignId,

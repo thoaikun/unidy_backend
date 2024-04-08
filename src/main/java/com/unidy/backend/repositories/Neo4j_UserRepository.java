@@ -1,6 +1,6 @@
 package com.unidy.backend.repositories;
 
-import com.unidy.backend.domains.dto.responses.CheckResult;
+import com.unidy.backend.domains.dto.responses.RelationshipCheckResult;
 import com.unidy.backend.domains.dto.responses.InviteFriend;
 import com.unidy.backend.domains.dto.responses.RecommendFriendResponse;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
@@ -24,8 +24,6 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
      """)
      void friendInviteRequest(@Param("userId") int userId, @Param("friendId") int friendId, @Param("date") String date);
 
-     @Query("OPTIONAL MATCH (user1: user {user_id: $friendId})-[r:INVITE_FRIEND]->(user2: user {user_id: $userId}) RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result")
-     CheckResult checkInviteRequest(@RequestParam int userId, @RequestParam int friendId);
      @Query("OPTIONAL MATCH (user1: user {user_id: $friendId})-[r:INVITE_FRIEND]->(user2: user {user_id: $userId}) DELETE r;")
      void deleteInviteRequest(Integer userId, int friendId);
 
@@ -65,7 +63,7 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
 
      @Query("""
           MATCH (root :user {user_id: $userId})
-          OPTIONAL MATCH (root) - [r:FRIEND] -> (friend: user)
+          MATCH (root) - [r:FRIEND] -> (friend: user)
           WITH friend
           ORDER BY friend.user_id
           RETURN friend, true as isFriend, false as isFollow
@@ -76,7 +74,13 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
 
      @Query(" OPTIONAL MATCH (user1: user {user_id: $userId})-[r:FOLLOW_ORGANIZATION]->(user2: user {user_id: $organizationId})\n" +
              "RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result")
-     CheckResult checkFollowRequest(Integer userId, int organizationId);
+     RelationshipCheckResult checkFollowRequest(Integer userId, int organizationId);
+
+     @Query("""
+             MATCH (user:user) - [r:FOLLOW_ORGANIZATION] -> (organization:user {user_id: $organizationId})
+             return toInteger(user.user_id)
+     """)
+     List<Integer> getFollowers(int organizationId);
 
      @Query("""
           MATCH (user1:user {user_id: $userId})
@@ -101,7 +105,7 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
              OPTIONAL MATCH (user1: user {user_id: $userId})-[r:FOLLOW_ORGANIZATION]->(user2: user {user_id: $organizationId, role: 'ORGANIZATION'})
              RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result
              """)
-     CheckResult checkFollow(int userId, int organizationId);
+     RelationshipCheckResult checkFollow(int userId, int organizationId);
 
      @Query("OPTIONAL MATCH (user1: user {user_id: $userId})-[r:INVITE_FRIEND]->(user2: user {user_id: $friendId}) DELETE r;")
      void deleteInvite(Integer userId, int friendId);
@@ -110,9 +114,14 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
      void declineInviteRequest(Integer userId, int friendId);
 
      @Query("""
-             OPTIONAL MATCH (user1: user {user_id: $userId})-[r:FRIEND]->(user2: user {user_id: $friendId})
-             RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result
+          OPTIONAL MATCH (:user {user_id: $userId})-[r:FRIEND]->(:user {user_id: $otherId})
+          OPTIONAL MATCH (:user {user_id: $userId})-[i1:INVITE_FRIEND]->(:user {user_id: $otherId})
+          OPTIONAL MATCH (:user {user_id: $userId})<-[i2:INVITE_FRIEND]-(:user {user_id: $otherId})
+          OPTIONAL MATCH (:user {user_id: $userId})-[i3:FOLLOW_ORGANIZATION]->(:user {user_id: $otherId, role: 'ORGANIZATION'})
+          RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS isFriend,
+                 CASE WHEN i1 IS NULL THEN FALSE ELSE TRUE END AS isRequesting,
+                 CASE WHEN i2 IS NULL THEN FALSE ELSE TRUE END AS isRequested,
+                 CASE WHEN i3 IS NULL THEN FALSE ELSE TRUE END AS isFollowed;
      """)
-     CheckResult checkFriend(int userId, int friendId);
-
+     RelationshipCheckResult checkRelationship(int userId, int otherId);
 }

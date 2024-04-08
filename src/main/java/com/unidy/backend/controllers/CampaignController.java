@@ -128,7 +128,7 @@ public class CampaignController {
 
     @GetMapping("{campaignId}/certificates")
     public ResponseEntity<?> getCertificate(Principal connectedUser, @PathVariable int campaignId){
-        return certificateService.getCertificate(connectedUser);
+        return certificateService.getCertificate(connectedUser, campaignId);
     }
 }
 

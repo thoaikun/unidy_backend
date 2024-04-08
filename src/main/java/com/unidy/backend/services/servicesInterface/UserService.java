@@ -34,4 +34,11 @@ public interface UserService {
     ResponseEntity<?> getUserJoinedCampaigns(Principal connectedUser, int pageSize, int pageNumber);
     @Async("threadPoolTaskExecutor")
     CompletableFuture<List<UserNode>> searchUser(Principal connectedUser, String searchTerm, int limit, int skip);
+    ResponseEntity<?> getNotification(Principal connectedUser, int pageSize, int pageNumber);
+
+    ResponseEntity<?> getUnseenNotification(Principal connectedUser);
+
+    ResponseEntity<?> markAsSeen(Principal connectedUser, int notificationId);
+
+    ResponseEntity<?> markAllAsSeen(Principal connectedUser);
 }
