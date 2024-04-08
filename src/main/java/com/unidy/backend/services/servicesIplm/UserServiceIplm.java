@@ -328,8 +328,12 @@ public class UserServiceIplm implements UserService {
     public ResponseEntity<?> deleteInvite(Principal connectedUser, int friendId) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
-            neo4jUserRepository.deleteInvite(user.getUserId(),friendId);
-            return ResponseEntity.ok().body("Delete success");
+            if (neo4jUserRepository.checkInviteRequest(friendId,user.getUserId()).isResult()){
+                neo4jUserRepository.deleteInvite(user.getUserId(),friendId);
+                return ResponseEntity.ok().body("Delete success");
+            } else {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Invite not exist"));
+            }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something error"));
         }

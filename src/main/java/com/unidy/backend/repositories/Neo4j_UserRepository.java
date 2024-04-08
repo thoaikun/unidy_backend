@@ -103,7 +103,7 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
              """)
      CheckResult checkFollow(int userId, int organizationId);
 
-     @Query("OPTIONAL MATCH (user1: user {user_id: $userId})-[r:INVITE_FRIEND]->(user2: user {user_id: $userId}) DELETE r;")
+     @Query("OPTIONAL MATCH (user1: user {user_id: $userId})-[r:INVITE_FRIEND]->(user2: user {user_id: $friendId}) DELETE r;")
      void deleteInvite(Integer userId, int friendId);
 
      @Query("OPTIONAL MATCH (user1: user {user_id: $friendId})-[r:INVITE_FRIEND]->(user2: user {user_id: $userId}) DELETE r;")

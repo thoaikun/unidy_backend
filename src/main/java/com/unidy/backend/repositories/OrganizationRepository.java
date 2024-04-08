@@ -34,5 +34,7 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
         WHERE o.userId = :organizationId
     """)
     OrganizationInformation getOrganizationInformation(int organizationId);
+
+    Organization findByOrganizationId(int organizationId);
 }
 

@@ -108,4 +108,9 @@ public class OrganizationController {
     public ResponseEntity<?> updateCampaignInformation(Principal connectedUser, @PathVariable int campaignId, @RequestBody CampaignDto campaignDto) {
         return organizationService.updateCampaignInformation(connectedUser,campaignId,campaignDto);
     }
+
+    @PatchMapping("/settlements/{settlementId}/confirm")
+    public ResponseEntity<?> confirmSettlements(@PathVariable int settlementId, Principal userConnected){
+        return organizationService.confirmSettlements(settlementId,userConnected);
+    }
 }

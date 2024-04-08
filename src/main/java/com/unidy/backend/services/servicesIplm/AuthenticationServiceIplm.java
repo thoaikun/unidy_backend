@@ -53,6 +53,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
                 .role(Role.ORGANIZATION)
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .isBlock(false)
                 .build();
         repository.save(user);
 
@@ -66,6 +67,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
                 .country(request.getCountry())
                 .userId(user_id)
                 .firebaseTopic(request.getFullName().toLowerCase().replace(" ", "_") + "_" + user_id + "_topic")
+                .isApproved(false)
                 .build();
         organizationRepository.save(organization);
         UserNode userNode = new UserNode() ;
@@ -88,6 +90,7 @@ public class AuthenticationServiceIplm implements AuthenticationService {
                 .workLocation(request.getWorkLocation())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
+                .isBlock(false)
                 .build();
         var savedUser = repository.save(user);
         var jwtToken = jwtService.generateToken(user);
@@ -127,6 +130,15 @@ public class AuthenticationServiceIplm implements AuthenticationService {
       FavoriteActivities favorite = favoriteActivitiesRepository.findByUserId(user.getUserId());
       if (favorite != null) {
         check = true;
+      }
+      if (user.getIsBlock()){
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponseDto("Tài khoản bạn đã bị khoá"));
+      }
+      if (user.getRole().equals(Role.ORGANIZATION)){
+        Optional<Organization> organization = organizationRepository.findByUserId(user.getUserId());
+        if (!organization.get().getIsApproved()){
+          return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new ErrorResponseDto("Tổ chức của bạn chưa được Unidy chấp nhận tham gia"));
+        }
       }
       return ResponseEntity.ok().body(AuthenticationResponse.builder()
               .accessToken(jwtTokens.get("accessToken"))

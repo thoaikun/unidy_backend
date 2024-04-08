@@ -4,20 +4,18 @@ import com.unidy.backend.config.JwtService;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.TokenType;
+import com.unidy.backend.domains.Type.CampaignStatus;
 import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
 import com.unidy.backend.domains.dto.requests.RegisterRequest;
 import com.unidy.backend.domains.dto.responses.AuthenticationResponse;
+import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.dto.responses.PostResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.PostNode;
-import com.unidy.backend.domains.entity.neo4j.UserNode;
-import com.unidy.backend.domains.role.Role;
 import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.quartz.*;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,6 +23,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.*;
 
 @Service
@@ -38,6 +37,11 @@ public class AdminServiceImpl implements AdminService {
     private final AuthenticationManager authenticationManager;
     private final AdminRepository adminRepository;
     private final AdminTokenRepository adminTokenRepository;
+    private final OrganizationRepository organizationRepository;
+    private final UserRepository userRepository;
+    private final CampaignRepository campaignRepository;
+    private final Neo4j_CampaignRepository neo4jCampaignRepository;
+    private final SettlementRepository settlementRepository;
 
     public ResponseEntity<?> register(RegisterRequest request) {
         try {
@@ -63,6 +67,63 @@ public class AdminServiceImpl implements AdminService {
             return ResponseEntity.ok().header("Register").body("Register success");
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> approveOrganization(int organizationId) {
+        try {
+            Organization organization = organizationRepository.findByOrganizationId(organizationId);
+            organization.setIsApproved(true);
+            organizationRepository.save(organization);
+            return ResponseEntity.ok().body("Approve Success");
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.toString());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> blockOrUnblockUser(int userId) {
+        try {
+            User user = userRepository.findByUserId(userId);
+            user.setIsBlock(!user.getIsBlock());
+            userRepository.save(user);
+            return ResponseEntity.ok().body("Success");
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.toString());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getCampaignByStatus(CampaignStatus status, int skip, int limit) {
+        try {
+            List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponses = neo4jCampaignRepository.findCampaignPostByCampaignStatus(status,skip,limit);
+            return ResponseEntity.ok().body(campaignPostResponses);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.toString());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getCampaignPostByDate(Date fromDate, Date toDate, int skip, int limit) {
+        try {
+            List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponses = neo4jCampaignRepository.findCampaignPostByCampaignDate(fromDate,toDate,skip,limit);
+            return ResponseEntity.ok().body(campaignPostResponses);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.toString());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> confirmSettlements(int settlementId, Principal userConnected) {
+        try {
+            Settlement settlement = settlementRepository.findBySettlementId(settlementId);
+            settlement.setAdminConfirm(true);
+            settlement.setUpdateTime(new Date());
+            settlementRepository.save(settlement);
+            return ResponseEntity.ok().body("Confirm success");
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.toString());
         }
     }
 
@@ -123,11 +184,12 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public ResponseEntity<?> blockOrUnblockPost(int postId, String status) {
+    public ResponseEntity<?> blockOrUnblockPost(String postId, String status) {
         try {
             List<PostNode> postNode =  neo4jPostRepository.findPostNodeByPostId(String.valueOf(postId));
             PostNode post = postNode.get(0);
             post.setIsBlock(Objects.equals(status, "1"));
+            neo4jPostRepository.save(post);
             return ResponseEntity.ok().body(new SuccessReponse("Success"));
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -163,14 +225,17 @@ public class AdminServiceImpl implements AdminService {
             try {
                 isTokenStillValid(token);
                 return Map.of("accessToken", token.getToken(), "refreshToken", token.getRefreshToken(), "isExpired", "false");
-            } catch (Exception e) {
+            }
+            catch (Exception e){
                 token.setExpired(true);
                 token.setRevoked(true);
                 adminTokenRepository.save(token);
             }
         }
-        return null;
+
+        return Map.of("accessToken", jwtService.generateToken(user), "refreshToken", jwtService.generateRefreshToken(user), "isExpired", "true");
     }
+
 
     private void saveUserToken(Admin user, String jwtToken, String refreshToken) {
         var token = AdminToken.builder()
@@ -184,8 +249,8 @@ public class AdminServiceImpl implements AdminService {
         adminTokenRepository.save(token);
     }
 
-    private boolean isTokenStillValid(AdminToken token) {
-        return jwtService.isTokenExpired(token.getToken());
+    private void isTokenStillValid(AdminToken token) {
+        jwtService.isTokenExpired(token.getToken());
     }
 
     private void revokeAllUserTokens(User user) {

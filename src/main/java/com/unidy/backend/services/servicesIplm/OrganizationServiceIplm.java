@@ -24,6 +24,7 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,7 @@ public class OrganizationServiceIplm implements OrganizationService {
     private final S3Service s3Service;
     private final FirebaseService firebaseService;
     private final CertificateService certificateService;
+    private final SettlementRepository settlementRepository;
 
     @Override
     public ResponseEntity<?> getProfileOrganization(Principal connectedUser) {
@@ -305,6 +307,25 @@ public class OrganizationServiceIplm implements OrganizationService {
             return ResponseEntity.ok().body(new SuccessReponse("Campaign updated successfully."));
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> confirmSettlements(int settlementId, Principal userConnected) {
+        try {
+            var user = (User) ((UsernamePasswordAuthenticationToken) userConnected).getPrincipal();
+            Organization organization = organizationRepository.findByUserId(user.getUserId()).get();
+            Settlement settlement = settlementRepository.findBySettlementId(settlementId);
+            if (organization.getOrganizationId().equals(settlement.getOrganizationId())){
+                settlement.setAdminConfirm(true);
+                settlement.setUpdateTime(new Date());
+                settlementRepository.save(settlement);
+                return ResponseEntity.ok().body("Confirm success");
+            } else {
+                return ResponseEntity.status(HttpStatusCode.valueOf(406)).body("You aren't permit to confirm this settlement");
+            }
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.toString());
         }
     }
 }
