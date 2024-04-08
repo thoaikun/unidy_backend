@@ -25,7 +25,8 @@ CREATE TABLE organization
     phone             VARCHAR(15)  not null,
     email             VARCHAR(30)  not null,
     status            VARCHAR(10),
-    country           VARCHAR(20)
+    country           VARCHAR(20),
+    is_approved       boolean
 );
 
 CREATE TABLE volunteer
@@ -247,3 +248,14 @@ CREATE TABLE IF NOT EXISTS notification (
 -- # INSERT INTO user VALUES (3,'Nguyễn Hoàng Bảo Hùng', 'Đồng Nai', '2002-09-10', 'male', '0348273185', 'nhb.hung@gmail.com', 'Student', 'BKU','123456','VOLUNTEER');
 -- #
 -- # DELETE FROM user where user_id = 3 ;
+CREATE table settlement (
+    settlement_id           INTEGER,
+    admin_id                INTEGER,
+    organization_id         INTEGER,
+    create_time             DATETIME,
+    update_time             DATETIME,
+    admin_confirm           BOOLEAN,
+    organization_confirm    BOOLEAN,
+    FOREIGN KEY (admin_id) REFERENCES admin(admin_id),
+    FOREIGN KEY (organization_id) REFERENCES organization(organization_id)
+)

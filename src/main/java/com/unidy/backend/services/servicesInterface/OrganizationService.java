@@ -20,4 +20,6 @@ public interface OrganizationService {
     ResponseEntity<?> sendNotifyToMember(Principal connectedUser, NotificationDto notificationDto);
     ResponseEntity<?> endCampaign(Principal connectedUser, int campaignId);
     ResponseEntity<?> updateCampaignInformation(Principal connectedUser, int campaignId, CampaignDto campaignDto);
+
+    ResponseEntity<?> confirmSettlements(int settlementId, Principal userConnected);
 }

@@ -43,4 +43,7 @@ public class Organization {
 
     @Column(name = "firebase_topic")
     private String firebaseTopic;
+
+    @Column(name = "is_approved")
+    private Boolean isApproved;
 }
