@@ -97,4 +97,18 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
             LIMIT $limit;
             """)
     List<CampaignPostResponse.CampaignPostResponseData> findCampaignPostByCampaignDate(Date fromDate, Date toDate, int skip, int limit);
+
+    @Query("""
+            MATCH (organizationNode:user)-[r:HAS_CAMPAIGN]->(campaign:campaign)
+            WHERE campaign.create_date <= $toDate AND campaign.create_date >= $fromDate
+            OPTIONAL MATCH (user)-[isLiked:LIKE]->(campaign)
+            OPTIONAL MATCH (organizationNode)-[r_like:LIKE]->(campaign)
+            WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked
+            RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, FALSE AS isJoined
+            ORDER BY campaign.create_date DESC, campaign.id ASC
+            SKIP $skip
+            LIMIT $limit;
+            """)
+    List<CampaignPostResponse.CampaignPostResponseData> findCampaignPost(CampaignStatus status, Date fromDate, Date toDate, int skip, int limit);
+
 }

@@ -2,6 +2,7 @@ package com.unidy.backend.services.servicesInterface;
 
 import com.unidy.backend.domains.Type.CampaignStatus;
 import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
+import com.unidy.backend.domains.dto.requests.PostCondition;
 import com.unidy.backend.domains.dto.requests.RegisterRequest;
 import org.springframework.http.ResponseEntity;
 
@@ -25,9 +26,7 @@ public interface AdminService {
 
     ResponseEntity<?> blockOrUnblockUser(int userid);
 
-    ResponseEntity<?> getCampaignByStatus(CampaignStatus status, int skip, int limit);
-
-    ResponseEntity<?> getCampaignPostByDate(Date fromDate, Date toDate, int skip, int limit);
-
     ResponseEntity<?> confirmSettlements(int settlementId, Principal userConnected);
+
+    ResponseEntity<?> getCampaign(PostCondition postCondition);
 }

@@ -2,6 +2,7 @@ package com.unidy.backend.controllers;
 
 import com.unidy.backend.domains.Type.CampaignStatus;
 import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
+import com.unidy.backend.domains.dto.requests.PostCondition;
 import com.unidy.backend.domains.dto.requests.RegisterRequest;
 import com.unidy.backend.services.servicesInterface.AdminService;
 import jakarta.validation.Valid;
@@ -54,13 +55,8 @@ public class AdminController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/posts/date")
-    public ResponseEntity<?> getPostByDate(
-            @RequestParam("fromDate") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") Date fromDate,
-            @RequestParam("toDate") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") Date toDate,
-            @RequestParam("pageNumber") int skip,
-            @RequestParam("pageSize") int limit
-    ) {
-        return adminService.getPostByDate(fromDate, toDate, skip, limit);
+    public ResponseEntity<?> getPost(@RequestBody PostCondition postCondition) {
+        return adminService.getPostByDate(postCondition.getFromDate(), postCondition.getToDate(), postCondition.getSkip(), postCondition.getLimit());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -76,21 +72,9 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/campaigns/{status}")
-    public ResponseEntity<?> getCampaignByStatus(@PathVariable CampaignStatus status, @RequestParam("skip") int skip,
-                                                 @RequestParam("limit") int limit ){
-        return adminService.getCampaignByStatus(status,skip,limit);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/campaigns/date")
-    public ResponseEntity<?> getCampaignPostByDate(
-            @RequestParam("fromDate") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") Date fromDate,
-            @RequestParam("toDate") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") Date toDate,
-            @RequestParam("skip") int skip,
-            @RequestParam("limit") int limit
-    ) {
-        return adminService.getCampaignPostByDate(fromDate, toDate, skip, limit);
+    @GetMapping("/campaigns")
+    public ResponseEntity<?> getCampaign(@RequestBody PostCondition postCondition){
+        return adminService.getCampaign(postCondition);
     }
 
 
