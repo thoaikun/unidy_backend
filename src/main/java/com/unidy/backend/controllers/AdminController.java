@@ -70,6 +70,20 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/volunteers")
+    public ResponseEntity<?> getAllVolunteers(@RequestParam("pageNumber") int pageNumber,
+                                              @RequestParam("pageSize") int pageSize){
+        return adminService.getAllVolunteers(pageNumber, pageSize);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/organizations")
+    public ResponseEntity<?> getAllOrganizations(@RequestParam("pageNumber") int pageNumber,
+                                                 @RequestParam("pageSize") int pageSize){
+        return adminService.getAllOrganizations(pageNumber, pageSize);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/users/{userId}/block")
     public ResponseEntity<?> blockOrUnblockUser(@PathVariable int userId){
         return adminService.blockOrUnblockUser(userId);

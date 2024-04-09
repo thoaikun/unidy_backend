@@ -9,13 +9,19 @@ import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
 import com.unidy.backend.domains.dto.requests.RegisterRequest;
 import com.unidy.backend.domains.dto.responses.AuthenticationResponse;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
+import com.unidy.backend.domains.dto.responses.OrganizationInformation;
 import com.unidy.backend.domains.dto.responses.PostResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.PostNode;
+import com.unidy.backend.domains.role.Role;
 import com.unidy.backend.repositories.*;
 import com.unidy.backend.services.servicesInterface.AdminService;
 import lombok.RequiredArgsConstructor;
-import org.quartz.*;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,7 +45,6 @@ public class AdminServiceImpl implements AdminService {
     private final AdminTokenRepository adminTokenRepository;
     private final OrganizationRepository organizationRepository;
     private final UserRepository userRepository;
-    private final CampaignRepository campaignRepository;
     private final Neo4j_CampaignRepository neo4jCampaignRepository;
     private final SettlementRepository settlementRepository;
 
@@ -79,6 +84,28 @@ public class AdminServiceImpl implements AdminService {
             return ResponseEntity.ok().body("Approve Success");
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.toString());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getAllVolunteers(int pageNumber, int pageSize) {
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            List<User> users = userRepository.getUsersByRole(Role.VOLUNTEER, pageable);
+            return ResponseEntity.ok().body(users);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Có lỗi xảy ra"));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getAllOrganizations(int pageNumber, int pageSize) {
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            List<OrganizationInformation> organizations = organizationRepository.getOrganizations(pageable);
+            return ResponseEntity.ok().body(organizations);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Có lỗi xảy ra"));
         }
     }
 
@@ -154,7 +181,6 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-
     @Override
     public ResponseEntity<?> runOrStopJob(int jobId) {
         Optional<ScheduleJobs> optionalScheduleJobs = scheduleJobsRepository.findById(jobId);
@@ -216,8 +242,6 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-
-
     private Map<String, String> getJwtToken(Admin user) {
         List<AdminToken> previousTokens = adminTokenRepository.findAllValidTokenByUser(user.getAdmin_id());
 
@@ -263,7 +287,4 @@ public class AdminServiceImpl implements AdminService {
         });
         adminTokenRepository.saveAll(validUserTokens);
     }
-
-
-
 }
