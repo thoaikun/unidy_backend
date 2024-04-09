@@ -29,6 +29,7 @@ public class OrganizationInformation {
     private String image;
     private String firebaseTopic;
     private Boolean isFollow;
+    private Boolean isApproved;
     private OverallFigure overallFigure;
 
     public OrganizationInformation(
@@ -40,7 +41,8 @@ public class OrganizationInformation {
         String country,
         String image,
         String firebaseTopic,
-        Boolean isFollow
+        Boolean isFollow,
+        Boolean isApproved
     ) {
         this.userId = userId;
         this.organizationName = organizationName;
@@ -51,5 +53,6 @@ public class OrganizationInformation {
         this.image = image;
         this.firebaseTopic = firebaseTopic;
         this.isFollow = isFollow;
+        this.isApproved = isApproved;
     }
 }

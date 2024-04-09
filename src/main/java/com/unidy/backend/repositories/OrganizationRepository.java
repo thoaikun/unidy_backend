@@ -26,7 +26,8 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
             o.country,
             upi.linkImage,
             o.firebaseTopic,
-            false
+            false,
+            o.isApproved
         )
         FROM Organization o
         LEFT JOIN UserProfileImage upi
@@ -36,5 +37,26 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
     OrganizationInformation getOrganizationInformation(int organizationId);
 
     Organization findByOrganizationId(int organizationId);
+
+    @Query("""
+        SELECT new com.unidy.backend.domains.dto.responses.OrganizationInformation(
+            o.userId,
+            o.organizationName,
+            o.address,
+            o.phone,
+            o.email,
+            o.country,
+            upi.linkImage,
+            o.firebaseTopic,
+            false,
+            o.isApproved
+        )
+        FROM Organization o
+        JOIN User u
+            ON o.userId = u.userId
+        LEFT JOIN UserProfileImage upi
+            ON o.userId = upi.userId
+    """)
+    List<OrganizationInformation> getOrganizations(Pageable pageable);
 }
 

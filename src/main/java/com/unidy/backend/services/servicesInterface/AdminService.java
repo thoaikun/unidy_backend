@@ -23,6 +23,10 @@ public interface AdminService {
 
     ResponseEntity<?> approveOrganization(int organizationId);
 
+    ResponseEntity<?> getAllVolunteers(int pageNumber, int pageSize);
+
+    ResponseEntity<?> getAllOrganizations(int pageNumber, int pageSize);
+
     ResponseEntity<?> blockOrUnblockUser(int userid);
 
     ResponseEntity<?> getCampaignByStatus(CampaignStatus status, int skip, int limit);
