@@ -6,6 +6,7 @@ import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.TokenType;
 import com.unidy.backend.domains.Type.CampaignStatus;
 import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
+import com.unidy.backend.domains.dto.requests.PostCondition;
 import com.unidy.backend.domains.dto.requests.RegisterRequest;
 import com.unidy.backend.domains.dto.responses.AuthenticationResponse;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
@@ -122,26 +123,6 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public ResponseEntity<?> getCampaignByStatus(CampaignStatus status, int skip, int limit) {
-        try {
-            List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponses = neo4jCampaignRepository.findCampaignPostByCampaignStatus(status,skip,limit);
-            return ResponseEntity.ok().body(campaignPostResponses);
-        } catch (Exception e){
-            return ResponseEntity.badRequest().body(e.toString());
-        }
-    }
-
-    @Override
-    public ResponseEntity<?> getCampaignPostByDate(Date fromDate, Date toDate, int skip, int limit) {
-        try {
-            List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponses = neo4jCampaignRepository.findCampaignPostByCampaignDate(fromDate,toDate,skip,limit);
-            return ResponseEntity.ok().body(campaignPostResponses);
-        } catch (Exception e){
-            return ResponseEntity.badRequest().body(e.toString());
-        }
-    }
-
-    @Override
     public ResponseEntity<?> confirmSettlements(int settlementId, Principal userConnected) {
         try {
             Settlement settlement = settlementRepository.findBySettlementId(settlementId);
@@ -149,6 +130,24 @@ public class AdminServiceImpl implements AdminService {
             settlement.setUpdateTime(new Date());
             settlementRepository.save(settlement);
             return ResponseEntity.ok().body("Confirm success");
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.toString());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getCampaign(PostCondition postCondition) {
+        try {
+            if (postCondition.getStatus() != null && postCondition.getFromDate() != null & postCondition.getToDate() != null) {
+                List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponses = neo4jCampaignRepository.findCampaignPost(postCondition.getStatus(), postCondition.getFromDate(), postCondition.getToDate(), postCondition.getSkip(), postCondition.getLimit());
+                return ResponseEntity.ok().body(campaignPostResponses);
+            }
+            if (postCondition.getStatus() != null){
+                List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponses = neo4jCampaignRepository.findCampaignPostByCampaignStatus(postCondition.getStatus(),postCondition.getSkip(),postCondition.getLimit());
+                return ResponseEntity.ok().body(campaignPostResponses);
+            }
+            List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponses = neo4jCampaignRepository.findCampaignPostByCampaignDate(postCondition.getFromDate(),postCondition.getToDate(),postCondition.getSkip(),postCondition.getLimit());
+            return ResponseEntity.ok().body(campaignPostResponses);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.toString());
         }

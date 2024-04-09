@@ -72,10 +72,6 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
      """)
      List<UserNode> getListFriend(Integer userId, int limit, int skip);
 
-     @Query(" OPTIONAL MATCH (user1: user {user_id: $userId})-[r:FOLLOW_ORGANIZATION]->(user2: user {user_id: $organizationId})\n" +
-             "RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result")
-     RelationshipCheckResult checkFollowRequest(Integer userId, int organizationId);
-
      @Query("""
              MATCH (user:user) - [r:FOLLOW_ORGANIZATION] -> (organization:user {user_id: $organizationId})
              return toInteger(user.user_id)
@@ -101,11 +97,11 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
      """)
      List<UserNode> searchUser(int userId, String searchTerm, int limit, int skip);
 
-     @Query("""
-             OPTIONAL MATCH (user1: user {user_id: $userId})-[r:FOLLOW_ORGANIZATION]->(user2: user {user_id: $organizationId, role: 'ORGANIZATION'})
-             RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result
-             """)
-     RelationshipCheckResult checkFollow(int userId, int organizationId);
+//     @Query("""
+//             OPTIONAL MATCH (user1: user {user_id: $userId})-[r:FOLLOW_ORGANIZATION]->(user2: user {user_id: $organizationId, role: 'ORGANIZATION'})
+//             RETURN CASE WHEN r IS NULL THEN FALSE ELSE TRUE END AS result
+//             """)
+//     RelationshipCheckResult checkFollow(int userId, int organizationId);
 
      @Query("OPTIONAL MATCH (user1: user {user_id: $userId})-[r:INVITE_FRIEND]->(user2: user {user_id: $friendId}) DELETE r;")
      void deleteInvite(Integer userId, int friendId);
@@ -124,4 +120,10 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
                  CASE WHEN i3 IS NULL THEN FALSE ELSE TRUE END AS isFollowed;
      """)
      RelationshipCheckResult checkRelationship(int userId, int otherId);
+
+     @Query("""
+             MATCH (user:user {user_id : $userId}) - [r:FOLLOW_ORGANIZATION] -> (organization:user {user_id: $organizationId})
+             DELETE r;
+             """)
+     void unfollowOrganization(int userId, int organizationId);
 }

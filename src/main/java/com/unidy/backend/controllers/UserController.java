@@ -127,6 +127,11 @@ public class UserController {
         return userService.followOrganization(connectedUser,organizationId);
     }
 
+    @PatchMapping("/unfollow-organization")
+    public ResponseEntity<?> unFollowOrganization(Principal connectedUser, @RequestParam int organizationId){
+        return userService.unFollowOrganization(connectedUser,organizationId);
+    }
+
     @GetMapping("/transactions")
     public ResponseEntity<?> getUserTransaction(Principal connectedUser, @RequestParam int pageSize, @RequestParam int pageNumber){
         return userService.getUserTransaction(connectedUser, pageSize, pageNumber);

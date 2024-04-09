@@ -41,4 +41,6 @@ public interface UserService {
     ResponseEntity<?> markAsSeen(Principal connectedUser, int notificationId);
 
     ResponseEntity<?> markAllAsSeen(Principal connectedUser);
+
+    ResponseEntity<?> unFollowOrganization(Principal connectedUser, int organizationId);
 }

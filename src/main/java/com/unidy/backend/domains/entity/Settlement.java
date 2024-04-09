@@ -33,4 +33,7 @@ public class Settlement {
 
     @Column(name = "update_time")
     private Date updateTime;
+
+    @Column(name = "campaign_id")
+    private int campaignId;
 }

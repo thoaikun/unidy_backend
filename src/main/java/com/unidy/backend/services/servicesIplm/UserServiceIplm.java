@@ -486,4 +486,19 @@ public class UserServiceIplm implements UserService {
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
+
+    @Override
+    public ResponseEntity<?> unFollowOrganization(Principal connectedUser, int organizationId) {
+        try {
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            if (neo4jUserRepository.checkRelationship(user.getUserId(), organizationId).isFollowed()){
+                neo4jUserRepository.unfollowOrganization(user.getUserId(), organizationId);
+                return ResponseEntity.ok().body(new SuccessReponse("Huỷ theo dõi thành công"));
+            } else {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Bạn chưa theo dõi"));
+            }
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
 }
