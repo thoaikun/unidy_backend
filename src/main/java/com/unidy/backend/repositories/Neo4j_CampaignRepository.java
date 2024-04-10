@@ -74,18 +74,6 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
     void cancelLikeCampaign(Integer userId, String campaignId);
 
     @Query("""
-            MATCH (organizationNode:user)-[r:HAS_CAMPAIGN]->(campaign:campaign {status : $status})
-            OPTIONAL MATCH (user)-[isLiked:LIKE]->(campaign)
-            OPTIONAL MATCH (organizationNode)-[r_like:LIKE]->(campaign)
-            WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked
-            RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, FALSE AS isJoined
-            ORDER BY campaign.create_date DESC, campaign.id ASC
-            SKIP $skip
-            LIMIT $limit;
-            """)
-    List<CampaignPostResponse.CampaignPostResponseData> findCampaignPostByCampaignStatus(CampaignStatus status, int skip, int limit);
-
-    @Query("""
             MATCH (organizationNode:user)-[r:HAS_CAMPAIGN]->(campaign:campaign)
             WHERE campaign.create_date <= $toDate AND campaign.create_date >= $fromDate
             OPTIONAL MATCH (user)-[isLiked:LIKE]->(campaign)
@@ -100,7 +88,7 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
 
     @Query("""
             MATCH (organizationNode:user)-[r:HAS_CAMPAIGN]->(campaign:campaign)
-            WHERE campaign.create_date <= $toDate AND campaign.create_date >= $fromDate
+            WHERE campaign.create_date <= $toDate AND campaign.create_date >= $fromDate AND campaign.status = $status
             OPTIONAL MATCH (user)-[isLiked:LIKE]->(campaign)
             OPTIONAL MATCH (organizationNode)-[r_like:LIKE]->(campaign)
             WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked

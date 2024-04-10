@@ -86,7 +86,7 @@ public class CampaignServiceIplm implements CampaignService {
                                     image.getBytes()
                             );
 
-                            String imageUrl = "/" + user.getUserId() + "/" + postImageId + fileContentType;
+                            String imageUrl = environment.getProperty("LINK_S3") + user.getUserId() + "/" + postImageId + fileContentType;
                             listImageLink.put(imageUrl);
                         } else {
                             return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
