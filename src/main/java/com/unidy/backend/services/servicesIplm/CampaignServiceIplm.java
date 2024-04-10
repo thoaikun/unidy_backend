@@ -146,6 +146,13 @@ public class CampaignServiceIplm implements CampaignService {
             campaign.setOwner(user.getUserId());
             campaign.setNumberVolunteerRegistered(0);
             campaignRepository.save(campaign);
+
+            int campaignId = campaign.getCampaignId();
+            ObjectMapper objectMapper = new ObjectMapper();
+            CampaignType campaignType = objectMapper.readValue(request.getCategories(), CampaignType.class);
+            campaignType.setCampaignId(campaignId);
+            campaignTypeRepository.save(campaignType);
+
             return CompletableFuture.completedFuture(0);
         }
         catch (Exception e){
@@ -157,11 +164,6 @@ public class CampaignServiceIplm implements CampaignService {
     protected CompletableFuture<Integer> saveCampaignToNeo4J(CampaignRequest request, User user, String linkImages, Campaign campaign) {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            int campaignId = campaign.getCampaignId();
-            ObjectMapper objectMapper = new ObjectMapper();
-            CampaignType campaignType = objectMapper.readValue(request.getCategories(), CampaignType.class);
-            campaignType.setCampaignId(campaignId);
-            campaignTypeRepository.save(campaignType);
 
             UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
             CampaignNode campaignNode = new CampaignNode() ;

@@ -76,8 +76,8 @@ public class Campaign {
     @Column(name = "link_image")
     private String link_image;
 
-    @JoinColumn(name = "campaign_id")
-    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "campaign_id", referencedColumnName = "campaign_id", insertable = false, updatable = false)
+    @OneToOne(fetch = FetchType.EAGER)
     private CampaignType campaignType;
 
     @JoinColumn(name = "owner", referencedColumnName = "user_id", insertable = false, updatable = false)
