@@ -1,5 +1,6 @@
 package com.unidy.backend.domains.entity.relationship;
 
+import com.unidy.backend.domains.entity.Campaign;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
