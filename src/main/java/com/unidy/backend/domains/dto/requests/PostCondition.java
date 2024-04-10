@@ -19,6 +19,6 @@ public class PostCondition {
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private Date toDate;
     private CampaignStatus status;
-    private int limit;
-    private int skip;
+    private Integer pageNumber;
+    private Integer pageSize;
 }

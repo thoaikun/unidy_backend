@@ -64,6 +64,33 @@ public class TransactionResponse {
     }
 
     public TransactionResponse(
+            Integer transactionId,
+            String transactionType,
+            Date transactionTime,
+            Long transactionAmount,
+            String transactionCode,
+            String signature,
+            Integer organizationUserId,
+            Integer campaignId,
+            Integer userId,
+            String fullName,
+            String linkImages
+    ) {
+        this.transactionId = transactionId;
+        this.transactionType = transactionType;
+        this.transactionTime = transactionTime;
+        this.transactionAmount = transactionAmount;
+        this.transactionCode = transactionCode;
+        this.signature = signature;
+        this.organizationUserId = organizationUserId;
+        this.campaignId = campaignId;
+        this.user = new UserInfo();
+        this.user.userId = userId;
+        this.user.fullName = fullName;
+        this.user.linkImage = linkImages == null ? null : "https://unidy.s3.ap-southeast-1.amazonaws.com/" + "profile-images/" + userId + "/" + linkImages;
+    }
+
+    public TransactionResponse(
             Long transactionAmount,
             int organizationUserId,
             int campaignId,

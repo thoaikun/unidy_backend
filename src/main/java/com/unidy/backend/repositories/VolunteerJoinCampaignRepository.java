@@ -67,7 +67,7 @@ public interface VolunteerJoinCampaignRepository extends JpaRepository<Volunteer
                 AND c.campaignId = :campaignId
         ORDER BY vjc.timeJoin
     """)
-    List<ListVolunteerResponse> getListVolunteerNotApproved(@Param("organizationId") int organizationId, @Param("campaignId") int campaignId, Pageable pageable);
+    Page<ListVolunteerResponse> getListVolunteerNotApproved(@Param("organizationId") int organizationId, @Param("campaignId") int campaignId, Pageable pageable);
 
     @Query(value = """
         SELECT
@@ -93,7 +93,7 @@ public interface VolunteerJoinCampaignRepository extends JpaRepository<Volunteer
                 AND c.campaignId = :campaignId
         ORDER BY vjc.timeJoin
     """)
-    List<ListVolunteerResponse> getListVolunteerApproved(@Param("organizationId") int organizationId, @Param("campaignId") int campaignId, Pageable pageable);
+    Page<ListVolunteerResponse> getListVolunteerApproved(@Param("organizationId") int organizationId, @Param("campaignId") int campaignId, Pageable pageable);
 
     List<VolunteerJoinCampaign> findUserIdsByCampaignIdAndStatus(int campaignId, String status);
 

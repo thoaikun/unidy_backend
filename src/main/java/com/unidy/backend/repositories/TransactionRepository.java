@@ -3,6 +3,7 @@ package com.unidy.backend.repositories;
 import com.unidy.backend.domains.dto.responses.TransactionResponse;
 import com.unidy.backend.domains.entity.Transaction;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -90,7 +91,28 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
         WHERE t.campaignId = :campaignId
         GROUP BY u.userId
     """)
-    List<TransactionResponse> findTransactionsByCampaignId(int campaignId, Pageable pageable);
+    List<TransactionResponse> findTransactionsByCampaignIdAndGroupByUserId(int campaignId, Pageable pageable);
+
+    @Query("""
+        SELECT new com.unidy.backend.domains.dto.responses.TransactionResponse(
+            t.transactionId,
+            t.transactionType,
+            t.transactionTime,
+            t.transactionAmount,
+            t.transactionCode,
+            t.signature,
+            t.organizationUserId,
+            t.campaignId,
+            u.userId,
+            u.fullName,
+            upi.linkImage
+        )
+        FROM Transaction t
+        JOIN User u ON t.userId = u.userId
+        LEFT JOIN UserProfileImage upi ON u.userId = upi.userId
+        WHERE t.campaignId = :campaignId
+    """)
+    Page<TransactionResponse> findTransactionsByCampaignId(int campaignId, Pageable pageable);
 
     @Query("""
         SELECT new com.unidy.backend.domains.dto.responses.TransactionResponse(
@@ -128,6 +150,4 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
         WHERE t.userId = :organizationUserId AND t.transactionTime = CURRENT_DATE()
     """)
     Integer sumAmountTransactionByOrganizationUserIdInDay(Integer organizationUserId);
-
-    List<Transaction> findTransactionsByCampaignId(int campaignId);
 }

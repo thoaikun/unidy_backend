@@ -8,10 +8,7 @@ import com.unidy.backend.domains.Type.CampaignStatus;
 import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
 import com.unidy.backend.domains.dto.requests.PostCondition;
 import com.unidy.backend.domains.dto.requests.RegisterRequest;
-import com.unidy.backend.domains.dto.responses.AuthenticationResponse;
-import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
-import com.unidy.backend.domains.dto.responses.OrganizationInformation;
-import com.unidy.backend.domains.dto.responses.PostResponse;
+import com.unidy.backend.domains.dto.responses.*;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.PostNode;
 import com.unidy.backend.domains.role.Role;
@@ -21,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -51,8 +49,11 @@ public class AdminServiceImpl implements AdminService {
     private final AdminTokenRepository adminTokenRepository;
     private final OrganizationRepository organizationRepository;
     private final UserRepository userRepository;
-    private final Neo4j_CampaignRepository neo4jCampaignRepository;
+    private final CampaignRepository campaignRepository;
     private final SettlementRepository settlementRepository;
+    private final TransactionRepository transactionRepository;
+    private final VolunteerJoinCampaignRepository volunteerJoinCampaignRepository;
+    private final PostRepository postRepository;
 
     public ResponseEntity<?> register(RegisterRequest request) {
         try {
@@ -97,7 +98,7 @@ public class AdminServiceImpl implements AdminService {
     public ResponseEntity<?> getAllVolunteers(int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            List<User> users = userRepository.getUsersByRole(Role.VOLUNTEER, pageable);
+            Page<User> users = userRepository.getUsersByRole(Role.VOLUNTEER, pageable);
             return ResponseEntity.ok().body(users);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Có lỗi xảy ra"));
@@ -108,7 +109,7 @@ public class AdminServiceImpl implements AdminService {
     public ResponseEntity<?> getAllOrganizations(int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            List<OrganizationInformation> organizations = organizationRepository.getOrganizations(pageable);
+            Page<OrganizationInformation> organizations = organizationRepository.getOrganizations(pageable);
             return ResponseEntity.ok().body(organizations);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Có lỗi xảy ra"));
@@ -145,17 +146,66 @@ public class AdminServiceImpl implements AdminService {
         try {
             Date fromDate = postCondition.getFromDate() != null ? postCondition.getFromDate() : Date.from(LocalDateTime.now().minusDays(7).atZone(ZoneId.systemDefault()).toInstant());
             Date toDate = postCondition.getToDate() != null ? postCondition.getToDate() : Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
-            int limit = postCondition.getLimit() != 0 ? postCondition.getLimit() : 10;
-            int skip = postCondition.getSkip() != 0 ? postCondition.getSkip() : 0;
+            int pageNumber = postCondition.getPageNumber() != 0 ? postCondition.getPageNumber() : 0;
+            int pageSize = postCondition.getPageSize() != 0 ? postCondition.getPageSize() : 10;
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
+            Page<Campaign> campaigns;
             if (postCondition.getStatus() != null) {
-                List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponses = neo4jCampaignRepository.findCampaignPost(postCondition.getStatus(), postCondition.getFromDate(), postCondition.getToDate(), postCondition.getSkip(), postCondition.getLimit());
-                return ResponseEntity.ok().body(campaignPostResponses);
+                campaigns = campaignRepository.getCampaignsByStatusAndCreateDateBetween(postCondition.getStatus().toString(), fromDate, toDate, pageable);
+            } else {
+                campaigns = campaignRepository.getCampaignsByCreateDateBetween(fromDate, toDate, pageable);
             }
-            List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponses = neo4jCampaignRepository.findCampaignPostByCampaignDate(fromDate, toDate, skip, limit);
-            return ResponseEntity.ok().body(campaignPostResponses);
+            return ResponseEntity.ok().body(campaigns);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.toString());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getCampaignByCampaignId(Integer campaignId) {
+        try {
+            Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
+            return ResponseEntity.ok().body(campaign);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getTransactionByCampaignId(Integer campaignId, int pageNumber, int pageSize) {
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<TransactionResponse> transactions = transactionRepository.findTransactionsByCampaignId(campaignId, pageable);
+            return ResponseEntity.ok().body(transactions);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getApprovedVolunteers(int organizationId, int campaignId, int pageNumber, int pageSize) {
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<ListVolunteerResponse> volunteers = volunteerJoinCampaignRepository.getListVolunteerApproved(organizationId, campaignId, pageable);
+            return ResponseEntity.ok().body(volunteers);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getNotApprovedVolunteers(int organizationId, int campaignId, int pageNumber, int pageSize) {
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<ListVolunteerResponse> volunteers = volunteerJoinCampaignRepository.getListVolunteerNotApproved(organizationId, campaignId, pageable);
+            return ResponseEntity.ok().body(volunteers);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }
 
@@ -238,9 +288,10 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public ResponseEntity<?> getPostByDate(Date fromDate, Date toDate, int skip, int limit) {
+    public ResponseEntity<?> getPostByDate(Date fromDate, Date toDate, int pageNumber, int pageSize) {
         try {
-            List<PostResponse> posts = neo4jPostRepository.findPostNodeByDate(fromDate,toDate,skip,limit);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<Post> posts = postRepository.getPostsByCreateDateBetween(fromDate, toDate, pageable);
             return ResponseEntity.ok().body(posts);
         } catch (Exception e){
             return  ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -264,7 +315,6 @@ public class AdminServiceImpl implements AdminService {
 
         return Map.of("accessToken", jwtService.generateToken(user), "refreshToken", jwtService.generateRefreshToken(user), "isExpired", "true");
     }
-
 
     private void saveUserToken(Admin user, String jwtToken, String refreshToken) {
         var token = AdminToken.builder()

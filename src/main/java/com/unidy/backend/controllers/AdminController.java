@@ -5,6 +5,8 @@ import com.unidy.backend.domains.dto.requests.AuthenticationRequest;
 import com.unidy.backend.domains.dto.requests.PostCondition;
 import com.unidy.backend.domains.dto.requests.RegisterRequest;
 import com.unidy.backend.services.servicesInterface.AdminService;
+import com.unidy.backend.services.servicesInterface.CampaignService;
+import com.unidy.backend.services.servicesInterface.OrganizationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -21,6 +23,7 @@ import java.util.Date;
 
 public class AdminController {
     private final AdminService adminService;
+
     @PostMapping("/authenticate/register")
     public ResponseEntity<?> register(
             @RequestBody @Valid RegisterRequest request
@@ -56,7 +59,7 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/posts")
     public ResponseEntity<?> getPost(@RequestBody PostCondition postCondition) {
-        return adminService.getPostByDate(postCondition.getFromDate(), postCondition.getToDate(), postCondition.getSkip(), postCondition.getLimit());
+        return adminService.getPostByDate(postCondition.getFromDate(), postCondition.getToDate(), postCondition.getPageNumber(), postCondition.getPageSize());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -89,6 +92,38 @@ public class AdminController {
     @PostMapping("/campaigns")
     public ResponseEntity<?> getCampaign(@RequestBody PostCondition postCondition){
         return adminService.getCampaign(postCondition);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/campaigns/{campaignId}")
+    public ResponseEntity<?> getCampaignByCampaignId(@PathVariable Integer campaignId){
+        return adminService.getCampaignByCampaignId(campaignId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/campaigns/{campaignId}/transactions")
+    public ResponseEntity<?> getTransactionByCampaignId(@PathVariable int campaignId,
+                                                        @RequestParam("pageNumber") int pageNumber,
+                                                        @RequestParam("pageSize") int pageSize){
+        return adminService.getTransactionByCampaignId(campaignId, pageNumber, pageSize);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/campaigns/{campaignId}/volunteers/approved")
+    public ResponseEntity<?> getVolunteersByCampaignId(@PathVariable int campaignId,
+                                                       @RequestParam("organizationId") int organizationId,
+                                                       @RequestParam("pageNumber") int pageNumber,
+                                                       @RequestParam("pageSize") int pageSize){
+        return adminService.getApprovedVolunteers(organizationId, campaignId, pageNumber, pageSize);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/campaigns/{campaignId}/volunteers/unapproved")
+    public ResponseEntity<?> getVolunteersNotApprovedByCampaignId(@PathVariable int campaignId,
+                                                                 @RequestParam("organizationId") int organizationId,
+                                                                 @RequestParam("pageNumber") int pageNumber,
+                                                                 @RequestParam("pageSize") int pageSize){
+        return adminService.getNotApprovedVolunteers(organizationId, campaignId, pageNumber, pageSize);
     }
 
 

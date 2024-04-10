@@ -57,6 +57,6 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
         LEFT JOIN UserProfileImage upi
             ON o.userId = upi.userId
     """)
-    List<OrganizationInformation> getOrganizations(Pageable pageable);
+    Page<OrganizationInformation> getOrganizations(Pageable pageable);
 }
 
