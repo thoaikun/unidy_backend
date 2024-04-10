@@ -146,8 +146,8 @@ public class AdminServiceImpl implements AdminService {
         try {
             Date fromDate = postCondition.getFromDate() != null ? postCondition.getFromDate() : Date.from(LocalDateTime.now().minusDays(7).atZone(ZoneId.systemDefault()).toInstant());
             Date toDate = postCondition.getToDate() != null ? postCondition.getToDate() : Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
-            int pageNumber = postCondition.getPageNumber() != 0 ? postCondition.getPageNumber() : 0;
-            int pageSize = postCondition.getPageSize() != 0 ? postCondition.getPageSize() : 10;
+            int pageNumber = postCondition.getPageNumber() != null ? postCondition.getPageNumber() : 0;
+            int pageSize = postCondition.getPageSize() != null ? postCondition.getPageSize() : 10;
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
             Page<Campaign> campaigns;
