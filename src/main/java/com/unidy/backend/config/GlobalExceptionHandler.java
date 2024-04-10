@@ -1,5 +1,6 @@
 package com.unidy.backend.config;
 import com.unidy.backend.domains.ErrorResponseDto;
+import org.springframework.boot.json.JsonParseException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;

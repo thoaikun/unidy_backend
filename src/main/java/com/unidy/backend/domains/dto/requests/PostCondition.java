@@ -1,7 +1,9 @@
 package com.unidy.backend.domains.dto.requests;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.unidy.backend.domains.Type.CampaignStatus;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;

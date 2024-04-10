@@ -23,6 +23,7 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,6 +32,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.text.DateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -138,15 +143,16 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public ResponseEntity<?> getCampaign(PostCondition postCondition) {
         try {
-            if (postCondition.getStatus() != null && postCondition.getFromDate() != null & postCondition.getToDate() != null) {
+            Date fromDate = postCondition.getFromDate() != null ? postCondition.getFromDate() : Date.from(LocalDateTime.now().minusDays(7).atZone(ZoneId.systemDefault()).toInstant());
+            Date toDate = postCondition.getToDate() != null ? postCondition.getToDate() : Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
+            int limit = postCondition.getLimit() != 0 ? postCondition.getLimit() : 10;
+            int skip = postCondition.getSkip() != 0 ? postCondition.getSkip() : 0;
+
+            if (postCondition.getStatus() != null) {
                 List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponses = neo4jCampaignRepository.findCampaignPost(postCondition.getStatus(), postCondition.getFromDate(), postCondition.getToDate(), postCondition.getSkip(), postCondition.getLimit());
                 return ResponseEntity.ok().body(campaignPostResponses);
             }
-            if (postCondition.getStatus() != null){
-                List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponses = neo4jCampaignRepository.findCampaignPostByCampaignStatus(postCondition.getStatus(),postCondition.getSkip(),postCondition.getLimit());
-                return ResponseEntity.ok().body(campaignPostResponses);
-            }
-            List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponses = neo4jCampaignRepository.findCampaignPostByCampaignDate(postCondition.getFromDate(),postCondition.getToDate(),postCondition.getSkip(),postCondition.getLimit());
+            List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponses = neo4jCampaignRepository.findCampaignPostByCampaignDate(fromDate, toDate, skip, limit);
             return ResponseEntity.ok().body(campaignPostResponses);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.toString());
