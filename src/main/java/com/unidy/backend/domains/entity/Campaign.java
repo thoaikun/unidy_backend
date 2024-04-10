@@ -79,4 +79,8 @@ public class Campaign {
     @JoinColumn(name = "campaign_id")
     @OneToOne(cascade = CascadeType.ALL)
     private CampaignType campaignType;
+
+    @JoinColumn(name = "owner", referencedColumnName = "user_id", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Organization organization;
 }
