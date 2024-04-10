@@ -26,6 +26,6 @@ public class ListVolunteerResponse {
         this.timeJoin = timeJoin;
         this.status = status;
         this.campaignId = campaignId;
-        this.linkImage = linkImages == null ? null : "https://unidy.s3.ap-southeast-1.amazonaws.com/" + "profile-images/" + userId + "/" + linkImages;
+        this.linkImage = linkImages;
     }
 }

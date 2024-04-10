@@ -103,12 +103,8 @@ public class OrganizationServiceIplm implements OrganizationService {
             organizationInformation.setPhone(organization.get().getPhone());
             organizationInformation.setFirebaseTopic(organization.get().getFirebaseTopic());
             UserProfileImage image = userProfileImageRepository.findByUserId(organizationId);
-            if (image != null){
-                URL urlImage = s3Service.getObjectUrl(
-                        "unidy",
-                        "profile-images/%s/%s".formatted(organizationId, image.getLinkImage())
-                );
-                organizationInformation.setImage(urlImage.toString());
+            if (image != null) {
+                organizationInformation.setImage(image.getLinkImage());
             }
             return ResponseEntity.ok().body(organizationInformation);
         } catch (Exception exception){

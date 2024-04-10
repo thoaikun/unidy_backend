@@ -70,7 +70,7 @@ public class NotificationResponse {
         this.type = type;
         this.extra = new Gson().fromJson(extra, NotificationExtra.class);
         this.receiver = receiverId;
-        ownerLinkImages = ownerLinkImages == null ? null : "https://unidy.s3.ap-southeast-1.amazonaws.com/" + "profile-images/" + ownerId + "/" + ownerLinkImages;
+        ownerLinkImages = ownerLinkImages;
         this.owner = new UserInfo(ownerId, ownerFullName, ownerLinkImages);
     }
 }

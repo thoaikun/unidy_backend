@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "organization")
 
-public class Organization {
+    public class Organization {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "organization_id")
@@ -45,4 +45,8 @@ public class Organization {
 
     @Column(name = "is_approved")
     private Boolean isApproved;
+
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
+    @OneToOne(fetch = FetchType.EAGER)
+    private UserProfileImage userProfileImage;
 }

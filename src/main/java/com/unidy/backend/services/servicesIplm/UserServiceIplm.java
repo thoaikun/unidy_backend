@@ -69,14 +69,9 @@ public class UserServiceIplm implements UserService {
         information.setJob(user.getJob());
         information.setRole(user.getRole());
         information.setWorkLocation(user.getWorkLocation());
-
         UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
-        if (image != null){
-            URL urlImage = s3Service.getObjectUrl(
-                    "unidy",
-                    "profile-images/%s/%s".formatted(user.getUserId(), image.getLinkImage())
-            );
-            information.setImage(urlImage.toString());
+        if (image != null) {
+            information.setImage(image.getLinkImage());
         }
 
         return information ;
@@ -104,12 +99,8 @@ public class UserServiceIplm implements UserService {
                 information.setIsRequested(checkRelationship.isRequested());
                 information.setIsRequesting(checkRelationship.isRequesting());
                 UserProfileImage image = userProfileImageRepository.findByUserId(user.getUserId());
-                if (image != null){
-                    URL urlImage = s3Service.getObjectUrl(
-                            "unidy",
-                            "profile-images/%s/%s".formatted(user.getUserId(), image.getLinkImage())
-                    );
-                    information.setImage(urlImage.toString());
+                if (image != null) {
+                    information.setImage(image.getLinkImage());
                 }
                 return ResponseEntity.ok().body(information);
             }
@@ -187,16 +178,16 @@ public class UserServiceIplm implements UserService {
                         imageFile.getBytes()
                 );
 
+                String imageUrl = linkS3 + "profile-images/" + userId + "/" + profileImageId + fileContentType;
                 UserProfileImage image = userProfileImageRepository.findByUserId(userId);
                 if (image == null){
                     image = new UserProfileImage();
                 }
-                image.setLinkImage(profileImageId+fileContentType);
+                image.setLinkImage(imageUrl);
                 image.setUpdateDate(new Date());
                 image.setUserId(userId);
                 userProfileImageRepository.save(image);
 
-                String imageUrl = linkS3 + "profile-images/" + userId + "/" + profileImageId + fileContentType;
                 UserNode userNode = neo4jUserRepository.findUserNodeByUserId(userId);
                 userNode.setProfileImageLink(imageUrl);
                 neo4jUserRepository.save(userNode);
