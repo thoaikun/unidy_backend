@@ -54,7 +54,7 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/posts/date")
+    @PostMapping("/posts")
     public ResponseEntity<?> getPost(@RequestBody PostCondition postCondition) {
         return adminService.getPostByDate(postCondition.getFromDate(), postCondition.getToDate(), postCondition.getSkip(), postCondition.getLimit());
     }
@@ -86,7 +86,7 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/campaigns")
+    @PostMapping("/campaigns")
     public ResponseEntity<?> getCampaign(@RequestBody PostCondition postCondition){
         return adminService.getCampaign(postCondition);
     }
