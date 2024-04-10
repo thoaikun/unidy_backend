@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 @Data
@@ -17,19 +18,34 @@ import java.util.Date;
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     @Column(name = "post_id")
     private Integer optId;
 
     @Column(name = "content")
     private String content;
 
+    @Column(name = "status")
+    private String status;
+
     @Column(name = "create_date")
-    private Date createDate;
+    @Builder.Default
+    private Timestamp createDate = new Timestamp(System.currentTimeMillis());
 
     @Column(name = "update_date")
-    private Date updateDate;
+    @Builder.Default
+    private Timestamp updateDate = new Timestamp(System.currentTimeMillis());;
 
     @Column(name = "is_block")
-    private Boolean isBlock;
+    @Builder.Default
+    private Boolean isBlock = false;
+
+    @Column(name = "link_image")
+    private String linkImage;
+
+    @Column(name = "user_id")
+    private Integer userId;
+
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    private User user;
 }

@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.URL;
 import java.security.Principal;
+import java.sql.Timestamp;
 import java.util.*;
 
 @Service
@@ -128,7 +129,7 @@ public class OrganizationServiceIplm implements OrganizationService {
     public ResponseEntity<?> getListVolunteerNotApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            List<ListVolunteerResponse> listVolunteerNotApproved = volunteerJoinCampaignRepository.getListVolunteerNotApproved(organizationId,campaignId,pageable);
+            List<ListVolunteerResponse> listVolunteerNotApproved = volunteerJoinCampaignRepository.getListVolunteerNotApproved(organizationId,campaignId,pageable).getContent();
             return ResponseEntity.ok().body(listVolunteerNotApproved);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -138,7 +139,7 @@ public class OrganizationServiceIplm implements OrganizationService {
     public ResponseEntity<?> getListVolunteerApproved(int organizationId, int campaignId, int pageNumber, int pageSize){
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            List<ListVolunteerResponse> listVolunteerApproved = volunteerJoinCampaignRepository.getListVolunteerApproved(organizationId,campaignId,pageable);
+            List<ListVolunteerResponse> listVolunteerApproved = volunteerJoinCampaignRepository.getListVolunteerApproved(organizationId,campaignId,pageable).getContent();
             return ResponseEntity.ok().body(listVolunteerApproved);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -288,7 +289,7 @@ public class OrganizationServiceIplm implements OrganizationService {
                     .setMatchingStrategy(MatchingStrategies.STRICT)
                     .setSkipNullEnabled(true);
             modelMapper.map(campaignDto, campaign);
-            campaign.setUpdateDate(new Date());
+            campaign.setUpdateDate(new Timestamp(System.currentTimeMillis()));
             campaign.setUpdateBy(user.getUserId());
             campaignRepository.save(campaign);
 

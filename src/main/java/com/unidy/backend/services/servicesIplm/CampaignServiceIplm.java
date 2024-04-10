@@ -37,6 +37,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -65,8 +66,6 @@ public class CampaignServiceIplm implements CampaignService {
     public ResponseEntity<?> createCampaign(Principal connectedUser, CampaignRequest request) throws JsonProcessingException {
         try {
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                //neo4j
 
             JSONArray listImageLink =  new JSONArray();
             if (null != request.getListImageFile()){
@@ -97,56 +96,15 @@ public class CampaignServiceIplm implements CampaignService {
                 }
             }
 
+            Campaign campaign = Campaign.builder().build();
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            Campaign campaign_mysql = Campaign.builder()
-                    .title(request.getTitle())
-                    .description(request.getDescription())
-                    .status(request.getStatus())
-                    .numberVolunteer(request.getNumberVolunteer())
-                    .donationBudget(request.getDonationBudget())
-                    .startDate(request.getStartDate())
-                    .endDate((request.getEndDate()))
-                    .timeTakePlace(request.getTimeTakePlace())
-                    .location(request.getLocation())
-                    .createDate(dateFormat.format(new Date()))
-                    .hashTag(request.getHashTag())
-                    .link_image(listImageLink.toString())
-                    .owner(user.getUserId())
-                    .numberVolunteerRegistered(0)
-                    .build();
-            campaignRepository.save(campaign_mysql);
-
-            int campaignId = campaign_mysql.getCampaignId();
-            ObjectMapper objectMapper = new ObjectMapper();
-            CampaignType campaignType = objectMapper.readValue(request.getCategories(), CampaignType.class);
-            campaignType.setCampaignId(campaignId);
-            campaignTypeRepository.save(campaignType);
-
-            UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
-            CampaignNode campaign = new CampaignNode() ;
-            campaign.setCampaignId(campaign_mysql.getCampaignId().toString());
-            campaign.setContent(request.getDescription());
-            campaign.setTitle(request.getTitle());
-            campaign.setStatus(request.getStatus());
-            campaign.setNumOfRegister(request.getNumberVolunteer());
-            campaign.setCreateDate(sdf.format(new Date()));
-            campaign.setStartDate(request.getStartDate().toString());
-            campaign.setEndDate(request.getEndDate().toString());
-            campaign.setTimeTakePlace(request.getTimeTakePlace().toString());
-            campaign.setLocation(request.getLocation());
-            campaign.setIsBlock(false);
-            campaign.setHashTag(request.getHashTag());
-            campaign.setUserNode(campaignOrganization);
-            campaign.setLinkImage(listImageLink.toString());
-            campaign.setUpdateDate(null);
-            campaign.setDonationBudget(request.getDonationBudget());
-            campaign.setDonationBudgetReceived(0);
-            neo4jCampaignRepository.save(campaign);
+            CompletableFuture<Integer> saveCampaignToMySQL = saveCampaignToMySQL(request, user, listImageLink.toString(), campaign);
+            CompletableFuture<Integer> saveCampaignToNeo4J = saveCampaignToNeo4J(request, user, listImageLink.toString(), campaign);
+            CompletableFuture.allOf(saveCampaignToMySQL, saveCampaignToNeo4J).join();
 
             Optional<Organization> organization = organizationRepository.findByUserId(user.getUserId());
             if (organization.isPresent()) {
-                ExtraData extraData = new NewCampaignData(campaignId, organization.get().getOrganizationId(), request.getTitle());
+                ExtraData extraData = new NewCampaignData(campaign.getCampaignId(), organization.get().getOrganizationId(), request.getTitle());
 
                 NotificationDto notification = NotificationDto.builder()
                         .title(organization.get().getOrganizationName() + " tổ chức chiến dịch mới")
@@ -157,7 +115,7 @@ public class CampaignServiceIplm implements CampaignService {
                 firebaseService.pushNotificationToTopic(notification);
                 List<Integer> followerIds = neo4j_UserRepository.getFollowers(user.getUserId());
                 Map<String, String> extra = new HashMap<>();
-                extra.put("id", campaign.getCampaignId());
+                extra.put("id", campaign.getCampaignId().toString());
                 firebaseService.saveNotification(organization.get().getUserId(), followerIds,
                         NotificationType.NEW_CAMPAIGN, organization.get().getOrganizationName() + " tổ chức chiến dịch mới",
                         request.getDescription(), new Gson().toJson(extra));
@@ -167,7 +125,69 @@ public class CampaignServiceIplm implements CampaignService {
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
+    }
 
+    @Async("threadPoolTaskExecutor")
+    protected CompletableFuture<Integer> saveCampaignToMySQL(CampaignRequest request, User user, String linkImages, Campaign campaign) {
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            campaign.setTitle(request.getTitle());
+            campaign.setDescription(request.getDescription());
+            campaign.setStatus(request.getStatus());
+            campaign.setNumberVolunteer(request.getNumberVolunteer());
+            campaign.setDonationBudget(request.getDonationBudget());
+            campaign.setStartDate(request.getStartDate());
+            campaign.setEndDate((request.getEndDate()));
+            campaign.setTimeTakePlace(request.getTimeTakePlace());
+            campaign.setLocation(request.getLocation());
+            campaign.setCreateDate(new Timestamp(System.currentTimeMillis()));
+            campaign.setHashTag(request.getHashTag());
+            campaign.setLink_image(linkImages);
+            campaign.setOwner(user.getUserId());
+            campaign.setNumberVolunteerRegistered(0);
+            campaignRepository.save(campaign);
+            return CompletableFuture.completedFuture(0);
+        }
+        catch (Exception e){
+            return CompletableFuture.completedFuture(1);
+        }
+    }
+
+    @Async("threadPoolTaskExecutor")
+    protected CompletableFuture<Integer> saveCampaignToNeo4J(CampaignRequest request, User user, String linkImages, Campaign campaign) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            int campaignId = campaign.getCampaignId();
+            ObjectMapper objectMapper = new ObjectMapper();
+            CampaignType campaignType = objectMapper.readValue(request.getCategories(), CampaignType.class);
+            campaignType.setCampaignId(campaignId);
+            campaignTypeRepository.save(campaignType);
+
+            UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
+            CampaignNode campaignNode = new CampaignNode() ;
+            campaignNode.setCampaignId(campaign.getCampaignId().toString());
+            campaignNode.setContent(request.getDescription());
+            campaignNode.setTitle(request.getTitle());
+            campaignNode.setStatus(request.getStatus());
+            campaignNode.setNumOfRegister(request.getNumberVolunteer());
+            campaignNode.setCreateDate(sdf.format(new Date()));
+            campaignNode.setStartDate(request.getStartDate().toString());
+            campaignNode.setEndDate(request.getEndDate().toString());
+            campaignNode.setTimeTakePlace(request.getTimeTakePlace().toString());
+            campaignNode.setLocation(request.getLocation());
+            campaignNode.setIsBlock(false);
+            campaignNode.setHashTag(request.getHashTag());
+            campaignNode.setUserNode(campaignOrganization);
+            campaignNode.setLinkImage(linkImages);
+            campaignNode.setUpdateDate(null);
+            campaignNode.setDonationBudget(request.getDonationBudget());
+            campaignNode.setDonationBudgetReceived(0);
+            neo4jCampaignRepository.save(campaignNode);
+            return CompletableFuture.completedFuture(0);
+        }
+        catch (Exception e){
+            return CompletableFuture.completedFuture(1);
+        }
     }
 
     @Transactional
@@ -283,7 +303,7 @@ public class CampaignServiceIplm implements CampaignService {
     public ResponseEntity<?> getTransactionByCampaignId(int campaignId, int pageNumber, int pageSize) {
         try {
             Pageable pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
-            List<TransactionResponse> transactions = transactionRepository.findTransactionsByCampaignId(campaignId, pageable);
+            List<TransactionResponse> transactions = transactionRepository.findTransactionsByCampaignIdAndGroupByUserId(campaignId, pageable);
             return ResponseEntity.ok().body(transactions);
         }
         catch (Exception e){

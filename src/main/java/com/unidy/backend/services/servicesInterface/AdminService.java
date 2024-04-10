@@ -33,4 +33,12 @@ public interface AdminService {
     ResponseEntity<?> confirmSettlements(int settlementId, Principal userConnected);
 
     ResponseEntity<?> getCampaign(PostCondition postCondition);
+
+    ResponseEntity<?> getCampaignByCampaignId(Integer campaignId);
+
+    ResponseEntity<?> getTransactionByCampaignId(Integer campaignId, int pageNumber, int pageSize);
+
+    ResponseEntity<?> getApprovedVolunteers(int organizationId, int campaignId, int pageNumber, int pageSize);
+
+    ResponseEntity<?> getNotApprovedVolunteers(int organizationId, int campaignId, int pageNumber, int pageSize);
 }

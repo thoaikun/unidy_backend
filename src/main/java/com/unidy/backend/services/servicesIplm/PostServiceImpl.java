@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +38,7 @@ public class PostServiceImpl implements PostService {
     private final Neo4j_PostRepository neo4j_postRepository;
     private final Neo4j_UserRepository userRepository;
     private final S3Service s3Service;
-    private final MySQL_PostRepository mySQL_postRepository;
+    private final PostRepository postRepository;
     private final Environment environment;
     private final Neo4j_UserRepository neo4j_userRepository;
     private final Neo4j_CommentRepository neo4jCommentRepository;
@@ -70,58 +71,92 @@ public class PostServiceImpl implements PostService {
             return ResponseEntity.badRequest().body((new ErrorResponseDto(e.toString())));
         }
     }
+
+    @Transactional
     public ResponseEntity<?> createPost(Principal connectedUser, PostRequest request){
-        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        // for mysql storage
-        String linkS3 = environment.getProperty("LINK_S3");
+        try {
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+            // for mysql storage
+            String linkS3 = environment.getProperty("LINK_S3");
+            JSONArray listImageLink =  new JSONArray();
+            if (request.getListImageFile() != null){
+                for (MultipartFile image : request.getListImageFile()){
+                    String postImageId = UUID.randomUUID().toString();
+                    String fileContentType = image.getContentType();
+                    try {
+                        if (fileContentType != null &&
+                                (fileContentType.equals("image/png") ||
+                                        fileContentType.equals("image/jpeg") ||
+                                        fileContentType.equals("image/jpg"))) {
+                            fileContentType = fileContentType.replace("image/",".");
+                            s3Service.putObject(
+                                    "unidy",
+                                    fileContentType,
+                                    "post-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),
+                                    image.getBytes()
+                            );
 
-
-        PostNode post = new PostNode();
-        UserNode userNode = userRepository.findUserNodeByUserId(user.getUserId());
-        JSONArray listImageLink =  new JSONArray();
-        if (request.getListImageFile() != null){
-            for (MultipartFile image : request.getListImageFile()){
-                String postImageId = UUID.randomUUID().toString();
-                String fileContentType = image.getContentType();
-                try {
-                    if (fileContentType != null &&
-                            (fileContentType.equals("image/png") ||
-                                    fileContentType.equals("image/jpeg") ||
-                                    fileContentType.equals("image/jpg"))) {
-                        fileContentType = fileContentType.replace("image/",".");
-                        s3Service.putObject(
-                                "unidy",
-                                fileContentType,
-                                "post-images/%s/%s".formatted(user.getUserId(), postImageId+fileContentType ),
-                                image.getBytes()
-                        );
-
-                        String imageUrl = linkS3 + "post-images/" + user.getUserId() + "/" + postImageId + fileContentType;
-                        listImageLink.put(imageUrl);
-                    } else {
-                        return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
+                            String imageUrl = linkS3 + "post-images/" + user.getUserId() + "/" + postImageId + fileContentType;
+                            listImageLink.put(imageUrl);
+                        } else {
+                            return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
+                        }
+                    } catch (Exception e) {
+                        return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
                     }
-                } catch (Exception e) {
-                    return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
                 }
             }
+
+            CompletableFuture<Integer> savePostToMySQL = savePostToMySQL(request, listImageLink.toString(), user.getUserId());
+            CompletableFuture<Integer> savePostToNeo4j = savePostToNeo4j(request, listImageLink.toString(), user.getUserId());
+
+            List<Integer> results = CompletableFuture.allOf(savePostToMySQL, savePostToNeo4j).thenApplyAsync(
+                    v -> List.of(savePostToMySQL.join(), savePostToNeo4j.join())
+            ).join();
+
+            return ResponseEntity.ok().body(new SuccessReponse("Create success"));
         }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
 
-        post.setLinkImage(listImageLink.toString());
-        post.setPostId(LocalDateTime.now().toString()+'_'+user.getUserId().toString());
-        post.setContent(request.getContent());
-        post.setStatus(request.getStatus());
+    @Async("threadPoolTaskExecutor")
+    protected CompletableFuture<Integer> savePostToMySQL(PostRequest postRequest, String linkImages, Integer userId) {
+        try {
+            Post post = Post.builder()
+                            .content(postRequest.getContent())
+                            .status(postRequest.getStatus())
+                            .linkImage(linkImages)
+                            .userId(userId)
+                            .build();
+            postRepository.save(post);
+            return CompletableFuture.completedFuture(0);
+        } catch (Exception e){
+            return CompletableFuture.completedFuture(1);
+        }
+    }
 
-        Date date = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        post.setCreateDate(sdf.format(date));
-        post.setUpdateDate(null);
-        post.setIsBlock(false);
-
-        post.setUserNode(userNode);
-        // for neo4j storage
-        neo4j_postRepository.save(post);
-        return ResponseEntity.ok().body(new SuccessReponse("Create success"));
+    @Async("threadPoolTaskExecutor")
+    protected CompletableFuture<Integer> savePostToNeo4j(PostRequest postRequest, String linkImages, Integer userId) {
+        try {
+            PostNode post = new PostNode();
+            UserNode userNode = userRepository.findUserNodeByUserId(userId);
+            post.setLinkImage(linkImages);
+            post.setPostId(LocalDateTime.now().toString()+'_'+userId.toString());
+            post.setContent(postRequest.getContent());
+            post.setStatus(postRequest.getStatus());
+            Date date = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            post.setCreateDate(sdf.format(date));
+            post.setUpdateDate(null);
+            post.setIsBlock(false);
+            post.setUserNode(userNode);
+            neo4j_postRepository.save(post);
+            return CompletableFuture.completedFuture(0);
+        } catch (Exception e){
+            return CompletableFuture.completedFuture(1);
+        }
     }
 
     public ResponseEntity<?> updatePost(Principal connectedUser, PostRequest updateRequest){

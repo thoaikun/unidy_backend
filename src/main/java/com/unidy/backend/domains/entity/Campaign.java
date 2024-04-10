@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 @Data
@@ -56,10 +57,12 @@ public class Campaign {
     private String status;
 
     @Column(name = "create_day")
-    private String createDate;
+    @Builder.Default
+    private Timestamp createDate = new Timestamp(System.currentTimeMillis());
 
     @Column(name = "update_day")
-    private Date updateDate;
+    @Builder.Default
+    private Timestamp updateDate = new Timestamp(System.currentTimeMillis());
 
     @Column(name = "update_by")
     private Integer updateBy;
