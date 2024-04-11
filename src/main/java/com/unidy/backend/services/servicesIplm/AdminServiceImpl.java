@@ -85,9 +85,11 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public ResponseEntity<?> approveOrganization(int organizationId) {
         try {
-            Organization organization = organizationRepository.findByOrganizationId(organizationId);
-            organization.setIsApproved(true);
-            organizationRepository.save(organization);
+            Optional<Organization> organization = organizationRepository.findByUserId(organizationId);
+            if (organization.isEmpty())
+                return ResponseEntity.notFound().build();
+            organization.get().setIsApproved(true);
+            organizationRepository.save(organization.get());
             return ResponseEntity.ok().body("Approve Success");
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.toString());

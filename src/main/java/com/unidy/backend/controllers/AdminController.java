@@ -69,7 +69,7 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/organization/{organizationId}/approve")
+    @PatchMapping("/organizations/{organizationId}/approve")
     public ResponseEntity<?> approveOrganization(@PathVariable int organizationId){
         return adminService.approveOrganization(organizationId);
     }
