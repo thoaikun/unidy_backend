@@ -111,7 +111,7 @@ public class PostServiceImpl implements PostService {
             CompletableFuture<Integer> savePostToNeo4j = savePostToNeo4j(request, listImageLink.toString(), user.getUserId());
 
             List<Integer> results = CompletableFuture.allOf(savePostToMySQL, savePostToNeo4j).thenApplyAsync(
-                    v -> List.of(savePostToMySQL.join(), savePostToNeo4j.join())
+                v -> List.of(savePostToMySQL.join(), savePostToNeo4j.join())
             ).join();
 
             return ResponseEntity.ok().body(new SuccessReponse("Create success"));
@@ -125,6 +125,7 @@ public class PostServiceImpl implements PostService {
     protected CompletableFuture<Integer> savePostToMySQL(PostRequest postRequest, String linkImages, Integer userId) {
         try {
             Post post = Post.builder()
+                            .postId(LocalDateTime.now().toString() + '_' + userId.toString())
                             .content(postRequest.getContent())
                             .status(postRequest.getStatus())
                             .linkImage(linkImages)

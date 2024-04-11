@@ -63,6 +63,12 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/posts/{postId}")
+    public ResponseEntity<?> getPostByPostId(@PathVariable String postId){
+        return adminService.getPostByPostId(postId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/organization/{organizationId}/approve")
     public ResponseEntity<?> approveOrganization(@PathVariable int organizationId){
         return adminService.approveOrganization(organizationId);

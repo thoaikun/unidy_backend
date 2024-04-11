@@ -13,4 +13,6 @@ import java.util.Date;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {
     Page<Post> getPostsByCreateDateBetween(Date startDate, Date endDate, Pageable pageable);
+
+    Post getPostByPostId(String postId);
 }
