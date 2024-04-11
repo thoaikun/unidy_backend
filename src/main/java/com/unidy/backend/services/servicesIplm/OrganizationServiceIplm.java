@@ -60,13 +60,6 @@ public class OrganizationServiceIplm implements OrganizationService {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         try {
             OrganizationInformation organizationInformation = organizationRepository.getOrganizationInformation(user.getUserId());
-            if (organizationInformation.getImage() != null){
-                URL urlImage = s3Service.getObjectUrl(
-                        "unidy",
-                        "profile-images/%s/%s".formatted(organizationInformation.getUserId(), organizationInformation.getImage())
-                );
-                organizationInformation.setImage(urlImage.toString());
-            }
             Integer totalCampaign = campaignRepository.countCampaignByOwner(user.getUserId());
             Integer totalVolunteer = volunteerJoinCampaignRepository.countVolunteerByOrganizationId(user.getUserId());
             Integer totalAmountTransaction = transactionRepository.sumAmountTransactionByOrganizationUserId(user.getUserId());
