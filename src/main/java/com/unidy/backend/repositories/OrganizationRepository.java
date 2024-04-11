@@ -58,5 +58,27 @@ public interface OrganizationRepository extends JpaRepository<Organization,Integ
             ON o.userId = upi.userId
     """)
     Page<OrganizationInformation> getOrganizations(Pageable pageable);
+
+    @Query("""
+        SELECT new com.unidy.backend.domains.dto.responses.OrganizationInformation(
+            o.userId,
+            o.organizationName,
+            o.address,
+            o.phone,
+            o.email,
+            o.country,
+            upi.linkImage,
+            o.firebaseTopic,
+            false,
+            o.isApproved
+        )
+        FROM Organization o
+        JOIN User u
+            ON o.userId = u.userId
+        LEFT JOIN UserProfileImage upi
+            ON o.userId = upi.userId
+        WHERE o.isApproved = :isApproved
+    """)
+    Page<OrganizationInformation> getOrganizationByIsApproved(boolean isApproved, Pageable pageable);
 }
 

@@ -41,4 +41,10 @@ public interface AdminService {
     ResponseEntity<?> getApprovedVolunteers(int organizationId, int campaignId, int pageNumber, int pageSize);
 
     ResponseEntity<?> getNotApprovedVolunteers(int organizationId, int campaignId, int pageNumber, int pageSize);
+
+    ResponseEntity<?> getNotApprovedOrganizations(int pageNumber, int pageSize);
+
+    ResponseEntity<?> getVolunteerByVolunteerId(int volunteerId);
+
+    ResponseEntity<?> getOrganizationInformation(int organizationId);
 }
