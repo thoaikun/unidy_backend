@@ -46,6 +46,36 @@ public interface CampaignRepository extends JpaRepository<Campaign,Integer> {
 
     Integer countCampaignByOwner(Integer userId);
 
+    @Query("""
+        SELECT new com.unidy.backend.domains.entity.Campaign(
+            c.campaignId,
+            c.title,
+            c.description,
+            c.numberVolunteer,
+            c.numberVolunteerRegistered,
+            c.donationBudget,
+            c.donationBudgetReceived,
+            c.startDate,
+            c.endDate,
+            c.timeTakePlace,
+            c.location,
+            c.status,
+            c.createDate,
+            c.updateDate,
+            c.updateBy,
+            c.owner,
+            c.hashTag,
+            c.link_image,
+            ct,
+            o
+        )
+        FROM Campaign c
+        JOIN Organization o
+            ON c.owner = o.userId
+        JOIN CampaignType ct
+            ON c.campaignId = ct.campaignId
+        WHERE c.owner = :organizationId
+    """)
     List<Campaign> getCampaignsByOwner(Integer organizationId, Pageable pageable);
 
     @Query("""

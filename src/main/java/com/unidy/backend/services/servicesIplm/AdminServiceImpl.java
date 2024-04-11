@@ -247,6 +247,17 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    public ResponseEntity<?> getPostByPostId(String postId) {
+        try {
+            Post post = postRepository.getPostByPostId(postId);
+            return ResponseEntity.ok().body(post);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    @Override
     public ResponseEntity<?> authenticate(AuthenticationRequest request) {
         try {
             authenticationManager.authenticate(

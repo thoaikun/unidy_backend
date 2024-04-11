@@ -47,4 +47,6 @@ public interface AdminService {
     ResponseEntity<?> getVolunteerByVolunteerId(int volunteerId);
 
     ResponseEntity<?> getOrganizationInformation(int organizationId);
+
+    ResponseEntity<?> getPostByPostId(String postId);
 }
