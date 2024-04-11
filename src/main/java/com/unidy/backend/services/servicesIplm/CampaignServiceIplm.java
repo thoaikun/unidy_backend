@@ -173,9 +173,9 @@ public class CampaignServiceIplm implements CampaignService {
             campaignNode.setStatus(request.getStatus());
             campaignNode.setNumOfRegister(request.getNumberVolunteer());
             campaignNode.setCreateDate(sdf.format(new Date()));
-            campaignNode.setStartDate(request.getStartDate().toString());
-            campaignNode.setEndDate(request.getEndDate().toString());
-            campaignNode.setTimeTakePlace(request.getTimeTakePlace().toString());
+            campaignNode.setStartDate(sdf.format(request.getStartDate()));
+            campaignNode.setEndDate(sdf.format(request.getEndDate()));
+            campaignNode.setTimeTakePlace(sdf.format(request.getTimeTakePlace()));
             campaignNode.setLocation(request.getLocation());
             campaignNode.setIsBlock(false);
             campaignNode.setHashTag(request.getHashTag());
