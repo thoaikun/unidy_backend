@@ -47,6 +47,7 @@ public class UserServiceIplm implements UserService {
     private final DtoMapper dtoMapper;
     private final S3Service s3Service;
     private final UserRepository userRepository;
+    private final UserDeviceFcmTokenRepository userDeviceFcmTokenRepository;
     private final OrganizationRepository organizationRepository;
     private final UserProfileImageRepository userProfileImageRepository;
     private final Neo4j_UserRepository neo4jUserRepository;
@@ -211,10 +212,10 @@ public class UserServiceIplm implements UserService {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
             neo4jUserRepository.friendInviteRequest(user.getUserId(), friendId, sdf.format(date).toString());
 
-            User friend = userRepository.findByUserId(friendId);
+            List<UserDeviceFcmToken> friendDeviceTokens = userDeviceFcmTokenRepository.findByUserId(friendId);
             ExtraData extraData = new FriendRequestData(user.getUserId(), user.getFullName());
             ArrayList<String> deviceTokens = new ArrayList<>();
-            for (UserDeviceFcmToken deviceToken : friend.getUserDeviceFcmTokens()) {
+            for (UserDeviceFcmToken deviceToken : friendDeviceTokens) {
                 deviceTokens.add(deviceToken.getFcmToken());
             }
 
@@ -250,10 +251,10 @@ public class UserServiceIplm implements UserService {
                 neo4jUserRepository.declineInviteRequest(user.getUserId(),friendId);
                 neo4jUserRepository.createFriendship(user.getUserId(),friendId);
 
-                User requestUser = userRepository.findByUserId(friendId);
+                List<UserDeviceFcmToken> requestUserDeviceTokens = userDeviceFcmTokenRepository.findByUserId(friendId);
                 ExtraData extraData = new FriendAcceptData(user.getUserId(), user.getFullName());
                 ArrayList<String> deviceTokens = new ArrayList<>();
-                for (UserDeviceFcmToken deviceToken : requestUser.getUserDeviceFcmTokens()) {
+                for (UserDeviceFcmToken deviceToken : requestUserDeviceTokens) {
                     deviceTokens.add(deviceToken.getFcmToken());
                 }
 

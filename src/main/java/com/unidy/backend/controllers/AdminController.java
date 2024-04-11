@@ -76,10 +76,29 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/volunteers/{volunteerId}")
+    public ResponseEntity<?> getVolunteerByVolunteerId(@PathVariable int volunteerId){
+        return adminService.getVolunteerByVolunteerId(volunteerId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/organizations")
     public ResponseEntity<?> getAllOrganizations(@RequestParam("pageNumber") int pageNumber,
                                                  @RequestParam("pageSize") int pageSize){
         return adminService.getAllOrganizations(pageNumber, pageSize);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/organizations/{organizationId}")
+    public ResponseEntity<?> getOrganizationInformation(@PathVariable int organizationId){
+        return adminService.getOrganizationInformation(organizationId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/organizations/unapproved")
+    public ResponseEntity<?> getNotApprovedOrganizations(@RequestParam("pageNumber") int pageNumber,
+                                                         @RequestParam("pageSize") int pageSize){
+        return adminService.getNotApprovedOrganizations(pageNumber, pageSize);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

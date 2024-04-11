@@ -98,7 +98,7 @@ public class AdminServiceImpl implements AdminService {
     public ResponseEntity<?> getAllVolunteers(int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            Page<User> users = userRepository.getUsersByRole(Role.VOLUNTEER, pageable);
+            Page<UserInfoForAdminResponse> users = userRepository.getAllUserInfoForAdminByRole(Role.VOLUNTEER, pageable);
             return ResponseEntity.ok().body(users);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Có lỗi xảy ra"));
@@ -203,6 +203,43 @@ public class AdminServiceImpl implements AdminService {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
             Page<ListVolunteerResponse> volunteers = volunteerJoinCampaignRepository.getListVolunteerNotApproved(organizationId, campaignId, pageable);
             return ResponseEntity.ok().body(volunteers);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getNotApprovedOrganizations(int pageNumber, int pageSize) {
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<OrganizationInformation> organizations = organizationRepository.getOrganizationByIsApproved(false, pageable);
+            return ResponseEntity.ok().body(organizations);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getVolunteerByVolunteerId(int volunteerId) {
+        try {
+            UserInfoForAdminResponse user = userRepository.getUserInfoForAdminById(volunteerId);
+            return ResponseEntity.ok().body(user);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getOrganizationInformation(int organizationId) {
+        try {
+            OrganizationInformation organizationInformation = organizationRepository.getOrganizationInformation(organizationId);
+            if (organizationInformation == null)
+                return ResponseEntity.notFound().build();
+
+            return ResponseEntity.ok().body(organizationInformation);
         }
         catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
