@@ -13,7 +13,6 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 @NoArgsConstructor
 @AllArgsConstructor
 @Node("comment")
-
 public class CommentNode implements Neo4JNode {
     @Id
     @Property("comment_id")

@@ -360,7 +360,7 @@ public class CampaignServiceIplm implements CampaignService {
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public ResponseEntity<?> comment(Principal connectedUser, String campaignId, String content) {
         try {
             if (campaignId == null) {
