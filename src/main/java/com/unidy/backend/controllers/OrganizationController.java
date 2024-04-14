@@ -5,6 +5,7 @@ import com.unidy.backend.domains.dto.notification.NotificationDto;
 import com.unidy.backend.domains.dto.requests.ApproveVolunteerRequest;
 import com.unidy.backend.domains.dto.requests.CampaignDto;
 import com.unidy.backend.domains.entity.User;
+import com.unidy.backend.domains.entity.VolunteerJoinCampaign;
 import com.unidy.backend.services.servicesInterface.OrganizationService;
 import com.unidy.backend.services.servicesIplm.CertificateServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,11 +42,7 @@ public class OrganizationController {
     @GetMapping("/campaigns/{campaignId}/not-approved-volunteers")
     public ResponseEntity<?> getListVolunteer(Principal connectedUser, @PathVariable("campaignId") int campaignId, @RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        try {
-            return ResponseEntity.ok(organizationService.getListVolunteerNotApproved(user.getUserId(), campaignId, pageNumber, pageSize));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.getMessage()));
-        }
+        return organizationService.getListVolunteerNotApproved(user.getUserId(), campaignId, pageNumber, pageSize);
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
@@ -68,11 +66,7 @@ public class OrganizationController {
         @RequestParam("pageSize") int pageSize
     ) {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        try {
-            return ResponseEntity.ok(organizationService.getListVolunteerApproved(user.getUserId(), campaignId, pageNumber, pageSize));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.getMessage()));
-        }
+        return organizationService.getListVolunteerApproved(user.getUserId(), campaignId, pageNumber, pageSize);
     }
 
     @PreAuthorize("hasRole('ORGANIZATION')")
