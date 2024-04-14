@@ -1,7 +1,6 @@
 package com.unidy.backend.repositories;
 
 import com.unidy.backend.domains.dto.responses.ListVolunteerResponse;
-import com.unidy.backend.domains.dto.responses.VolunteerJoinResponse;
 import com.unidy.backend.domains.entity.VolunteerJoinCampaign;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -17,8 +16,34 @@ import java.util.List;
 
 @Repository
 public interface VolunteerJoinCampaignRepository extends JpaRepository<VolunteerJoinCampaign, Integer> {
+    @Query("""
+        SELECT new com.unidy.backend.domains.entity.VolunteerJoinCampaign(
+            vjc.userId,
+            vjc.campaignId,
+            vjc.timeJoin,
+            vjc.status,
+            c
+        )
+        FROM VolunteerJoinCampaign vjc
+        JOIN Campaign c
+            ON vjc.campaignId = c.campaignId
+        WHERE vjc.userId = :userId AND vjc.campaignId = :campaignId
+    """)
     VolunteerJoinCampaign findVolunteerJoinCampaignByUserIdAndCampaignId(Integer userId, int campaignId);
 
+    @Query("""
+        SELECT new com.unidy.backend.domains.entity.VolunteerJoinCampaign(
+            vjc.userId,
+            vjc.campaignId,
+            vjc.timeJoin,
+            vjc.status,
+            c
+        )
+        FROM VolunteerJoinCampaign vjc
+        JOIN Campaign c
+            ON vjc.campaignId = c.campaignId
+        WHERE vjc.userId IN :volunteerIds AND vjc.campaignId = :campaignId
+    """)
     List<VolunteerJoinCampaign> findVolunteerJoinCampaignByCampaignIdAndUserIdIn(int campaignId, Collection<Integer> volunteerIds);
 
     @Modifying
@@ -39,8 +64,36 @@ public interface VolunteerJoinCampaignRepository extends JpaRepository<Volunteer
     """)
     void rejectVolunteerJoinCampaignByCampaignIdAndUserIdIn(int campaignId, Collection<Integer> volunteerIds);
 
+    @Query("""
+            SELECT new com.unidy.backend.domains.entity.VolunteerJoinCampaign(
+                vjc.userId,
+                vjc.campaignId,
+                vjc.timeJoin,
+                vjc.status,
+                c
+            )
+            FROM VolunteerJoinCampaign vjc
+            JOIN Campaign c
+                ON vjc.campaignId = c.campaignId
+            WHERE vjc.userId = :userId
+    """)
     List<VolunteerJoinCampaign> findVolunteerJoinCampaignByUserId(Integer userId, Pageable pageable);
 
+    @Query(
+        """
+        SELECT new com.unidy.backend.domains.entity.VolunteerJoinCampaign(
+            vjc.userId,
+            vjc.campaignId,
+            vjc.timeJoin,
+            vjc.status,
+            c
+        )
+        FROM VolunteerJoinCampaign vjc
+        JOIN Campaign c
+            ON vjc.campaignId = c.campaignId
+        WHERE vjc.campaignId in :campaignIds AND vjc.userId = :userId
+        """
+    )
     List<VolunteerJoinCampaign> findVolunteerJoinCampaignByCampaignIdInAndUserId(List<Integer> campaignIds, Integer userId);
 
     @Query(value = """
@@ -95,6 +148,19 @@ public interface VolunteerJoinCampaignRepository extends JpaRepository<Volunteer
     """)
     Page<ListVolunteerResponse> getListVolunteerApproved(@Param("organizationId") int organizationId, @Param("campaignId") int campaignId, Pageable pageable);
 
+    @Query("""
+        SELECT new com.unidy.backend.domains.entity.VolunteerJoinCampaign(
+            vjc.userId,
+            vjc.campaignId,
+            vjc.timeJoin,
+            vjc.status,
+            c
+        )
+        FROM VolunteerJoinCampaign vjc
+        JOIN Campaign c
+            ON vjc.campaignId = c.campaignId
+        WHERE vjc.campaignId = :campaignId AND vjc.status = :status
+    """)
     List<VolunteerJoinCampaign> findUserIdsByCampaignIdAndStatus(int campaignId, String status);
 
     @Query("""
