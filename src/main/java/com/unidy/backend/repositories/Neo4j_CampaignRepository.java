@@ -53,6 +53,12 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
     CampaignNode findCampaignNodeByCampaignId(String campaignId);
 
     @Query("""
+          OPTIONAL MATCH (user1:user {user_id: $userId})-[r:LIKE]->(campaign:campaign {campaign_id: $campaignId})
+          RETURN CASE WHEN r IS NOT NULL THEN true ELSE false END
+     """)
+    boolean isLikedCampaign(int userId, String campaignId);
+
+    @Query("""
             CALL db.index.fulltext.queryNodes("searchCampaignIndex", $searchTerm) YIELD node, score
             WITH node, score
             MATCH (organizationNode:user {role:"ORGANIZATION"})-[r:HAS_CAMPAIGN]->(campaign:campaign)

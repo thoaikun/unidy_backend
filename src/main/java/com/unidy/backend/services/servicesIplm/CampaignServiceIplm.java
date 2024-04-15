@@ -14,6 +14,7 @@ import com.unidy.backend.domains.dto.notification.extraData.NewCampaignData;
 import com.unidy.backend.domains.dto.requests.CampaignRequest;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.dto.responses.CommentResponse;
+import com.unidy.backend.domains.dto.responses.InteractResponse;
 import com.unidy.backend.domains.dto.responses.TransactionResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.CampaignNode;
@@ -321,17 +322,22 @@ public class CampaignServiceIplm implements CampaignService {
         try {
             CampaignNode campaign = neo4jCampaignRepository.findCampaignNodeByCampaignId(campaignId);
             if (campaign == null){
-                return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find campaign"));
+                return ResponseEntity.notFound().build();
             }
             UserNode userNode = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
             if (userNode == null) {
-                return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Có lỗi xảy ra khi like bài viết"));
             }
+            boolean isAlreadyLiked = neo4jCampaignRepository.isLikedCampaign(user.getUserId(), campaignId);
+            if (isAlreadyLiked) {
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Bạn đã like bài viết này rồi"));
+            }
+
             List<UserNode> userLikes = campaign.getUserLikes();
             userLikes.add(userNode);
             campaign.setUserLikes(userLikes);
             neo4jCampaignRepository.save(campaign);
-            return ResponseEntity.ok().body(new SuccessReponse("Like campaign success"));
+            return ResponseEntity.ok().body(new InteractResponse("Like chiến dịch thành công", userLikes.size()));
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto("Something Error"));
         }
@@ -346,11 +352,16 @@ public class CampaignServiceIplm implements CampaignService {
             try {
                 CampaignNode campaign =  neo4jCampaignRepository.findCampaignNodeByCampaignId(campaignId);
                 if (campaign != null) {
+                    boolean isAlreadyLiked = neo4jCampaignRepository.isLikedCampaign(user.getUserId(), campaignId);
+                    if (!isAlreadyLiked) {
+                        return ResponseEntity.badRequest().body(new ErrorResponseDto("Bạn chưa like bài viết này"));
+                    }
+
                     neo4jCampaignRepository.cancelLikeCampaign(user.getUserId(),campaignId);
-                    return ResponseEntity.ok().body(new SuccessReponse("Cancel like campaign success"));
+                    return ResponseEntity.ok().body(new InteractResponse("Hủy like chiến dịch thành công", campaign.getUserLikes().size() - 1));
                 }
                 else {
-                    return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find this campaign"));
+                    return ResponseEntity.notFound().build();
                 }
             }
             catch(Exception e){

@@ -1,10 +1,12 @@
 package com.unidy.backend.services.servicesIplm;
 
+import com.google.gson.Gson;
 import com.unidy.backend.S3.S3Service;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.SuccessReponse;
 import com.unidy.backend.domains.dto.requests.PostRequest;
 import com.unidy.backend.domains.dto.responses.CommentResponse;
+import com.unidy.backend.domains.dto.responses.InteractResponse;
 import com.unidy.backend.domains.dto.responses.PostResponse;
 import com.unidy.backend.domains.entity.*;
 import com.unidy.backend.domains.entity.neo4j.CommentNode;
@@ -23,13 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.text.SimpleDateFormat;
-import java.util.Optional;
+import java.util.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
@@ -250,16 +249,21 @@ public class PostServiceImpl implements PostService {
 
         try {
             Optional<List<PostNode>> optionalPost = Optional.ofNullable( neo4j_postRepository.findPostNodeByPostId(postId));
-            if (optionalPost.isPresent()) {
+            if (optionalPost.isPresent() && !optionalPost.get().isEmpty()) {
+                boolean isAlreadyLiked = neo4j_postRepository.isLikedPost(user.getUserId(), postId);
+                if (isAlreadyLiked){
+                    return ResponseEntity.badRequest().body(new ErrorResponseDto("Bạn đã like bài viết này"));
+                }
+
                 PostNode post = optionalPost.get().get(0);
                 List<UserNode> usersLike = post.getUserLikes();
                 usersLike.add(userNode);
                 post.setUserLikes(usersLike);
                 neo4j_postRepository.save(post);
-                return ResponseEntity.ok().body(new SuccessReponse("Like post success"));
+                return ResponseEntity.ok().body(new InteractResponse("Like bài viết thành công", usersLike.size()));
             }
             else {
-                return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find this post"));
+                return ResponseEntity.notFound().build();
             }
         }
         catch(Exception e){
@@ -272,13 +276,19 @@ public class PostServiceImpl implements PostService {
 
         try {
             Optional<List<PostNode>> optionalPost = Optional.ofNullable( neo4j_postRepository.findPostNodeByPostId(postId));
-            if (optionalPost.isPresent()) {
+            if (optionalPost.isPresent() && !optionalPost.get().isEmpty()) {
+                boolean isAlreadyLiked = neo4j_postRepository.isLikedPost(user.getUserId(), postId);
+                if (!isAlreadyLiked){
+                    return ResponseEntity.badRequest().body(new ErrorResponseDto("Bạn chưa like bài viết này"));
+                }
+
                 PostNode post = optionalPost.get().get(0);
                 neo4j_postRepository.cancelLikePost(user.getUserId(),postId);
-                return ResponseEntity.ok().body(new SuccessReponse("Cancel like post success"));
+                List<UserNode> usersLike = post.getUserLikes();
+                return ResponseEntity.ok().body(new InteractResponse("Unlike bài viết thành công", usersLike.size() - 1));
             }
             else {
-                return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find this post"));
+                return ResponseEntity.notFound().build();
             }
         }
         catch(Exception e){

@@ -18,6 +18,12 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
 
     List<PostNode> findPostNodeByPostId(String postId);
 
+    @Query("""
+        OPTIONAL MATCH (user:user {user_id: $userId})-[r:LIKE]->(post:post {post_id: $postId})
+        RETURN CASE WHEN r IS NOT NULL THEN true ELSE false END
+    """)
+    boolean isLikedPost(int userId, String postId);
+
     @Query("MATCH (user:user)-[r:HAS_POST]->(post:post {post_id: $postId})\n" +
             "OPTIONAL MATCH (:user {user_id: $userId})-[isLiked:LIKE]->(post)\n" +
             "OPTIONAL MATCH (:user)-[r_like:LIKE]->(post)\n" +
@@ -50,7 +56,6 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
 
     @Query("MATCH (p : user {user_id:$userId})-[r:LIKE]->(post: post {post_id: $postId}) DELETE r ;")
     void cancelLikePost(@Param("userId") int userId, @Param("postId") String postId);
-
 
     @Query("""
             CALL db.index.fulltext.queryNodes("searchPostIndex", $searchTerm) YIELD node, score

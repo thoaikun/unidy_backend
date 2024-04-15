@@ -16,6 +16,7 @@ import java.util.List;
 @Transactional
 public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> {
      UserNode findUserNodeByUserId(int userId);
+
      @Query("""
           MATCH (user1:user {user_id: $userId})
           MATCH (user2:user {user_id: $friendId})
