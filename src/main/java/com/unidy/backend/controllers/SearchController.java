@@ -7,6 +7,7 @@ import com.unidy.backend.domains.entity.neo4j.CampaignNode;
 import com.unidy.backend.domains.entity.neo4j.Neo4JNode;
 import com.unidy.backend.domains.entity.neo4j.PostNode;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
+import com.unidy.backend.domains.role.Role;
 import com.unidy.backend.services.servicesInterface.CampaignService;
 import com.unidy.backend.services.servicesInterface.PostService;
 import com.unidy.backend.services.servicesInterface.UserService;
@@ -40,7 +41,7 @@ public class SearchController {
         try {
             CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign = campaignService.searchCampaign(searchTerm, limit, skip);
             CompletableFuture<List<PostNode>> searchPost = postService.searchPost(searchTerm, limit, skip);
-            CompletableFuture<List<UserNode>> searchUser = userService.searchUser(connectedUser, searchTerm, limit, skip);
+            CompletableFuture<List<UserNode>> searchUser = userService.searchUser(connectedUser, searchTerm, limit, skip, "ALL");
             List<Neo4JNode> results = CompletableFuture.allOf(searchCampaign, searchPost, searchUser)
                     .thenApplyAsync(v -> {
                         List<Neo4JNode> temp = new ArrayList<>();
@@ -106,10 +107,11 @@ public class SearchController {
         Principal  connectedUser,
         @RequestParam(defaultValue = "") String searchTerm,
         @RequestParam(defaultValue = "5", required = false) int limit,
-        @RequestParam(defaultValue = "0", required = false) int skip
+        @RequestParam(defaultValue = "0", required = false) int skip,
+        @RequestParam(defaultValue = "ALL", required = false) String role
     ){
         try {
-            List<UserNode> users = userService.searchUser(connectedUser, searchTerm, limit, skip).join();
+            List<UserNode> users = userService.searchUser(connectedUser, searchTerm, limit, skip, role).join();
             List<Neo4JNode> results = new ArrayList<>(users);
             NodeFulltextSearchResponse response = NodeFulltextSearchResponse.builder()
                     .totals(results.size())

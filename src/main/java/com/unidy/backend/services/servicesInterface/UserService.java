@@ -5,6 +5,7 @@ import com.unidy.backend.domains.dto.requests.ChangePasswordRequest;
 import com.unidy.backend.domains.dto.requests.ChoseFavoriteRequest;
 import com.unidy.backend.domains.dto.responses.UserInformationRespond;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
+import com.unidy.backend.domains.role.Role;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,7 +34,7 @@ public interface UserService {
     ResponseEntity<?> getUserTransaction(Principal connectedUser, int pageSize, int pageNumber);
     ResponseEntity<?> getUserJoinedCampaigns(Principal connectedUser, int pageSize, int pageNumber);
     @Async("threadPoolTaskExecutor")
-    CompletableFuture<List<UserNode>> searchUser(Principal connectedUser, String searchTerm, int limit, int skip);
+    CompletableFuture<List<UserNode>> searchUser(Principal connectedUser, String searchTerm, int limit, int skip, String role);
     ResponseEntity<?> getNotification(Principal connectedUser, int pageSize, int pageNumber);
 
     ResponseEntity<?> getUnseenNotification(Principal connectedUser);

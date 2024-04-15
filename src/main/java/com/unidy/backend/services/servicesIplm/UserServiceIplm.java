@@ -33,7 +33,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.net.URL;
 import java.security.Principal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -421,9 +420,14 @@ public class UserServiceIplm implements UserService {
     }
 
     @Async("threadPoolTaskExecutor")
-    public CompletableFuture<List<UserNode>> searchUser(Principal connectedUser, String searchTerm, int limit, int skip){
+    public CompletableFuture<List<UserNode>> searchUser(Principal connectedUser, String searchTerm, int limit, int skip, String role){
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-        return CompletableFuture.completedFuture(neo4jUserRepository.searchUser(user.getUserId(), searchTerm, limit, skip));
+        if (role.equals("ALL"))
+            return CompletableFuture.completedFuture(neo4jUserRepository.searchUserBySearchTerm(user.getUserId(), searchTerm, limit, skip));
+        else if (role.equals("ORGANIZATION"))
+            return CompletableFuture.completedFuture(neo4jUserRepository.searchUserBySearchTermAndRoleOrganization(user.getUserId(), searchTerm, limit, skip));
+        else
+            return CompletableFuture.completedFuture(neo4jUserRepository.searchUserBySearchTermAndRoleVolunteer(user.getUserId(), searchTerm, limit, skip));
     }
 
     public ResponseEntity<?> getNotification(Principal connectedUser, int pageSize, int pageNumber) {

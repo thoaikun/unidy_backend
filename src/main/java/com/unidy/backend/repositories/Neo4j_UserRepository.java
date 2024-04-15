@@ -9,7 +9,6 @@ import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -90,12 +89,40 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
             WITH node, score
             OPTIONAL MATCH (user1: user {user_id: $userId})-[friend:FRIEND]->(node)
             OPTIONAL MATCH (user1: user {user_id: $userId})-[follow:FOLLOW_ORGANIZATION]->(node)
+            WITH node, CASE WHEN friend IS NULL THEN FALSE ELSE TRUE END AS isFriend, CASE WHEN follow IS NULL THEN FALSE ELSE TRUE END AS isFollow, score
+            WHERE node.role = 'ORGANIZATION'
+            RETURN node, isFriend, isFollow
+            ORDER BY score DESC, node.user_id ASC
+            SKIP $skip
+            LIMIT $limit;
+     """)
+     List<UserNode> searchUserBySearchTermAndRoleOrganization(int userId, String searchTerm, int limit, int skip);
+
+     @Query("""
+            CALL db.index.fulltext.queryNodes("searchUserIndex", $searchTerm) YIELD node, score
+            WITH node, score
+            OPTIONAL MATCH (user1: user {user_id: $userId})-[friend:FRIEND]->(node)
+            OPTIONAL MATCH (user1: user {user_id: $userId})-[follow:FOLLOW_ORGANIZATION]->(node)
+            WITH node, CASE WHEN friend IS NULL THEN FALSE ELSE TRUE END AS isFriend, CASE WHEN follow IS NULL THEN FALSE ELSE TRUE END AS isFollow, score
+            WHERE node.role IS NULL
+            RETURN node, isFriend, isFollow
+            ORDER BY score DESC, node.user_id ASC
+            SKIP $skip
+            LIMIT $limit;
+     """)
+     List<UserNode> searchUserBySearchTermAndRoleVolunteer(int userId, String searchTerm, int limit, int skip);
+
+     @Query("""
+            CALL db.index.fulltext.queryNodes("searchUserIndex", $searchTerm) YIELD node, score
+            WITH node, score
+            OPTIONAL MATCH (user1: user {user_id: $userId})-[friend:FRIEND]->(node)
+            OPTIONAL MATCH (user1: user {user_id: $userId})-[follow:FOLLOW_ORGANIZATION]->(node)
             RETURN node, CASE WHEN friend IS NULL THEN FALSE ELSE TRUE END AS isFriend, CASE WHEN follow IS NULL THEN FALSE ELSE TRUE END AS isFollow
             ORDER BY score DESC, node.user_id ASC
             SKIP $skip
             LIMIT $limit;
      """)
-     List<UserNode> searchUser(int userId, String searchTerm, int limit, int skip);
+     List<UserNode> searchUserBySearchTerm(int userId, String searchTerm, int limit, int skip);
 
 //     @Query("""
 //             OPTIONAL MATCH (user1: user {user_id: $userId})-[r:FOLLOW_ORGANIZATION]->(user2: user {user_id: $organizationId, role: 'ORGANIZATION'})
