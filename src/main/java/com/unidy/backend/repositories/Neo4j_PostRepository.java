@@ -19,17 +19,17 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
     List<PostNode> findPostNodeByPostId(String postId);
 
     @Query("MATCH (user:user)-[r:HAS_POST]->(post:post {post_id: $postId})\n" +
-            "OPTIONAL MATCH (userLike)-[isLiked:LIKE]->(post)\n" +
-            "OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)\n" +
-            "WITH post,user, r, count(userLike) AS likeCount,r_like, isLiked\n" +
+            "OPTIONAL MATCH (:user {user_id: $userId})-[isLiked:LIKE]->(post)\n" +
+            "OPTIONAL MATCH (:user)-[r_like:LIKE]->(post)\n" +
+            "WITH post,user, r, count(r_like) AS likeCount,r_like, isLiked\n" +
             "RETURN post,user as userNodes, r, likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked;")
-    List<PostResponse> findPostNodeByPostIdCustom(String postId);
+    List<PostResponse> findPostNodeByPostIdCustom(int userId, String postId);
 
     @Query("""
             MATCH (user:user {user_id: $userId})-[r:HAS_POST]->(post:post)
-            OPTIONAL MATCH (userLike)-[isLiked:LIKE]->(post)
-            OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)
-            WITH post,user, r, count(userLike) AS likeCount,r_like, isLiked
+            OPTIONAL MATCH (user)-[isLiked:LIKE]->(post)
+            OPTIONAL MATCH (:user)-[r_like:LIKE]->(post)
+            WITH post,user, r, count(r_like) AS likeCount, r_like, isLiked
             RETURN post,user as userNodes, r, likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked
             ORDER BY post.create_date DESC, post.id ASC
             SKIP $skip
@@ -40,13 +40,11 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
     @Query("""
             MATCH (user:user {user_id: $userId})-[is_friend_1:FRIEND]->(friend:user)-[has_post_1:HAS_POST]->(post:post)
             OPTIONAL MATCH (user)-[isLiked:LIKE]->(post)
-            OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)
+            OPTIONAL MATCH (:user)-[r_like:LIKE]->(post)
             return post as posts, friend as userNodes, has_post_1 as has_posts, count(r_like) as likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked
-            UNION
-            OPTIONAL MATCH (friend)-[is_friend_2:FRIEND]->(friend_2:user)-[has_post_2:HAS_POST]->(post_2:post)
-            OPTIONAL MATCH (user)-[isLiked:LIKE]->(post_2)
-            OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post_2)
-            RETURN post_2 as posts, friend_2 as userNodes, has_post_2 as has_posts, count(r_like) as likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked
+            ORDER BY post.create_date DESC, post.id ASC
+            SKIP $skip
+            LIMIT $limit;
             """)
     List<PostResponse> findPost(int userId, int skip, int limit);
 
@@ -59,31 +57,15 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
             WITH node, score
             MATCH (userNodes:user)-[r:HAS_POST]->(post:post)
             WHERE post = node
-            OPTIONAL MATCH (user)-[isLiked:LIKE]->(post)
-            OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)
+            OPTIONAL MATCH (:user {user_id: $userId})-[isLiked:LIKE]->(post)
+            OPTIONAL MATCH (:user)-[r_like:LIKE]->(post)
             WITH post, userNodes, r, count(r_like) AS likeCount, r_like, isLiked, score
             RETURN post, userNodes, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked
             ORDER BY score DESC, post.create_date DESC, post.id ASC
             SKIP $skip
             LIMIT $limit;
     """)
-    List<PostNode> searchPost(String searchTerm, int limit, int skip);
+    List<PostResponse> searchPost(int userId, String searchTerm, int limit, int skip);
 
     void deletePostByPostId(String postId);
-
-
-    @Query(
-            """
-            MATCH (user:user)-[r:HAS_POST]->(post:post)
-            WHERE post.create_date <= $toDate AND post.create_date >= $fromDate
-            OPTIONAL MATCH (userLike)-[isLiked:LIKE]->(post)
-            OPTIONAL MATCH (userNodes)-[r_like:LIKE]->(post)
-            WITH post,user, r, count(userLike) AS likeCount,r_like, isLiked
-            RETURN post,user as userNodes, r, likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked
-            ORDER BY post.create_date DESC, post.id ASC
-            SKIP $skip
-            LIMIT $limit;
-            """
-    )
-    List<PostResponse> findPostNodeByDate(Date fromDate, Date toDate, int skip, int limit);
 }

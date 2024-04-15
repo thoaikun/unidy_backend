@@ -1,5 +1,6 @@
 package com.unidy.backend.domains.dto.responses;
 
+import com.unidy.backend.domains.entity.neo4j.Neo4JNode;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +11,7 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-public class PostResponse {
+public class PostResponse implements Neo4JNode {
     private String postId;
     private String content;
     private String status;

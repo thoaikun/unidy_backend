@@ -3,6 +3,7 @@ package com.unidy.backend.controllers;
 import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.dto.responses.NodeFulltextSearchResponse;
+import com.unidy.backend.domains.dto.responses.PostResponse;
 import com.unidy.backend.domains.entity.neo4j.CampaignNode;
 import com.unidy.backend.domains.entity.neo4j.Neo4JNode;
 import com.unidy.backend.domains.entity.neo4j.PostNode;
@@ -39,8 +40,8 @@ public class SearchController {
         @RequestParam(defaultValue = "0", required = false) int skip
     ){
         try {
-            CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign = campaignService.searchCampaign(searchTerm, limit, skip);
-            CompletableFuture<List<PostNode>> searchPost = postService.searchPost(searchTerm, limit, skip);
+            CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign = campaignService.searchCampaign(connectedUser, searchTerm, limit, skip);
+            CompletableFuture<List<PostResponse>> searchPost = postService.searchPost(connectedUser, searchTerm, limit, skip);
             CompletableFuture<List<UserNode>> searchUser = userService.searchUser(connectedUser, searchTerm, limit, skip, "ALL");
             List<Neo4JNode> results = CompletableFuture.allOf(searchCampaign, searchPost, searchUser)
                     .thenApplyAsync(v -> {
@@ -64,12 +65,13 @@ public class SearchController {
 
     @GetMapping("/campaign")
     public ResponseEntity<?> searchCampaign(
+        Principal connectedUser,
         @RequestParam(defaultValue = "") String searchTerm,
         @RequestParam(defaultValue = "5", required = false) int limit,
         @RequestParam(defaultValue = "0", required = false) int skip
     ) {
         try {
-            List<CampaignPostResponse.CampaignPostResponseData> campaigns = campaignService.searchCampaign(searchTerm, limit, skip).join();
+            List<CampaignPostResponse.CampaignPostResponseData> campaigns = campaignService.searchCampaign(connectedUser ,searchTerm, limit, skip).join();
             List<Neo4JNode> results = new ArrayList<>(campaigns);
             NodeFulltextSearchResponse response = NodeFulltextSearchResponse.builder()
                     .totals(results.size())
@@ -84,12 +86,13 @@ public class SearchController {
 
     @GetMapping("/post")
     public ResponseEntity<?> searchPost(
+        Principal connectUser,
         @RequestParam(defaultValue = "") String searchTerm,
         @RequestParam(defaultValue = "5", required = false) int limit,
         @RequestParam(defaultValue = "0", required = false) int skip
     ){
         try {
-            List<PostNode> posts = postService.searchPost(searchTerm, limit, skip).join();
+            List<PostResponse> posts = postService.searchPost(connectUser, searchTerm, limit, skip).join();
             List<Neo4JNode> results = new ArrayList<>(posts);
             NodeFulltextSearchResponse response = NodeFulltextSearchResponse.builder()
                     .totals(results.size())

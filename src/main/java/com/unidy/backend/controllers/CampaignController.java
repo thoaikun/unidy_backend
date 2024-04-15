@@ -73,9 +73,9 @@ public class CampaignController {
     }
 
     @GetMapping("/organization/{organizationId}")
-    public ResponseEntity<?> getCampaignByOrganizationId(@PathVariable int organizationId, @RequestParam int skip, @RequestParam int limit){
+    public ResponseEntity<?> getCampaignByOrganizationId(Principal connectedUser,  @PathVariable int organizationId, @RequestParam int skip, @RequestParam int limit){
         try {
-            List<CampaignPostResponse.CampaignPostResponseData> organizationCampaigns = campaignService.getCampaignByOrganizationID(organizationId, skip, limit);
+            List<CampaignPostResponse.CampaignPostResponseData> organizationCampaigns = campaignService.getCampaignByOrganizationID(connectedUser, organizationId, skip, limit);
             CampaignPostResponse response = CampaignPostResponse.builder()
                     .campaigns(organizationCampaigns)
                     .total(organizationCampaigns.size())

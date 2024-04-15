@@ -44,9 +44,10 @@ public class PostServiceImpl implements PostService {
     private final Neo4j_CommentRepository neo4jCommentRepository;
     private final CommentRepository commentRepository;
 
-    public ResponseEntity<?> getPostById(String postID){
+    public ResponseEntity<?> getPostById(Principal connectUser, String postID){
         try {
-            List<PostResponse> postList = neo4j_postRepository.findPostNodeByPostIdCustom(postID);
+            var user = (User) ((UsernamePasswordAuthenticationToken) connectUser).getPrincipal();
+            List<PostResponse> postList = neo4j_postRepository.findPostNodeByPostIdCustom(user.getUserId(), postID);
             return ResponseEntity.ok().body(postList);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
@@ -285,9 +286,10 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    public CompletableFuture<List<PostNode>> searchPost(String searchTerm, int limit, int skip){
-       List<PostNode> posts = neo4j_postRepository.searchPost(searchTerm, limit, skip);
-         return CompletableFuture.supplyAsync(() -> posts);
+    public CompletableFuture<List<PostResponse>> searchPost(Principal connectUser, String searchTerm, int limit, int skip){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectUser).getPrincipal();
+        List<PostResponse> posts = neo4j_postRepository.searchPost(user.getUserId(), searchTerm, limit, skip);
+             return CompletableFuture.supplyAsync(() -> posts);
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.unidy.backend.domains.ErrorResponseDto;
 import com.unidy.backend.domains.dto.responses.CampaignPostResponse;
 import com.unidy.backend.domains.dto.responses.NodeFulltextSearchResponse;
 import com.unidy.backend.domains.dto.responses.NodeFulltextSearchResponseV2;
+import com.unidy.backend.domains.dto.responses.PostResponse;
 import com.unidy.backend.domains.entity.neo4j.Neo4JNode;
 import com.unidy.backend.domains.entity.neo4j.PostNode;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
@@ -39,8 +40,8 @@ public class SearchControllerV2 {
         @RequestParam(defaultValue = "0", required = false) int skip
     ){
         try {
-            CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign = campaignService.searchCampaign(searchTerm, limit, skip);
-            CompletableFuture<List<PostNode>> searchPost = postService.searchPost(searchTerm, limit, skip);
+            CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign = campaignService.searchCampaign(connectedUser, searchTerm, limit, skip);
+            CompletableFuture<List<PostResponse>> searchPost = postService.searchPost(connectedUser, searchTerm, limit, skip);
             CompletableFuture<List<UserNode>> searchUser = userService.searchUser(connectedUser, searchTerm, limit, skip, "ALL");
             NodeFulltextSearchResponseV2.Hits hits = CompletableFuture.allOf(searchCampaign, searchPost, searchUser)
                     .thenApplyAsync(v -> {

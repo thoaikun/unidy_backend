@@ -16,8 +16,8 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping("/{postId}")
-    public ResponseEntity<?> getPostByPostId(@PathVariable String postId) {
-        return postService.getPostById(postId);
+    public ResponseEntity<?> getPostByPostId(Principal connectUser, @PathVariable String postId) {
+        return postService.getPostById(connectUser, postId);
     }
 
     @GetMapping("/users/{userId}")

@@ -251,9 +251,9 @@ public class CampaignServiceIplm implements CampaignService {
             throw new Exception("Can't call api from recommend service");
         }
         String[] campaignIds = new Gson().fromJson(responseData, String[].class);
-        int length = Math.min(offset + limit, campaignIds.length - 1);
+        int length = Math.min(offset + limit, campaignIds.length);
         String[] splitIds = Arrays.copyOfRange(campaignIds, offset, length);
-        List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponseData = neo4jCampaignRepository.findCampaignPostByCampaignIds(splitIds);
+        List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponseData = neo4jCampaignRepository.findCampaignPostByCampaignIds(user.getUserId(), splitIds);
         userJoinedCampaignMapping(campaignPostResponseData, user.getUserId());
         return CompletableFuture.supplyAsync(() -> campaignPostResponseData);
     }
@@ -266,14 +266,15 @@ public class CampaignServiceIplm implements CampaignService {
         return CompletableFuture.supplyAsync(() -> listCampaign);
     }
 
-    public List<CampaignPostResponse.CampaignPostResponseData> getCampaignByOrganizationID(int organizationId, int skip, int limit){
-        User user = userRepository.findByUserId(organizationId);
-        if (user == null || !user.getRole().equals(Role.ORGANIZATION)){
+    public List<CampaignPostResponse.CampaignPostResponseData> getCampaignByOrganizationID(Principal connectedUser, int organizationId, int skip, int limit){
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        User organization = userRepository.findByUserId(organizationId);
+        if (organization == null || !organization.getRole().equals(Role.ORGANIZATION)){
             throw new RuntimeException("id tổ chức không hợp lệ");
         }
 
-        List<CampaignPostResponse.CampaignPostResponseData> listCampaign = neo4jCampaignRepository.findCampaignByOrganizationID(organizationId, skip, limit);
-        userJoinedCampaignMapping(listCampaign, user.getUserId());
+        List<CampaignPostResponse.CampaignPostResponseData> listCampaign = neo4jCampaignRepository.findCampaignByOrganizationID(user.getUserId(), organizationId, skip, limit);
+        userJoinedCampaignMapping(listCampaign, organization.getUserId());
         return listCampaign;
     }
 
@@ -296,8 +297,9 @@ public class CampaignServiceIplm implements CampaignService {
     }
 
     @Async("threadPoolTaskExecutor")
-    public CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign(String searchTerm, int limit, int skip) {
-        List<CampaignPostResponse.CampaignPostResponseData> campaigns = neo4jCampaignRepository.searchCampaign(searchTerm, limit, skip);
+    public CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> searchCampaign(Principal connectedUser, String searchTerm, int limit, int skip) {
+        var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+        List<CampaignPostResponse.CampaignPostResponseData> campaigns = neo4jCampaignRepository.searchCampaign(user.getUserId(), searchTerm, limit, skip);
         return CompletableFuture.supplyAsync(() -> campaigns);
     }
 
