@@ -7,6 +7,8 @@ import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Property;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
+import java.util.Date;
+
 
 @Data
 @Builder
@@ -20,6 +22,9 @@ public class CommentNode implements Neo4JNode {
 
     @Property("body")
     private String body;
+
+    @Property("create_date")
+    private String createDate;
 
     @Relationship(type = "HAS_COMMENT", direction = Relationship.Direction.INCOMING)
     private PostNode postNode;
