@@ -81,7 +81,7 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
             OPTIONAL MATCH (:user)-[r_like:LIKE]->(campaign)
             OPTIONAL MATCH (campaign) - [has_comment:HAS_COMMENT] -> (comment: comment)
             WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked, score, has_comment
-            RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked,count(has_comment) as numberComments
+            RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, count(has_comment) as numberComments, score
             ORDER BY score DESC, campaign.create_date DESC, campaign.id ASC
             SKIP $skip
             LIMIT $limit;

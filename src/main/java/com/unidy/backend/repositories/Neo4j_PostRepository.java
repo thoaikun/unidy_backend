@@ -69,8 +69,8 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
             OPTIONAL MATCH (:user {user_id: $userId})-[isLiked:LIKE]->(post)
             OPTIONAL MATCH (:user)-[r_like:LIKE]->(post)
             OPTIONAL MATCH (post) - [has_comment:HAS_COMMENT] -> (comment: comment)
-            WITH post, userNodes, r, count(r_like) AS likeCount, r_like, isLiked, score
-            RETURN post, userNodes, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, count(has_comment) as numberComments
+            WITH post, userNodes, r, count(r_like) AS likeCount, r_like, isLiked, score, count(has_comment) as numberComments
+            RETURN post, userNodes, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, numberComments, score
             ORDER BY score DESC, post.create_date DESC, post.id ASC
             SKIP $skip
             LIMIT $limit;
