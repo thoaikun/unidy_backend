@@ -33,8 +33,8 @@ public class CampaignController {
     }
 
     @GetMapping("/{campaignId}")
-    public ResponseEntity<?> getCampaignByCampaignId(@PathVariable String campaignId){
-        return campaignService.getCampaignByCampaignId(campaignId);
+    public ResponseEntity<?> getCampaignByCampaignId(Principal connectedUser,@PathVariable String campaignId){
+        return campaignService.getCampaignByCampaignId(connectedUser,campaignId);
     }
 
 

@@ -53,7 +53,18 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
     """)
     List<CampaignPostResponse.CampaignPostResponseData> findCampaignByOrganizationID(int userId, int organizationId, int skip, int limit);
 
+
     CampaignNode findCampaignNodeByCampaignId(String campaignId);
+
+    @Query("""
+            MATCH (organizationNode:user {role:"ORGANIZATION"})-[r:HAS_CAMPAIGN]->(campaign:campaign {campaign_id :$campaignId})
+            OPTIONAL MATCH (:user {user_id: $userId})-[isLiked:LIKE]->(campaign)
+            OPTIONAL MATCH (:user)-[r_like:LIKE]->(campaign)
+            OPTIONAL MATCH (campaign) - [has_comment:HAS_COMMENT] -> (comment: comment)
+            WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked,has_comment
+            RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, FALSE AS isJoined, count(has_comment) as numberComments
+            """)
+    CampaignPostResponse.CampaignPostResponseData findCampaignNodeByCampaignIdCustom(int userId, String campaignId);
 
     @Query("""
           OPTIONAL MATCH (user1:user {user_id: $userId})-[r:LIKE]->(campaign:campaign {campaign_id: $campaignId})

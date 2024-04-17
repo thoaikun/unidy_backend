@@ -41,5 +41,5 @@ public interface CampaignService {
 
     ResponseEntity<?> getReplyComment(Principal connectedUser, Integer commentId, int skip, int limit);
 
-    ResponseEntity<?> getCampaignByCampaignId(String campaignId);
+    ResponseEntity<?> getCampaignByCampaignId(Principal connectedUser ,String campaignId);
 }
