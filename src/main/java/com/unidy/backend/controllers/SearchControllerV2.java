@@ -50,8 +50,9 @@ public class SearchControllerV2 {
                         temp.setPostNodesHits(searchPost.join());
                         List<UserNode> volunteers = new ArrayList<>();
                         List<UserNode> organizations = new ArrayList<>();
-                        for (UserNode userNode : searchUser.join()) {
-                            if (userNode.getRole().equals(Role.VOLUNTEER.toString())) {
+                        List<UserNode> users = searchUser.join();
+                        for (UserNode userNode : users) {
+                            if (userNode.getRole() == null)  {
                                 volunteers.add(userNode);
                             } else {
                                 organizations.add(userNode);

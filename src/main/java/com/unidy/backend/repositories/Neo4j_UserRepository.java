@@ -88,8 +88,8 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
      @Query("""
             CALL db.index.fulltext.queryNodes("searchUserIndex", $searchTerm) YIELD node, score
             WITH node, score
-            OPTIONAL MATCH (user1: user {user_id: $userId})-[friend:FRIEND]->(node)
-            OPTIONAL MATCH (user1: user {user_id: $userId})-[follow:FOLLOW_ORGANIZATION]->(node)
+            OPTIONAL MATCH (:user {user_id: $userId})-[friend:FRIEND]->(node)
+            OPTIONAL MATCH (:user {user_id: $userId})-[follow:FOLLOW_ORGANIZATION]->(node)
             WITH node, CASE WHEN friend IS NULL THEN FALSE ELSE TRUE END AS isFriend, CASE WHEN follow IS NULL THEN FALSE ELSE TRUE END AS isFollow, score
             WHERE node.role = 'ORGANIZATION'
             RETURN node, isFriend, isFollow
@@ -102,8 +102,8 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
      @Query("""
             CALL db.index.fulltext.queryNodes("searchUserIndex", $searchTerm) YIELD node, score
             WITH node, score
-            OPTIONAL MATCH (user1: user {user_id: $userId})-[friend:FRIEND]->(node)
-            OPTIONAL MATCH (user1: user {user_id: $userId})-[follow:FOLLOW_ORGANIZATION]->(node)
+            OPTIONAL MATCH (:user {user_id: $userId})-[friend:FRIEND]->(node)
+            OPTIONAL MATCH (:user {user_id: $userId})-[follow:FOLLOW_ORGANIZATION]->(node)
             WITH node, CASE WHEN friend IS NULL THEN FALSE ELSE TRUE END AS isFriend, CASE WHEN follow IS NULL THEN FALSE ELSE TRUE END AS isFollow, score
             WHERE node.role IS NULL
             RETURN node, isFriend, isFollow
@@ -116,8 +116,8 @@ public interface Neo4j_UserRepository extends Neo4jRepository<UserNode,Integer> 
      @Query("""
             CALL db.index.fulltext.queryNodes("searchUserIndex", $searchTerm) YIELD node, score
             WITH node, score
-            OPTIONAL MATCH (user1: user {user_id: $userId})-[friend:FRIEND]->(node)
-            OPTIONAL MATCH (user1: user {user_id: $userId})-[follow:FOLLOW_ORGANIZATION]->(node)
+            OPTIONAL MATCH (:user {user_id: $userId})-[friend:FRIEND]->(node)
+            OPTIONAL MATCH (:user {user_id: $userId})-[follow:FOLLOW_ORGANIZATION]->(node)
             RETURN node, CASE WHEN friend IS NULL THEN FALSE ELSE TRUE END AS isFriend, CASE WHEN follow IS NULL THEN FALSE ELSE TRUE END AS isFollow
             ORDER BY score DESC, node.user_id ASC
             SKIP $skip

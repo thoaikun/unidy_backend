@@ -8,13 +8,13 @@ import org.springframework.data.neo4j.core.schema.Property;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
 import java.util.List;
+import java.util.Optional;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Node("user")
-
 public class UserNode implements Neo4JNode {
     @Id
     @Property("user_id")
