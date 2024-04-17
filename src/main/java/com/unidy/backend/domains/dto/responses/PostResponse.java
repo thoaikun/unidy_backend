@@ -23,4 +23,5 @@ public class PostResponse implements Neo4JNode {
 //    private List<UserNode> userLikes;
     private Boolean isLiked;
     private int likeCount ;
+    private int numberComments;
 }

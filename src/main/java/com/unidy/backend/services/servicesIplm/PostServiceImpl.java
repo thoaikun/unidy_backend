@@ -315,6 +315,7 @@ public class PostServiceImpl implements PostService {
                     .content(content)
                     .createTime(new Date())
                     .idBlock(false)
+                    .createTime(new Date())
                     .replyByComment(null)
                     .build();
             commentRepository.save(mysql_comment);
@@ -325,6 +326,7 @@ public class PostServiceImpl implements PostService {
             CommentNode comment = CommentNode.builder()
                     .commentId(mysql_comment.getCommentId())
                     .body(content)
+                    .createDate(new Date().toString())
                     .build();
             comment.setUserComment(userComment);
             comment.setPostNode(commentPost);
@@ -348,6 +350,7 @@ public class PostServiceImpl implements PostService {
                     .content(content)
                     .createTime(new Date())
                     .idBlock(false)
+                    .createTime(new Date())
                     .replyByComment(null)
                     .build();
             commentRepository.save(mysql_comment);
@@ -357,6 +360,7 @@ public class PostServiceImpl implements PostService {
             CommentNode reply = CommentNode.builder()
                     .commentId(mysql_comment.getCommentId())
                     .body(content)
+                    .createDate(new Date().toString())
                     .build();
             reply.setUserComment(userComment);
             comment.setReplyComment(reply);
