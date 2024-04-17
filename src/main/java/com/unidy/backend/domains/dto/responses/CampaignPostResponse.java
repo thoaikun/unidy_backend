@@ -24,6 +24,7 @@ public class CampaignPostResponse {
         private Boolean isLiked;
         @Builder.Default
         private Boolean isJoined = false;
+        private int numberComments;
     }
 
     private List<CampaignPostResponseData> campaigns;

@@ -19,8 +19,9 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
         MATCH (user:user {user_id: $userId})-[:FOLLOW_ORGANIZATION]->(organizationNode:user {role:"ORGANIZATION"})-[r:HAS_CAMPAIGN]->(campaign:campaign)
         OPTIONAL MATCH (user)-[isLiked:LIKE]->(campaign)
         OPTIONAL MATCH (:user)-[r_like:LIKE]->(campaign)
-        WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked
-        RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, FALSE AS isJoined
+        OPTIONAL MATCH (campaign) - [has_comment:HAS_COMMENT] -> (comment: comment)
+        WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked, has_comment
+        RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, FALSE AS isJoined, count(has_comment) as numberComments
         ORDER BY campaign.create_date DESC, campaign.id ASC
         SKIP $skip
         LIMIT $limit;
@@ -31,8 +32,9 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
         MATCH (organizationNode:user {role:"ORGANIZATION"})-[r:HAS_CAMPAIGN]->(campaign:campaign) WHERE campaign.campaign_id IN $campaignIds
         OPTIONAL MATCH (:user {user_id: $userId})-[isLiked:LIKE]->(campaign)
         OPTIONAL MATCH (:user)-[r_like:LIKE]->(campaign)
-        WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked
-        RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, FALSE AS isJoined
+        OPTIONAL MATCH (campaign) - [has_comment:HAS_COMMENT] -> (comment: comment)
+        WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked, has_comment
+        RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, FALSE AS isJoined, count(has_comment) as numberComments
         ORDER BY campaign.create_date DESC;
     """)
     List<CampaignPostResponse.CampaignPostResponseData> findCampaignPostByCampaignIds(int userId, String[] campaignIds);
@@ -42,8 +44,9 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
         MATCH (organizationNode:user {role:"ORGANIZATION", user_id : $organizationId})-[r:HAS_CAMPAIGN]->(campaign:campaign)
         OPTIONAL MATCH (:user {user_id: $userId})-[isLiked:LIKE]->(campaign)
         OPTIONAL MATCH (:user)-[r_like:LIKE]->(campaign)
-        WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked
-        RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, FALSE AS isJoined
+        OPTIONAL MATCH (campaign) - [has_comment:HAS_COMMENT] -> (comment: comment)
+        WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked,has_comment
+        RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, FALSE AS isJoined, count(has_comment) as numberComments
         ORDER BY campaign.create_date DESC, campaign.id ASC
         SKIP $skip
         limit $limit;
@@ -65,8 +68,9 @@ public interface Neo4j_CampaignRepository  extends Neo4jRepository<CampaignNode,
             WHERE campaign = node
             OPTIONAL MATCH (:user {user_id: $userId})-[isLiked:LIKE]->(campaign)
             OPTIONAL MATCH (:user)-[r_like:LIKE]->(campaign)
-            WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked, score
-            RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked
+            OPTIONAL MATCH (campaign) - [has_comment:HAS_COMMENT] -> (comment: comment)
+            WITH campaign, organizationNode, r, count(r_like) AS likeCount, r_like, isLiked, score, has_comment
+            RETURN campaign, organizationNode, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked,count(has_comment) as numberComments
             ORDER BY score DESC, campaign.create_date DESC, campaign.id ASC
             SKIP $skip
             LIMIT $limit;
