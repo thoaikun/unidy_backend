@@ -20,7 +20,7 @@ public class CampaignPostResponse {
     public static class CampaignPostResponseData implements Neo4JNode {
         private CampaignNode campaign;
         private UserNode organizationNode;
-        private int likeCount ;
+        private int likeCount;
         private Boolean isLiked;
         @Builder.Default
         private Boolean isJoined = false;

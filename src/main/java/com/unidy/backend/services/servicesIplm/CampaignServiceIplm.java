@@ -281,8 +281,13 @@ public class CampaignServiceIplm implements CampaignService {
 
     private void userJoinedCampaignMapping(List<CampaignPostResponse.CampaignPostResponseData> campaigns, int userId) {
         List<Integer> campaignIds = new ArrayList<>();
-        for (CampaignPostResponse.CampaignPostResponseData campaign : campaigns) {
-            campaignIds.add(Integer.parseInt(campaign.getCampaign().getCampaignId()));
+        for (int i = 0; i < campaigns.size();) {
+            if (campaignIds.contains(Integer.parseInt(campaigns.get(i).getCampaign().getCampaignId()))){
+                campaigns.remove(campaigns.get(i));
+                continue;
+            }
+            campaignIds.add(Integer.parseInt(campaigns.get(i).getCampaign().getCampaignId()));
+            i++;
         }
         List<VolunteerJoinCampaign> userJoinedCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByCampaignIdInAndUserId(campaignIds, userId);
         Map<Integer, Boolean> userJoinedCampaignMap = new HashMap<>();

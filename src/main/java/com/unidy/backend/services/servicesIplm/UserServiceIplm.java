@@ -197,7 +197,6 @@ public class UserServiceIplm implements UserService {
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("Unsupported file format"));
             }
         } catch (Exception e) {
-            System.out.println(e.toString());
             return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
         }
     }

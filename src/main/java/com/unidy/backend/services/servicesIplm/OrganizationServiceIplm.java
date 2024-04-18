@@ -107,7 +107,7 @@ public class OrganizationServiceIplm implements OrganizationService {
 
     public ResponseEntity<?> getListCampaign(int organizationId, int pageNumber, int pageSize){
         try {
-            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createDate").descending());
             List<Campaign> campaignResponses = campaignRepository.getCampaignsByOwner(organizationId, pageable);
             return ResponseEntity.ok().body(campaignResponses);
         } catch (Exception e) {
