@@ -6,7 +6,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.Date;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+class VolunteerJoinCampaignId implements Serializable {
+    private int userId;
+    private int campaignId;
+}
 
 @Entity
 @Getter
@@ -14,11 +24,13 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "volunteer_join_campaign")
+@IdClass(VolunteerJoinCampaignId.class)
 public class VolunteerJoinCampaign {
     @Id
     @Column(name = "user_id")
     private int userId;
 
+    @Id
     @Column(name = "campaign_id")
     private int campaignId;
 

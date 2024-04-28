@@ -210,20 +210,19 @@ public class CampaignServiceIplm implements CampaignService {
 
             Campaign campaign = campaignRepository.findCampaignByCampaignId(campaignId);
             if (campaign == null){
-                return ResponseEntity.badRequest().body(new ErrorResponseDto("Campaign not found"));
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Không tìm thấy chiến dịch"));
             }
             if (campaign.getNumberVolunteerRegistered() >= campaign.getNumberVolunteer()){
-                return ResponseEntity.ok().body(new ErrorResponseDto("Full slot"));
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Chiến dịch đã đủ số lượng tình nguyện viên"));
             } else {
                 campaign.setNumberVolunteerRegistered(campaign.getNumberVolunteerRegistered()+1);
                 campaignRepository.save(campaign);
             }
 
             volunteerJoinCampaignRepository.save(userJoin);
-
-            return  ResponseEntity.ok().body(new SuccessReponse("Join success"));
+            return  ResponseEntity.ok().body(new SuccessReponse("Tham gia thành công"));
         } catch (Exception e){
-            return ResponseEntity.badRequest().body(new ErrorResponseDto(e.toString()));
+            return ResponseEntity.badRequest().body(new ErrorResponseDto("Tham gia thất bại"));
         }
 
     }
