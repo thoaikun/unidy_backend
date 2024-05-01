@@ -254,16 +254,16 @@ public class CampaignServiceIplm implements CampaignService {
         int length = Math.min(offset + limit, campaignIds.length);
         String[] splitIds = Arrays.copyOfRange(campaignIds, offset, length);
         List<CampaignPostResponse.CampaignPostResponseData> campaignPostResponseData = neo4jCampaignRepository.findCampaignPostByCampaignIds(user.getUserId(), splitIds);
-        userJoinedCampaignMapping(campaignPostResponseData, user.getUserId());
-        return CompletableFuture.supplyAsync(() -> campaignPostResponseData);
+        List<CampaignPostResponse.CampaignPostResponseData> result = userJoinedCampaignMapping(campaignPostResponseData, user.getUserId());
+        return CompletableFuture.supplyAsync(() -> result);
     }
 
     @Async("threadPoolTaskExecutor")
     public CompletableFuture<List<CampaignPostResponse.CampaignPostResponseData>> getRecommendationFromNeo4J(Principal connectedUser, int skip, int limit) throws Exception {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         List<CampaignPostResponse.CampaignPostResponseData> listCampaign = neo4jCampaignRepository.findCampaign(user.getUserId(), skip, limit);
-        userJoinedCampaignMapping(listCampaign, user.getUserId());
-        return CompletableFuture.supplyAsync(() -> listCampaign);
+        List<CampaignPostResponse.CampaignPostResponseData> result = userJoinedCampaignMapping(listCampaign, user.getUserId());
+        return CompletableFuture.supplyAsync(() -> result);
     }
 
     public List<CampaignPostResponse.CampaignPostResponseData> getCampaignByOrganizationID(Principal connectedUser, int organizationId, int skip, int limit){
@@ -274,19 +274,15 @@ public class CampaignServiceIplm implements CampaignService {
         }
 
         List<CampaignPostResponse.CampaignPostResponseData> listCampaign = neo4jCampaignRepository.findCampaignByOrganizationID(user.getUserId(), organizationId, skip, limit);
-        userJoinedCampaignMapping(listCampaign, organization.getUserId());
+        listCampaign = userJoinedCampaignMapping(listCampaign, organization.getUserId());
         return listCampaign;
     }
 
-    private void userJoinedCampaignMapping(List<CampaignPostResponse.CampaignPostResponseData> campaigns, int userId) {
+    private List<CampaignPostResponse.CampaignPostResponseData> userJoinedCampaignMapping(List<CampaignPostResponse.CampaignPostResponseData> campaigns, int userId) {
         List<Integer> campaignIds = new ArrayList<>();
-        for (int i = 0; i < campaigns.size();) {
-            if (campaignIds.contains(Integer.parseInt(campaigns.get(i).getCampaign().getCampaignId()))){
-                campaigns.remove(campaigns.get(i));
-                continue;
-            }
-            campaignIds.add(Integer.parseInt(campaigns.get(i).getCampaign().getCampaignId()));
-            i++;
+        campaigns = deDuplicate(campaigns);
+        for (CampaignPostResponse.CampaignPostResponseData campaign : campaigns) {
+            campaignIds.add(Integer.parseInt(campaign.getCampaign().getCampaignId()));
         }
         List<VolunteerJoinCampaign> userJoinedCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByCampaignIdInAndUserId(campaignIds, userId);
         Map<Integer, Boolean> userJoinedCampaignMap = new HashMap<>();
@@ -299,6 +295,20 @@ public class CampaignServiceIplm implements CampaignService {
                 campaign.setIsJoined(true);
             }
         }
+
+        return campaigns;
+    }
+
+    private List<CampaignPostResponse.CampaignPostResponseData> deDuplicate(List<CampaignPostResponse.CampaignPostResponseData> campaigns) {
+        List<CampaignPostResponse.CampaignPostResponseData> result = new ArrayList<>();
+        Set<String> campaignIds = new HashSet<>();
+        for (CampaignPostResponse.CampaignPostResponseData campaign : campaigns) {
+            if (!campaignIds.contains(campaign.getCampaign().getCampaignId())) {
+                result.add(campaign);
+                campaignIds.add(campaign.getCampaign().getCampaignId());
+            }
+        }
+        return result;
     }
 
     @Async("threadPoolTaskExecutor")
@@ -465,11 +475,12 @@ public class CampaignServiceIplm implements CampaignService {
     public ResponseEntity<?> getCampaignByCampaignId(Principal connectedUser, String campaignId) {
         try {
             var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-            CampaignPostResponse.CampaignPostResponseData campaign = neo4jCampaignRepository.findCampaignNodeByCampaignIdCustom(user.getUserId(), campaignId);
-            if (campaign == null){
-                ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find this post"));
+            List<CampaignPostResponse.CampaignPostResponseData> campaigns = neo4jCampaignRepository.findCampaignNodeByCampaignIdCustom(user.getUserId(), campaignId);
+            if (campaigns == null){
+                return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find this post"));
             }
-            return ResponseEntity.ok().body(campaign);
+            campaigns = deDuplicate(campaigns);
+            return ResponseEntity.ok().body(campaigns.get(0));
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.toString());
         }
