@@ -1,5 +1,6 @@
 package com.unidy.backend.repositories;
 
+import com.unidy.backend.domains.Type.VolunteerStatus;
 import com.unidy.backend.domains.dto.responses.ListVolunteerResponse;
 import com.unidy.backend.domains.entity.VolunteerJoinCampaign;
 import jakarta.transaction.Transactional;
@@ -173,5 +174,10 @@ public interface VolunteerJoinCampaignRepository extends JpaRepository<Volunteer
     """)
     Integer countVolunteerByOrganizationId(Integer organizationId);
 
-
+    @Query("""
+        SELECT vjc.status
+        FROM VolunteerJoinCampaign vjc
+        WHERE vjc.userId = :userId AND vjc.campaignId = :campaignId
+    """)
+    VolunteerStatus findVolunteerStatusByUserIdAndCampaignId(Integer userId, String campaignId);
 }

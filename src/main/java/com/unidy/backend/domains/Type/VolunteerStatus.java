@@ -7,6 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum VolunteerStatus {
     NOT_APPROVE_YET(),
-    APPROVED(),
+    APPROVE(),
     REJECT();
 }

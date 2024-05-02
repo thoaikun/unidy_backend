@@ -274,7 +274,7 @@ public class CampaignServiceIplm implements CampaignService {
         }
 
         List<CampaignPostResponse.CampaignPostResponseData> listCampaign = neo4jCampaignRepository.findCampaignByOrganizationID(user.getUserId(), organizationId, skip, limit);
-        listCampaign = userJoinedCampaignMapping(listCampaign, organization.getUserId());
+        listCampaign = userJoinedCampaignMapping(listCampaign, user.getUserId());
         return listCampaign;
     }
 
@@ -285,14 +285,15 @@ public class CampaignServiceIplm implements CampaignService {
             campaignIds.add(Integer.parseInt(campaign.getCampaign().getCampaignId()));
         }
         List<VolunteerJoinCampaign> userJoinedCampaigns = volunteerJoinCampaignRepository.findVolunteerJoinCampaignByCampaignIdInAndUserId(campaignIds, userId);
-        Map<Integer, Boolean> userJoinedCampaignMap = new HashMap<>();
+        Map<Integer, VolunteerStatus> userJoinedCampaignMap = new HashMap<>();
         for (VolunteerJoinCampaign userJoinedCampaign : userJoinedCampaigns) {
-            userJoinedCampaignMap.put(userJoinedCampaign.getCampaignId(), true);
+            userJoinedCampaignMap.put(userJoinedCampaign.getCampaignId(), VolunteerStatus.valueOf(userJoinedCampaign.getStatus()));
         }
 
         for (CampaignPostResponse.CampaignPostResponseData campaign : campaigns) {
             if (userJoinedCampaignMap.containsKey(Integer.parseInt(campaign.getCampaign().getCampaignId()))) {
                 campaign.setIsJoined(true);
+                campaign.setJoinedStatus(userJoinedCampaignMap.get(Integer.parseInt(campaign.getCampaign().getCampaignId())));
             }
         }
 
@@ -480,6 +481,8 @@ public class CampaignServiceIplm implements CampaignService {
                 return ResponseEntity.badRequest().body(new ErrorResponseDto("Can't find this post"));
             }
             campaigns = deDuplicate(campaigns);
+            VolunteerStatus volunteerStatus = volunteerJoinCampaignRepository.findVolunteerStatusByUserIdAndCampaignId(user.getUserId(), campaignId);
+            campaigns.get(0).setJoinedStatus(volunteerStatus);
             return ResponseEntity.ok().body(campaigns.get(0));
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.toString());

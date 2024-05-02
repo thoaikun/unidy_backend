@@ -1,4 +1,5 @@
 package com.unidy.backend.domains.dto.responses;
+import com.unidy.backend.domains.Type.VolunteerStatus;
 import com.unidy.backend.domains.entity.neo4j.CampaignNode;
 import com.unidy.backend.domains.entity.neo4j.Neo4JNode;
 import com.unidy.backend.domains.entity.neo4j.UserNode;
@@ -24,6 +25,8 @@ public class CampaignPostResponse {
         private Boolean isLiked;
         @Builder.Default
         private Boolean isJoined = false;
+        @Builder.Default
+        private VolunteerStatus joinedStatus = null;
         private int numberComments;
     }
 
