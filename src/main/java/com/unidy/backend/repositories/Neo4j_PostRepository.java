@@ -25,13 +25,13 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
     boolean isLikedPost(int userId, String postId);
 
     @Query("""
-            MATCH (user:user)-[r:HAS_POST]->(post:post {post_id: $postId})
-            OPTIONAL MATCH (user)-[isLiked:LIKE]->(post)
-            OPTIONAL MATCH (:user)-[r_like:LIKE]->(post)
-            OPTIONAL MATCH (post) - [has_comment:HAS_COMMENT] -> (comment: comment)
-            WITH post,user, r, count(r_like) AS likeCount, r_like, isLiked, has_comment
-            RETURN post,user as userNodes, r, likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, count(has_comment) as numberComments
-            """)
+        MATCH (user:user)-[r:HAS_POST]->(post:post {post_id: $postId})
+        OPTIONAL MATCH (user)-[isLiked:LIKE]->(post)
+        OPTIONAL MATCH (:user)-[r_like:LIKE]->(post)
+        OPTIONAL MATCH (post) - [has_comment:HAS_COMMENT] -> (comment: comment)
+        WITH post,user, r, count(DISTINCT r_like) AS likeCount, r_like, isLiked, has_comment
+        RETURN post,user as userNodes, r, likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, count(has_comment) as numberComments
+    """)
     List<PostResponse> findPostNodeByPostIdCustom(int userId, String postId);
 
     @Query("""
@@ -39,7 +39,7 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
             OPTIONAL MATCH (user)-[isLiked:LIKE]->(post)
             OPTIONAL MATCH (:user)-[r_like:LIKE]->(post)
             OPTIONAL MATCH (post) - [has_comment:HAS_COMMENT] -> (comment: comment)
-            WITH post,user, r, count(r_like) AS likeCount, r_like, isLiked, has_comment
+            WITH post,user, r, count(DISTINCT r_like) AS likeCount, r_like, isLiked, has_comment
             RETURN post,user as userNodes, r, likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, count(has_comment) as numberComments
             ORDER BY post.create_date DESC, post.id ASC
             SKIP $skip
@@ -51,7 +51,7 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
            MATCH (user:user {user_id: $userId})-[is_friend_1:FRIEND]->(friend:user)-[has_post_1:HAS_POST]->(post:post)OPTIONAL MATCH (user)-[isLiked:LIKE]->(post)
            OPTIONAL MATCH (:user)-[r_like:LIKE]->(post)
            OPTIONAL MATCH (post) - [has_comment:HAS_COMMENT] -> (comment: comment)
-           return post as posts, friend as userNodes, has_post_1 as has_posts, count(r_like) as likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, count(has_comment) as numberComments
+           return post as posts, friend as userNodes, has_post_1 as has_posts, count(DISTINCT r_like) as likeCount, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, count(has_comment) as numberComments
            ORDER BY post.create_date DESC, post.id ASC
            SKIP $skip
            LIMIT $limit;
@@ -69,7 +69,7 @@ public interface Neo4j_PostRepository extends Neo4jRepository<PostNode,String> {
             OPTIONAL MATCH (:user {user_id: $userId})-[isLiked:LIKE]->(post)
             OPTIONAL MATCH (:user)-[r_like:LIKE]->(post)
             OPTIONAL MATCH (post) - [has_comment:HAS_COMMENT] -> (comment: comment)
-            WITH post, userNodes, r, count(r_like) AS likeCount, r_like, isLiked, score, count(has_comment) as numberComments
+            WITH post, userNodes, r, count(DISTINCT r_like) AS likeCount, r_like, isLiked, score, count(has_comment) as numberComments
             RETURN post, userNodes, r, likeCount, r_like, CASE WHEN isLiked IS NOT NULL THEN true ELSE false END AS isLiked, numberComments, score
             ORDER BY score DESC, post.create_date DESC, post.id ASC
             SKIP $skip
