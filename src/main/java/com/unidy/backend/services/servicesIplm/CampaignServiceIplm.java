@@ -76,7 +76,7 @@ public class CampaignServiceIplm implements CampaignService {
                     try {
                         if (fileContentType != null &&
                                 (fileContentType.equals("image/png") ||
-                                        fileContentType.equals("image/jpeg") ||
+                                        fileContentType.equals("image/jpeg") || fileContentType.equals("image/webp") ||
                                         fileContentType.equals("image/jpg"))) {
                             fileContentType = fileContentType.replace("image/",".");
                             s3Service.putObject(
