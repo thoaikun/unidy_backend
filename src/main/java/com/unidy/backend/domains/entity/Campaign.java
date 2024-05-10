@@ -19,7 +19,6 @@ import java.util.Date;
 public class Campaign {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     @Column(name = "campaign_id")
     private Integer campaignId;
 

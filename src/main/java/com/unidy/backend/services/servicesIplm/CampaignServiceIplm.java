@@ -96,16 +96,55 @@ public class CampaignServiceIplm implements CampaignService {
                     }
                 }
             }
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Campaign campaign_mysql = Campaign.builder()
+                    .title(request.getTitle())
+                    .description(request.getDescription())
+                    .status(request.getStatus())
+                    .numberVolunteer(Integer.valueOf(request.getNumberVolunteer()))
+                    .donationBudget(Integer.valueOf(request.getDonationBudget()))
+                    .startDate(request.getStartDate())
+                    .endDate(request.getEndDate())
+                    .timeTakePlace(request.getTimeTakePlace())
+                    .location(request.getLocation())
+                    .createDate(new Timestamp(System.currentTimeMillis()))
+                    .hashTag(request.getHashTag())
+                    .link_image(listImageLink.toString())
+                    .owner(user.getUserId())
+                    .numberVolunteerRegistered(0)
+                    .build();
+            campaignRepository.save(campaign_mysql);
 
-            Campaign campaign = Campaign.builder().build();
+            int campaignId = campaign_mysql.getCampaignId();
+            ObjectMapper objectMapper = new ObjectMapper();
+            CampaignType campaignType = objectMapper.readValue(request.getCategories(), CampaignType.class);
+            campaignType.setCampaignId(campaignId);
+            campaignTypeRepository.save(campaignType);
 
-            CompletableFuture<Integer> saveCampaignToMySQL = saveCampaignToMySQL(request, user, listImageLink.toString(), campaign);
-            CompletableFuture<Integer> saveCampaignToNeo4J = saveCampaignToNeo4J(request, user, listImageLink.toString(), campaign);
-            CompletableFuture.allOf(saveCampaignToMySQL, saveCampaignToNeo4J).join();
+            UserNode campaignOrganization = neo4jUserRepository.findUserNodeByUserId(user.getUserId());
+            CampaignNode campaign = new CampaignNode() ;
+            campaign.setCampaignId(campaign_mysql.getCampaignId().toString());
+            campaign.setContent(request.getDescription());
+            campaign.setTitle(request.getTitle());
+            campaign.setStatus(request.getStatus());
+            campaign.setNumOfRegister(Integer.parseInt(request.getNumberVolunteer()));
+            campaign.setCreateDate(dateFormat.format(new Date()));
+            campaign.setStartDate(request.getStartDate().toString());
+            campaign.setEndDate(request.getEndDate().toString());
+            campaign.setTimeTakePlace(request.getTimeTakePlace().toString());
+            campaign.setLocation(request.getLocation());
+            campaign.setIsBlock(false);
+            campaign.setHashTag(request.getHashTag());
+            campaign.setUserNode(campaignOrganization);
+            campaign.setLinkImage(listImageLink.toString());
+            campaign.setUpdateDate(null);
+            campaign.setDonationBudget(Integer.parseInt(request.getDonationBudget()));
+            campaign.setDonationBudgetReceived(0);
+            neo4jCampaignRepository.save(campaign);
 
             Optional<Organization> organization = organizationRepository.findByUserId(user.getUserId());
             if (organization.isPresent()) {
-                ExtraData extraData = new NewCampaignData(campaign.getCampaignId(), organization.get().getOrganizationId(), request.getTitle());
+                ExtraData extraData = new NewCampaignData(campaign_mysql.getCampaignId(), organization.get().getOrganizationId(), request.getTitle());
 
                 NotificationDto notification = NotificationDto.builder()
                         .title(organization.get().getOrganizationName() + " tổ chức chiến dịch mới")
