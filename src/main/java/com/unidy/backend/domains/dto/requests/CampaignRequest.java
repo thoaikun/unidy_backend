@@ -24,15 +24,12 @@ public class CampaignRequest {
     private String status;
     private String hashTag;
     private String location;
-    private int donationBudget;
-    private int numberVolunteer;
+    private String donationBudget;
+    private String numberVolunteer;
     private int numberRegistered;
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private Date startDate;
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private Date endDate;
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private Date timeTakePlace;
+    private String startDate;
+    private String endDate;
+    private String timeTakePlace;
     private List<MultipartFile> listImageFile;
     private String arrayImageLink ;
     private int owner;

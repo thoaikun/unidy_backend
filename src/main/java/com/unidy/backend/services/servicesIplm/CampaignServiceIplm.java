@@ -135,11 +135,11 @@ public class CampaignServiceIplm implements CampaignService {
             campaign.setTitle(request.getTitle());
             campaign.setDescription(request.getDescription());
             campaign.setStatus(request.getStatus());
-            campaign.setNumberVolunteer(request.getNumberVolunteer());
-            campaign.setDonationBudget(request.getDonationBudget());
-            campaign.setStartDate(request.getStartDate());
-            campaign.setEndDate((request.getEndDate()));
-            campaign.setTimeTakePlace(request.getTimeTakePlace());
+            campaign.setNumberVolunteer(Integer.valueOf(request.getNumberVolunteer()));
+            campaign.setDonationBudget(Integer.valueOf(request.getDonationBudget()));
+            campaign.setStartDate(dateFormat.parse(dateFormat.format(request.getStartDate())));
+            campaign.setEndDate(dateFormat.parse(dateFormat.format(request.getEndDate())));
+            campaign.setTimeTakePlace(dateFormat.parse(dateFormat.format(request.getTimeTakePlace())));
             campaign.setLocation(request.getLocation());
             campaign.setCreateDate(new Timestamp(System.currentTimeMillis()));
             campaign.setHashTag(request.getHashTag());
@@ -172,7 +172,7 @@ public class CampaignServiceIplm implements CampaignService {
             campaignNode.setContent(request.getDescription());
             campaignNode.setTitle(request.getTitle());
             campaignNode.setStatus(request.getStatus());
-            campaignNode.setNumOfRegister(request.getNumberVolunteer());
+            campaignNode.setNumOfRegister(Integer.parseInt(request.getNumberVolunteer()));
             campaignNode.setCreateDate(sdf.format(new Date()));
             campaignNode.setStartDate(sdf.format(request.getStartDate()));
             campaignNode.setEndDate(sdf.format(request.getEndDate()));
@@ -183,7 +183,7 @@ public class CampaignServiceIplm implements CampaignService {
             campaignNode.setUserNode(campaignOrganization);
             campaignNode.setLinkImage(linkImages);
             campaignNode.setUpdateDate(null);
-            campaignNode.setDonationBudget(request.getDonationBudget());
+            campaignNode.setDonationBudget(Integer.parseInt(request.getDonationBudget()));
             campaignNode.setDonationBudgetReceived(0);
             neo4jCampaignRepository.save(campaignNode);
             return CompletableFuture.completedFuture(0);
