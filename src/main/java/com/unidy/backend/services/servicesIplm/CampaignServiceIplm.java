@@ -119,7 +119,7 @@ public class CampaignServiceIplm implements CampaignService {
                 extra.put("id", campaign.getCampaignId().toString());
                 firebaseService.saveNotification(organization.get().getUserId(), followerIds,
                         NotificationType.NEW_CAMPAIGN, organization.get().getOrganizationName() + " tổ chức chiến dịch mới",
-                        request.getDescription(), new Gson().toJson(extra));
+                        request.getDescription().substring(0, 100), new Gson().toJson(extra));
             }
 
             return ResponseEntity.ok().body(new SuccessReponse("Create campaign success")) ;
